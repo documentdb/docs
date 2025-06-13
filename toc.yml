@@ -1,0 +1,12 @@
+- name: Getting Started
+  href: getting-started/
+  topicHref: getting-started/index.md
+- name: API Reference
+  href: api-reference/
+  topicHref: api-reference/index.md
+- name: PostgreSQL API
+  href: postgres-api/
+  topicHref: postgres-api/index.md
+- name: Architecture
+  href: architecture/
+  topicHref: architecture/index.md 

@@ -1,0 +1,64 @@
+- name: Overview
+  href: index.md
+- name: Operators
+  items:
+    - name: Accumulators
+      href: operators/accumulators/
+      topicHref: operators/accumulators/index.md
+    - name: Aggregation
+      href: operators/aggregation/
+      topicHref: operators/aggregation/index.md
+    - name: Arithmetic Expressions
+      href: operators/arithmetic/
+      topicHref: operators/arithmetic/index.md
+    - name: Array Expressions
+      href: operators/array/
+      topicHref: operators/array/index.md
+    - name: Array Query
+      href: operators/array-query/
+      topicHref: operators/array-query/index.md
+    - name: Array Update
+      href: operators/array-update/
+      topicHref: operators/array-update/index.md
+    - name: Bitwise Operators
+      href: operators/bitwise/
+      topicHref: operators/bitwise/index.md
+    - name: Bitwise Query
+      href: operators/bitwise-query/
+      topicHref: operators/bitwise-query/index.md
+    - name: Bitwise Update
+      href: operators/bitwise-update/
+      topicHref: operators/bitwise-update/index.md
+    - name: Comparison Query
+      href: operators/comparison/
+      topicHref: operators/comparison/index.md
+    - name: Conditional Expressions
+      href: operators/conditional/
+      topicHref: operators/conditional/index.md
+    - name: Date Expressions
+      href: operators/date/
+      topicHref: operators/date/index.md
+    - name: Data Size
+      href: operators/data-size/
+      topicHref: operators/data-size/index.md
+    - name: Evaluation Query
+      href: operators/evaluation/
+      topicHref: operators/evaluation/index.md
+    - name: Geospatial
+      href: operators/geospatial/
+      topicHref: operators/geospatial/index.md
+    - name: Logical Query
+      href: operators/logical/
+      topicHref: operators/logical/index.md
+    - name: Miscellaneous
+      href: operators/misc/
+      topicHref: operators/misc/index.md
+    - name: Object Expressions
+      href: operators/object/
+      topicHref: operators/object/index.md
+    - name: Projection
+      href: operators/projection/
+      topicHref: operators/projection/index.md
+    - name: Variable Expression
+      href: operators/variable/
+      topicHref: operators/variable/index.md 

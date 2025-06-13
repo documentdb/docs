@@ -1,0 +1,26 @@
+- name: Introduction
+  href: index.md
+- name: Quick Start Guides
+  items:
+    - name: VS Code Extension Quick Start
+      href: vscode-quickstart.md
+    - name: MongoDB Shell Quick Start
+      href: mongo-shell-quickstart.md
+- name: Language SDKs
+  items:
+    - name: Python Setup Guide
+      href: python-setup.md
+    - name: Node.js Setup Guide
+      href: nodejs-setup.md
+- name: Installation & Deployment
+  items:
+    - name: Pre-built Packages
+      href: prebuilt-packages.md
+    - name: Multi-cloud with Azure
+      href: azure-setup.md
+    - name: Multi-cloud with GCP
+      href: gcp-setup.md
+    - name: Multi-cloud with AWS DocumentDB
+      href: aws-setup.md
+    - name: Using with YugabyteDB
+      href: yugabyte-setup.md 
