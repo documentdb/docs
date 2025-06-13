@@ -138,9 +138,9 @@ db.collection.update(
    - Performance rankings
 
 3. **Data Management**
-   - Capped collections
    - Rolling windows
    - Limited history
+   > **Note:** Capped collections are not supported in the current version of DocumentDB local. Use array slicing operations to manage collection size instead.
 
 ## Performance Considerations
 

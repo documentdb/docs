@@ -51,7 +51,7 @@ Connection string format
    // Create a collection
    db.createCollection("users")
 
-   // Create a collection with options
+   // Create another collection
    db.createCollection("logs")
    ```
 

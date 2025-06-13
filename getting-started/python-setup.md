@@ -86,12 +86,7 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
    db.create_collection('users')
 
    # Create a collection with options
-   db.create_collection(
-       'logs',
-       capped=True,
-       size=5242880,  # 5MB
-       max=5000       # Maximum number of documents
-   )
+   db.create_collection('logs')
    ```
 
 2. Document operations

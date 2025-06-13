@@ -190,10 +190,10 @@ db.collection.update(
 
 ## Common Patterns
 
-### Capped Arrays
+### Limited Size Arrays
 
 ```javascript
-// Maintain last 5 elements
+// Maintain last 5 elements using array slicing
 db.collection.update(
   { _id: 1 },
   {
@@ -206,6 +206,7 @@ db.collection.update(
   }
 )
 ```
+> **Note:** While capped collections are not supported in the current version of DocumentDB local, you can use array slicing operations to maintain a fixed-size array within documents.
 
 ### Sorted Lists
 
