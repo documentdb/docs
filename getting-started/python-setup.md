@@ -24,24 +24,21 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
 
 ## Project Setup (skip if already done)
 
-1. Clone and build DocumentDB
+1. Setting up DocumentDB with Docker
    ```bash
-   # Clone the repository
-   git clone https://github.com/microsoft/documentdb.git
-   cd documentdb
+   # Pull the latest DocumentDB Docker image
+   docker pull ghcr.io/microsoft/documentdb/documentdb-local:latest
 
-   # Build the Docker image
-   docker build . -f .devcontainer/Dockerfile -t documentdb
+   # Tag the image for convenience
+   docker tag ghcr.io/microsoft/documentdb/documentdb-local:latest documentdb
 
-   # Run the container
-   docker run -v $(pwd):/home/documentdb/code -it documentdb /bin/bash
-
-   # Inside the container
-   cd code
-   make
-   sudo make install
-   ./scripts/start_oss_server.sh -t documentdb
+   # Run the container with your chosen username and password
+   docker run -dt -p 10260:10260 --name documentdb-container documentdb --username <YOUR_USERNAME> --password <YOUR_PASSWORD>
+   docker image rm -f ghcr.io/microsoft/documentdb/documentdb-local:latest || echo "No existing documentdb image to remove"
    ```
+   > **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. You must set these when creating the container for authentication to work.
+   > 
+   > **Port Note:** Port `10260` is used by default in these instructions to avoid conflicts with other local database services. You can use port `27017` (the standard MongoDB port) or any other available port if you prefer. If you do, be sure to update the port number in both your `docker run` command and your connection string accordingly.
 
 ## Connecting to DocumentDB
 

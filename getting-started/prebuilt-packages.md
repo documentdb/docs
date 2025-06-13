@@ -138,19 +138,18 @@ Download and install DocumentDB using our pre-built packages for various platfor
 1. Official images
    ```bash
    # Pull latest stable version
-   docker pull microsoft/documentdb:latest
-   
-   # Run with default configuration
-   docker run -d --name documentdb -p 27017:27017 microsoft/documentdb:latest
-   
-   # Run with custom configuration
-   docker run -d \
-     --name documentdb \
-     -p 27017:27017 \
-     -v /path/to/data:/var/lib/documentdb \
-     -v /path/to/config:/etc/documentdb \
-     microsoft/documentdb:latest
+   docker pull ghcr.io/microsoft/documentdb/documentdb-local:latest
+
+   # Tag the image for convenience
+   docker tag ghcr.io/microsoft/documentdb/documentdb-local:latest documentdb
+
+   # Run the container with your chosen username and password
+   docker run -dt -p 10260:10260 --name documentdb-container documentdb --username <YOUR_USERNAME> --password <YOUR_PASSWORD>
+   docker image rm -f ghcr.io/microsoft/documentdb/documentdb-local:latest || echo "No existing documentdb image to remove"
    ```
+   > **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. You must set these when creating the container for authentication to work.
+   > 
+   > **Port Note:** Port `10260` is used by default in these instructions to avoid conflicts with other local database services. You can use port `27017` (the standard MongoDB port) or any other available port if you prefer. If you do, be sure to update the port number in both your `docker run` command and your connection string accordingly.
 
 2. Version-specific tags
    ```bash
