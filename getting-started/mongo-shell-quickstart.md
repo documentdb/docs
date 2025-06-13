@@ -36,21 +36,9 @@ Get started with DocumentDB using the MongoDB shell for a familiar MongoDB-compa
 
 ## Connecting to DocumentDB
 
-1. Connection string format
+Connection string format
    ```bash
-   mongosh "mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260"
-   ```
-
-2. Authentication options
-   ```bash
-   # With authentication database
-   mongosh "mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/admin"
-   ```
-
-3. Connection parameters
-   ```bash
-   # With additional options
-   mongosh "mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?maxPoolSize=20&connectTimeoutMS=5000"
+   mongosh "mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true"
    ```
 
 ## Basic Operations
@@ -64,27 +52,16 @@ Get started with DocumentDB using the MongoDB shell for a familiar MongoDB-compa
    db.createCollection("users")
 
    // Create a collection with options
-   db.createCollection("logs", {
-     capped: true,
-     size: 5242880,
-     max: 5000
-   })
+   db.createCollection("logs")
    ```
 
 2. Inserting documents
    ```javascript
    // Insert a single document
-   db.users.insertOne({
-     name: "John Doe",
-     email: "john@example.com",
-     created_at: new Date()
-   })
+   db.users.insertOne({ name: "John Doe", email: "john@example.com", created_at: new Date() })
 
    // Insert multiple documents
-   db.users.insertMany([
-     { name: "Jane Smith", email: "jane@example.com" },
-     { name: "Bob Johnson", email: "bob@example.com" }
-   ])
+   db.users.insertMany([{ name: "Jane Smith", email: "jane@example.com" }, { name: "Bob Johnson", email: "bob@example.com" }])
    ```
 
 3. Querying documents
@@ -99,27 +76,16 @@ Get started with DocumentDB using the MongoDB shell for a familiar MongoDB-compa
    db.users.find({}, { name: 1, email: 1, _id: 0 })
 
    // Complex queries
-   db.users.find({
-     $and: [
-       { created_at: { $gte: new Date("2025-01-01") } },
-       { email: { $regex: "@example.com$" } }
-     ]
-   })
+   db.users.find({ $and: [{ created_at: { $gte: new Date("2025-01-01") } }, { email: { $regex: "@example.com$" } }] })
    ```
 
 4. Updating documents
    ```javascript
    // Update a single document
-   db.users.updateOne(
-     { name: "John Doe" },
-     { $set: { status: "active" } }
-   )
+   db.users.updateOne({ name: "John Doe" }, { $set: { status: "active" } })
 
    // Update multiple documents
-   db.users.updateMany(
-     { email: { $regex: "@example.com$" } },
-     { $set: { domain: "example.com" } }
-   )
+   db.users.updateMany({ email: { $regex: "@example.com$" } }, { $set: { domain: "example.com" } })
    ```
 
 5. Deleting documents
