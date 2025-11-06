@@ -2,12 +2,17 @@
 Index Advisor is a built-in performance tuning assistant for **DocumentDB**. It helps you diagnose slow queries, understand query execution behavior, and recommend optimized index strategies to improve performance.
 By analyzing your query structure along with collection and index statistics, Index Advisor generates clear, data-driven recommendations—accompanied by readable explanations that describe why a specific index would help.
 
-Index Advisor is available through the [DocumentDB for VS Code extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-documentdb) and supports two modes of operation:
+## Prerequisites
 
-* **Standard Mode:** Interactive tuning with a live database connection.
-* **Preload Mode:** Analysis of pre-collected execution plans and statistics without connecting to a database.
+To use Index Advisor, you must have:
 
-Both modes share the same privacy protections and data sanitization process.
+* An active **DocumentDB instance** or an [**Azure DocumentDB cluster**](https://aka.ms/tryvcore).
+* The [**DocumentDB for VS Code extension**](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-documentdb) installed.
+* The [**GitHub Copilot**](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) extension installed.
+* A **valid GitHub Copilot subscription**.
+
+If no valid Copilot subscription is detected, the extension will raise the following error:
+> `GitHub Copilot is not available. Please install the GitHub Copilot extension and ensure you have an active subscription.`
 
 ## Key Benefits
 * **Identify performance bottlenecks** and inefficient queries.
@@ -33,12 +38,17 @@ Use Standard Mode when you can connect to a live cluster—ideal for real-time t
 2. Navigate to the **Query Insights** tab.
 3. **Run** your query. The panel displays key performance indicators such as Execution Time, Documents Returned, Keys Examined, and Documents Examined.
 4. Review the **Query Statistics** and **Execution Plan** summaries.
+
+:::image type="content" source="media/query-statisics.png" alt-text="Screenshot of the query-statisics.":::
+
 5. Explore the **Optimization Opportunities** list. Each recommendation includes a human-readable explanation and a suggested index definition.
+
+:::image type="content" source="media/optimization-opportunities.png" alt-text="Screenshot of the optimization-opportunities.":::
+
 6. Click **Apply** to create the recommended index.
 7. After index creation, Index Advisor **re-runs the analysis** and updates metrics so you can compare performance improvements.
 
 Index creation runs asynchronously in the background. Once complete, the panel automatically refreshes with updated results.
-
 
 ## Supported Index Scenarios
 Index Advisor currently supports recommendations for the following query and indexing scenarios:
@@ -46,26 +56,14 @@ Index Advisor currently supports recommendations for the following query and ind
 | Scenario                                          | Description                                                                                                                             |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | **Equality / Range Query**                        | Handles simple equality or range filters (for example, `field = value` or `field > value`).                                             |
-| **Compound Filter / Covered Query / Lookup Join** | Analyzes queries that involve multiple filter conditions or joins that can be optimized with compound or covered indexes.               |
-| **Composite Index**                               | Suggests multi-field (composite) indexes to support complex filter and sort patterns.                                                   |
+| **Compound Filter / Covered Query / Lookup Join** | Analyzes queries that involve multiple filter conditions or joins that can be optimized with compound or covered indexes for Find Queries.               |
+| **Composite Index**                               | Suggests multi-field (composite) indexes to support complex Find queries                                                   |
 | **Sort Only / Filter + Sort**                     | Identifies when a sort operation can be improved or covered by an index.                                                                |
 | **Filter + Sort / Index Pushdown**                | Recommends index structures that allow filtering and sorting to be handled efficiently within the index layer, reducing document scans. |
+| **Low-selectivity field**                         | Supported for Find queries; will suggest a hidden index.                           |
+| **Existing index coverage**                       | Supported for Find queries; if an index already exists, no new index is suggested. |
 
 If your query scenario falls outside these patterns, please **file an ICM** with the DocumentDB team. The team will be happy to assist and review your specific use case.
-
-## Operational Modes
-
-| Aspect              | Standard Mode                 | Preload Mode                              |
-| ------------------- | ----------------------------- | ----------------------------------------- |
-| Database connection | Required                      | Not required                              |
-| Data source         | Fetched in real time          | Provided by the caller                    |
-| Use case            | Interactive tuning in VS Code | Batch analysis, testing, or offline tools |
-| Execution plan      | Retrieved via `explain()`     | Supplied in provided data                 |
-| Statistics          | Gathered from database        | Provided by the caller                    |
-| Cluster metadata    | Retrieved from connection     | Default non-Azure values                  |
-| Sanitization        | Applied to fetched data       | Applied to preloaded data                 |
-
-Both modes apply the same sanitization and privacy controls before any data leaves the extension.
 
 ## Privacy and Data Handling
 
@@ -118,31 +116,12 @@ Before data is sent for analysis:
 The model can recognize the query pattern but cannot infer or access your real data values.
 
 
-## Preload Mode
-
-Preload Mode enables you to analyze pre-collected execution plans and statistics without connecting to a database.
-
-* The same sanitization process applies to all preloaded data.
-* You can pre-sanitize data before loading it for additional protection.
-* Recommended for batch processing, offline evaluation, or integration with external performance tools.
-
 ## Limitations
 
 * **Regional availability:** Index Advisor is currently available only in the **United States** and **Canada** regions.
 * **Index management:** While Index Advisor recommends new indexes, **dropping indexes is not recommended** through the extension at this time.
 * **Scenario coverage:** Only the supported scenarios listed above are optimized in this release. For other query types, please file an ICM with our team.
 * **Data sensitivity:** Database and collection names are treated as metadata, but organizations should still review internal data classification policies.
-
-## Future Enhancement Under Review (v2.0)
-
-A proposed enhancement (under privacy review) may allow an **opt-in** feature that shares unsanitized queries and execution plans for deeper analysis.
-This would improve recommendation precision for complex workloads by allowing the model to understand real data selectivity and distribution.
-
-Because this could expose sensitive query values, it would:
-
-* Require **explicit user consent**.
-* Clearly display the data being shared.
-* Undergo a detailed **privacy impact assessment** before release.
 
 ## Compliance and Data Protection
 
@@ -154,8 +133,6 @@ Because this could expose sensitive query values, it would:
 
 ## Best Practices
 
-* Use **Standard Mode** for interactive performance tuning in VS Code.
-* Use **Preload Mode** for offline or automated batch analysis.
 * Follow your organization’s **data governance policies** when exporting or sharing statistics.
 * Review index recommendations before applying them to ensure they align with your workload and cost requirements.
 * Avoid manually dropping indexes without reviewing dependencies or consulting with the Azure DocumentDB team.
