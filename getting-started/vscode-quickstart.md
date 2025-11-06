@@ -21,10 +21,10 @@ Get started with DocumentDB using the Visual Studio Code extension for a seamles
 
 1. Creating a new DocumentDB instance
    ```bash
-   docker pull ghcr.io/microsoft/documentdb/documentdb-local:latest
-   docker tag ghcr.io/microsoft/documentdb/documentdb-local:latest documentdb
+   docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
+   docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
    docker run -dt -p 10260:10260 --name documentdb-container documentdb --username <YOUR_USERNAME> --password <YOUR_PASSWORD>
-   docker image rm -f ghcr.io/microsoft/documentdb/documentdb-local:latest || echo "No existing documentdb image to remove"
+   docker image rm -f ghcr.io/documentdb/documentdb/documentdb-local:latest || echo "No existing documentdb image to remove"
 
    ```
    > **Note:** During the transition to the Linux Foundation, Docker images may still be hosted on Microsoft's container registry. These will be migrated to the new DocumentDB organization as the transition completes.

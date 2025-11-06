@@ -28,13 +28,13 @@ Download and install DocumentDB using our pre-built packages for various platfor
 1. Official images
    ```bash
    # Pull latest stable version
-   docker pull ghcr.io/microsoft/documentdb/documentdb-local:latest
+   docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
 
    # Tag the image for convenience
-   docker tag ghcr.io/microsoft/documentdb/documentdb-local:latest documentdb
+   docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
 
    # Run the container with your chosen username and password
-   docker run -dt -p 10260:10260 --name documentdb-container ghcr.io/microsoft/documentdb/documentdb-local:latest --username <YOUR_USERNAME> --password <YOUR_PASSWORD>
+   docker run -dt -p 10260:10260 --name documentdb-container ghcr.io/documentdb/documentdb/documentdb-local:latest --username <YOUR_USERNAME> --password <YOUR_PASSWORD>
    ```
    > **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. You must set these when creating the container for authentication to work.
    > 
