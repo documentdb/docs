@@ -53,7 +53,7 @@ Use the command palette:
    docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
    docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
    docker run -dt -p 10260:10260 --name documentdb-container documentdb --username admin --password password123
-   docker image rm -f ghcr.io/documentdb/documentdb/documentdb-local:latest || echo "No existing documentdb image to remove"
+   docker image rm -f ghcr.io/documentdb/documentdb/documentdb-local:latest
    ```
 
    > **Note:** We're using port `10260` to avoid conflicts with other local database services. You can use port `27017` (the standard MongoDB port) if you prefer.
