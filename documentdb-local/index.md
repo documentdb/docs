@@ -1,5 +1,5 @@
 # DocumentDB-local
-DocumentDB is available as a Docker container. It supports running on a wide variety of processors and operating systems and make it easy to try out and test DocumentDB.
+DocumentDB Local provides a lightweight, containerized environment for developing and testing applications locally, including prototyping and integration testing.
 
 
 ## Prerequisites
@@ -8,7 +8,7 @@ DocumentDB is available as a Docker container. It supports running on a wide var
 
 ## Installation
 
-Get the Docker container image using `docker pull`. The container image is published to the Github container registry as `ghcr.io/documentdb/documentdb/documentdb-local:latest`.
+Get the Docker container image using `docker pull`.
 
 ```bash
 docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
@@ -31,7 +31,7 @@ CONTAINER ID   IMAGE                                                            
 5aff734a3591   ghcr.io/documentdb/documentdb/documentdb-local:latest                             "/bin/bash -c '/home…"   5 seconds ago   Up 4 seconds   0.0.0.0:10260->10260/tcp, :::10260->10260/tcp                                                              optimistic_blackwell
 ```
 
-> The DocumenttDB Mongo protocol gateway endpoint is typically available on port `10260`. To access this with `mongosh` run:
+> The DocumentDB gateway endpoint is available on port `10260` by default. To access this with `mongosh`, run:
 
 ```bash
 mongosh "mongodb://demo:test@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true"
@@ -73,12 +73,12 @@ The following table summarizes the available Docker commands for configuring the
 
 ## Feature support
 
-Please refer to the documentdb documentation for currently supported features,
+Please refer to the [documentdb](https://documentdb.io/docs/) documentation for currently supported features.
 
 
 ## Installing certificates 
 
-DocumentDB-local by default will generate new selef signed certificates each tome you start the container. To avoid certificate errors these can be installed on the local host. The example belw will show how to use this with `mongosh`.
+By default, DocumentDB Local generates new self-signed certificates each time the container starts. To prevent certificate errors, install them on your local machine. The example below shows how to use this setup with `mongosh`.
 
 ### Get certificate
 
