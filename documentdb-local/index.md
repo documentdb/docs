@@ -1,5 +1,5 @@
 # DocumentDB-local
-DocumentDB is available as a Docker container. It supports running on a wide variety of processors and operating systems and make it easy to try out and test DocumentDB.
+DocumentDB Local provides a lightweight, containerized environment for developing and testing applications locally, including prototyping and integration testing.
 
 
 ## Prerequisites
@@ -8,7 +8,7 @@ DocumentDB is available as a Docker container. It supports running on a wide var
 
 ## Installation
 
-Get the Docker container image using `docker pull`. The container image is published to the Github container registry as `ghcr.io/documentdb/documentdb/documentdb-local:latest`.
+Get the Docker container image using `docker pull`.
 
 ```bash
 docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
@@ -31,7 +31,7 @@ CONTAINER ID   IMAGE                                                            
 5aff734a3591   ghcr.io/documentdb/documentdb/documentdb-local:latest                             "/bin/bash -c '/home…"   5 seconds ago   Up 4 seconds   0.0.0.0:10260->10260/tcp, :::10260->10260/tcp                                                              optimistic_blackwell
 ```
 
-> The DocumenttDB Mongo protocol gateway endpoint is typically available on port `10260`. To access this with `mongosh` run:
+> The DocumentDB gateway endpoint is available on port `10260` by default. To access this with `mongosh`, run:
 
 ```bash
 mongosh "mongodb://demo:test@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true"
@@ -56,23 +56,29 @@ The following table summarizes the available Docker commands for configuring the
 | Requirement | Arg | Env | Allowed values | Default | Description |
 |---|---|---|---|---|---|
 | Print the settings to stdout from the container | `--help`, `-h` | N/A | N/A | N/A | Display information on available configuration |
+| Specify the username for DocumentDB. | `--username [value]` | Overrides `USERNAME` environment variable | STRING | `default_user` | Username for DocumentDB. |
+| Specify the password for DocumentDB. | `--password [value]` | Overrides `PASSWORD` environment variable | STRING | NA | Password for DocumentDB. This is required. |
+| The port of the DocumentDB endpoint. | `--documentdb-port [value]` | Overrides `PORT` environment variable | INT | `10260` | The port needs to published - for example, using `-p 10260:10260`. |
+| Specify a directory for data. | `--data-path [value]` | Overrides `DATA_PATH` environment variable. | STRING | `/data` | For example, to set `/usr/documentdb/data` as data directory, add this option to `docker run` command: `--mount type=bind,source=./.local/data,target=/usr/documentdb/data` |
+| Specify the owner. | `--owner [value]` | Overrides `OWNER` environment variable. | STRING | `documentdb` | Specify the owner for DocumentDB. |
+| Specify whether to start the PostgreSQL server. | `--start-pg` | NA | `true`, `false` | `true` | Specify whether to start the PostgreSQL server. |
+| Specify whether to create a user. | `--create-user` | NA | `true`, `false` | `true` | Specify whether to create a user. |
+| Specify the port for the PostgreSQL server. | `--pg-port [value]` | Overrides `PG_PORT` environment variable | INT | `9712` | Specify the port for the PostgreSQL server. |
+| Specify whether to allow external connections to PostgreSQL. | `--allow-external-connections` | Overrides `ALLOW_EXTERNAL_CONNECTIONS` environment variable | `true`, `false` | `false` | Specify whether to allow external connections to PostgreSQL. |
+| Specify the path to a certificate for securing traffic. | `--cert-path [value]` | Overrides `CERT_PATH` environment variable. | STRING | NA | You need to mount this file into the container. For example, to set `/mycert.pfx`, add this option to `docker run` command: `--mount type=bind,source=./mycert.pfx,target=/mycert.pfx`. Can set `CERT_SECRET` to the password for the certificate. |
+| Override default key with key in key file. | `--key-file [value]` | Overrides `KEY_FILE` environment variable. | STRING | NA | You need to mount this file into the container. For example, to set `/mykey.key`, add this option to `docker run` command: `--mount type=bind,source=./mykey.key,target=/mykey.key` |
+| Enable telemetry data. | `--enable-telemetry` | Overrides `ENABLE_TELEMETRY` environment variable | `true`, `false` | `false` | Enable telemetry data sent to the usage collector (Azure Application Insights). |
+| Specify log verbosity. | `--log-level [value]` | Overrides `LOG_LEVEL` environment variable. | `quiet`, `error`, `warn`, `info`, `debug`, `trace` | `info` | The verbosity of logs that will be emitted. |
 
-To be continued...
+
 ## Feature support
 
-Please refer to the documentdb documentation for currently supported features,
-
-
-## Limitations
-
-In addition to features not yet supported or not planned, the following list includes current limitations of docuemntdb-lcoal:
-
-To be added.
+Please refer to the [documentdb](https://documentdb.io/docs/) documentation for currently supported features.
 
 
 ## Installing certificates 
 
-DocumentDB-local by default will generate new selef signed certificates each tome you start the container. To avoid certificate errors these can be installed on the local host. The example belw will show how to use this with `mongosh`.
+By default, DocumentDB Local generates new self-signed certificates each time the container starts. To prevent certificate errors, install them on your local machine. The example below shows how to use this setup with `mongosh`.
 
 ### Get certificate
 
@@ -101,8 +107,6 @@ For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
 [direct: mongos] test>
 ```
 
-## Use in continuous integration workflow
-TBD
 
 ## Reporting issues
 
