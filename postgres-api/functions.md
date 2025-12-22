@@ -3,11 +3,13 @@ title: Functions
 description: Complete reference for PostgreSQL extension functions including CRUD operations, collection management, user management, and utilities.
 ---
 
+# Functions
+
 Comprehensive documentation for PostgreSQL extension functions and their usage patterns.
 
-## Table of Contents
+## CRUD Operations
 
-### CRUD Operations
+Functions for creating, reading, updating, and deleting documents in collections.
 
 | Function | Documentation |
 |----------|---------------|
@@ -24,7 +26,9 @@ Comprehensive documentation for PostgreSQL extension functions and their usage p
 | `list_indexes_cursor_first_page()` | [documentdb/wiki/Functions#list_indexes_cursor_first_page](https://github.com/microsoft/documentdb/wiki/Functions#list_indexes_cursor_first_page)
 | `update()` | [documentdb/wiki/Functions#update](https://github.com/microsoft/documentdb/wiki/Functions#update)
 
-### Collection Management
+## Collection Management
+
+Functions for managing collections, views, and databases.
 
 | | Documentation |
 | --- | --- |
@@ -36,7 +40,9 @@ Comprehensive documentation for PostgreSQL extension functions and their usage p
 | `rename_collection()` | [documentdb/wiki/Functions#rename_collection](https://github.com/microsoft/documentdb/wiki/Functions#rename_collection)
 | `shard_collection()` | [documentdb/wiki/Functions#shard_collection](https://github.com/microsoft/documentdb/wiki/Functions#shard_collection)
 
-### User Management
+## User Management
+
+Functions for creating, updating, and managing database users.
 
 | | Documentation |
 | --- | --- |
@@ -45,7 +51,9 @@ Comprehensive documentation for PostgreSQL extension functions and their usage p
 | `update_user()` | [documentdb/wiki/Functions#update_user](https://github.com/microsoft/documentdb/wiki/Functions#update_user)
 | `users_info()` | [documentdb/wiki/Functions#users_info](https://github.com/microsoft/documentdb/wiki/Functions#users_info)
 
-### Utility Functions
+## Utility Functions
+
+Functions for retrieving version information and other utility operations.
 
 | Function | Documentation |
 | --- | --- |

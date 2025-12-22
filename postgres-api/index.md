@@ -3,6 +3,10 @@ title: Components
 description: Learn about pg_documentdb_core and pg_documentdb_api PostgreSQL extensions that enable BSON support and document operations in Postgres.
 ---
 
+# Components
+
+The DocumentDB implementation consists of two key PostgreSQL extensions that work together to provide MongoDB-compatible document database functionality within PostgreSQL.
+
 ## pg_documentdb_core
 
 pg_documentdb_core is a PostgreSQL extension that introduces BSON datatype support and operations for native Postgres. This core component is essential for enabling document-oriented NoSQL capabilities within a PostgreSQL environment. It provides the foundational data structures and functions required to handle BSON data types, which are crucial for performing CRUD operations on documents.
