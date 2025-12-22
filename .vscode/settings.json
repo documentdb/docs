@@ -1,0 +1,11 @@
+{
+  "yaml.schemas": {
+    "./schema/navigation.schema.json": [
+      "*/navigation.{yml,yaml}"
+    ]
+  },
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  }
+}

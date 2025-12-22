@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Articles Navigation Configuration",
+  "description": "Schema for defining the navigation menu structure for article sections. This configuration creates sidebar or hierarchical navigation menus that help users browse through related documentation pages within a specific topic area.",
+  "type": "array",
+  "minItems": 1,
+  "maxItems": 50,
+  "items": {
+    "type": "object",
+    "description": "A single navigation item representing a page or section within the documentation. Each item creates a clickable link in the navigation menu that directs users to specific content.",
+    "required": ["title", "link"],
+    "properties": {
+      "title": {
+        "type": "string",
+        "description": "The display text for this navigation item as it appears in the menu. Should be concise yet descriptive enough to clearly indicate the page content. Use consistent terminology and formatting across navigation items for better user experience.",
+        "minLength": 1,
+        "maxLength": 100,
+        "examples": [
+          "Python Setup Guide",
+          "VS Code Extension Quick Start",
+          "MongoDB Shell Quick Start",
+          "Architecture under the hood",
+          "Components",
+          "Functions",
+          "Getting Started",
+          "Configuration Options"
+        ]
+      },
+      "link": {
+        "type": "string",
+        "description": "The URL path where this navigation item links to. For internal documentation pages, use relative paths to Markdown files. External links can use absolute URLs with http:// or https:// protocols.",
+        "pattern": "^(\\./.*\\.md$|/.*\\.md$|[^/]+\\.md$|https?://.+)",
+        "minLength": 1,
+        "maxLength": 500,
+        "examples": [
+          "file-name.md",
+          "/sub-folder/file-name.md",
+          "https://external-website.domain"
+        ]
+      },
+      "description": {
+        "type": "string",
+        "description": "Optional brief description or subtitle for this navigation item. Can be used to provide additional context about the page content, displayed as helper text in the navigation menu.",
+        "minLength": 1,
+        "maxLength": 200,
+        "examples": [
+          "Learn how to set up your Python development environment",
+          "Quick installation guide for the VS Code extension",
+          "Deep dive into the DocumentDB architecture"
+        ]
+      },
+      "children": {
+        "type": "array",
+        "description": "Optional array of nested navigation items that appear as sub-items under this parent item. Use this to create hierarchical navigation structures with collapsible sections. Supports multiple levels of nesting for complex documentation structures.",
+        "minItems": 1,
+        "maxItems": 30,
+        "items": {
+          "$ref": "#/items"
+        }
+      }
+    },
+    "additionalProperties": false
+  }
+}
