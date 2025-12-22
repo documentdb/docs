@@ -1,0 +1,22 @@
+- title: Getting Started
+  link: index.md
+- title: Visual Studio Code Quick Start
+  link: vscode-quickstart.md
+- title: Visual Studio Code Extension Guide
+  link: vscode-extension-guide.md
+- title: Node.js Setup Guide
+  link: nodejs-setup.md
+- title: Python Setup Guide
+  link: python-setup.md
+- title: Pre-built Packages
+  link: prebuilt-packages.md
+- title: AWS Setup
+  link: aws-setup.md
+- title: Azure Setup
+  link: azure-setup.md
+- title: GCP Setup
+  link: gcp-setup.md
+- title: YugabyteDB Setup
+  link: yugabyte-setup.md
+- title: MongoDB Migration Guide
+  link: mongodb-migration.md

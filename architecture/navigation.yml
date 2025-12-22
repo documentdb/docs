@@ -1,15 +1,2 @@
-items:
-  - name: Introduction
-    href: intoduction.md
-  - name: Postgres Processes
-    href: processes_background.md
-  - name: DocumentDB Schema
-    href: documentdb_shcema.md
-  - name: DocumentDB RUM operator classes
-    href: op_class.md
-  - name: DocumentDB Planner
-    href: planner.md
-  - name: Intermediate Query Representation
-    href: spec_tree.md
-  - name: Postgres Extension Versioning
-    href: versioning.md 
+- title: Architecture under the hood
+  link: index.md
