@@ -8,7 +8,10 @@
   "items": {
     "type": "object",
     "description": "A single navigation item representing a page or section within the documentation. Each item creates a clickable link in the navigation menu that directs users to specific content.",
-    "required": ["title", "link"],
+    "required": [
+      "title",
+      "link"
+    ],
     "properties": {
       "title": {
         "type": "string",
