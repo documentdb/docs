@@ -1,3 +1,8 @@
+---
+title: Pre-built Packages
+description: Download and install DocumentDB using our pre-built packages for various platforms.
+---
+
 # Pre-built Packages
 
 Download and install DocumentDB using our pre-built packages for various platforms.

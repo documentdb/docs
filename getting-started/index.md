@@ -1,3 +1,8 @@
+---
+title: Getting Started
+description: DocumentDB is an open-source document database platform built on PostgreSQL. It offers developers a fully permissive, open-source platform for document data stores.
+---
+
 # Introduction to DocumentDB
 
 DocumentDB is an open-source document database platform built on PostgreSQL. It offers developers a fully permissive, open-source platform for document data stores.

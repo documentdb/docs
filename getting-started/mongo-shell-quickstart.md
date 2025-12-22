@@ -1,3 +1,8 @@
+---
+title: MongoDB Shell Quick Start
+description: Learn how to set up and use DocumentDB with Node.js using the official MongoDB Node.js driver.
+---
+
 # Node.js Setup Guide
 
 Learn how to set up and use DocumentDB with Node.js using the official MongoDB Node.js driver.

@@ -1,3 +1,8 @@
+---
+title: Python Setup Guide
+description: Learn how to set up and use DocumentDB with Python using the official MongoDB Python driver (PyMongo).
+---
+
 # Python Setup Guide
 
 Learn how to set up and use DocumentDB with Python using the official MongoDB Python driver (PyMongo).

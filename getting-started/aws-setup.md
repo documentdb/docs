@@ -1,3 +1,8 @@
+---
+title: AWS Setup
+description: Deploy and manage DocumentDB alongside AWS for a hybrid database strategy.
+---
+
 # Multi-cloud with AWS DocumentDB
 
 Deploy and manage DocumentDB alongside AWS for a hybrid database strategy.

@@ -1,3 +1,8 @@
+---
+title: Visual Studio Code Extension Guide
+description: The DocumentDB for VS Code extension is a powerful, open-source GUI that helps you browse, manage, and query DocumentDB and MongoDB databases across any cloud, hybrid, or local environment.
+---
+
 # DocumentDB for VS Code Extension
 
 The [DocumentDB for VS Code extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-documentdb) is a powerful, open-source GUI that helps you browse, manage, and query DocumentDB and MongoDB databases across any cloud, hybrid, or local environment.

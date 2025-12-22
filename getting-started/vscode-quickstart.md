@@ -1,3 +1,8 @@
+---
+title: Visual Studio Code Quick Start
+description: Get started with DocumentDB using the Visual Studio Code extension for a seamless development experience.
+---
+
 # VS Code Extension Quick Start
 
 Get started with DocumentDB using the Visual Studio Code extension for a seamless development experience.

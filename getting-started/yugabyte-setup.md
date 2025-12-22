@@ -1,3 +1,8 @@
+---
+title: YugabyteDB Setup
+description: Learn how to use DocumentDB alongside YugabyteDB for a comprehensive database solution.
+---
+
 # DocumentDB Usage with YugabyteDB
 
 Learn how to use DocumentDB alongside YugabyteDB for a comprehensive database solution.
