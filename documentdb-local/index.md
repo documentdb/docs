@@ -1,6 +1,11 @@
-# DocumentDB-local
-DocumentDB Local provides a lightweight, containerized environment for developing and testing applications locally, including prototyping and integration testing.
+---
+title: DocumentDB Local
+description: Learn how to install and run DocumentDB Local using Docker for local development and testing. Includes setup instructions, configuration options, and certificate management.
+---
 
+# DocumentDB Local
+
+DocumentDB Local provides a lightweight, containerized environment for developing and testing applications locally, including prototyping and integration testing.
 
 ## Prerequisites
 
