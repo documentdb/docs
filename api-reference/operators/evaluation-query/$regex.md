@@ -2,7 +2,7 @@
 title: $regex
 description: The $regex operator provides regular expression capabilities for pattern matching in queries, allowing flexible string matching and searching.
 type: operators
-category: evaluation
+category: evaluation-query
 ---
 
 # $regex

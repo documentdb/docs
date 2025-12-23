@@ -2,7 +2,7 @@
 title: $expr
 description: The $expr operator allows the use of aggregation expressions within the query language, enabling complex field comparisons and calculations.
 type: operators
-category: evaluation
+category: evaluation-query
 ---
 
 # $expr

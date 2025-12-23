@@ -2,7 +2,7 @@
 title: $jsonSchema
 description: The $jsonSchema operator validates documents against a JSON Schema definition for data validation and structure enforcement. Discover supported features and limitations.
 type: operators
-category: evaluation
+category: evaluation-query
 ---
 
 # $jsonSchema

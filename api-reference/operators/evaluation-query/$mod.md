@@ -2,7 +2,7 @@
 title: $mod
 description: The $mod operator performs a modulo operation on the value of a field and selects documents with a specified result.
 type: operators
-category: evaluation
+category: evaluation-query
 ---
 
 # $mod

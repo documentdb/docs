@@ -2,7 +2,7 @@
 title: $text
 description: The $text operator performs text search on the content of indexed string fields, enabling full-text search capabilities.
 type: operators
-category: evaluation
+category: evaluation-query
 ---
 
 # $text
