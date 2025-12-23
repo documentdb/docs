@@ -1,5 +1,5 @@
 ---
-title: $[identifier]
+title: $[]
 description: The $[] operator is used to update all elements using a specific identifier in an array that match the query condition.
 type: operators
 category: array-update

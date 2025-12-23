@@ -1,6 +1,6 @@
 ---
 title: $pop
-description: Removes the first or last element of an array.
+description: The $pop operator removes the first or last element of an array.
 type: operators
 category: array-update
 ---
