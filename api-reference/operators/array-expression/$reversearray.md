@@ -2,7 +2,7 @@
 title: $reverseArray
 description: The $reverseArray operator is used to reverse the order of elements in an array.
 type: operators
-category: array
+category: array-expression
 ---
 
 # $reverseArray

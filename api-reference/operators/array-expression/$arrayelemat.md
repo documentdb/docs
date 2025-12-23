@@ -2,7 +2,7 @@
 title: $arrayElemAt
 description: The $arrayElemAt returns the element at the specified array index.
 type: operators
-category: array
+category: array-expression
 ---
 
 # $arrayElemAt

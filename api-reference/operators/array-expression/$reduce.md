@@ -1,19 +1,21 @@
 ---
-title: $range
-description: The $range operator allows generating an array of sequential integers.
+title: $reduce
+description: The $reduce operator applies an expression to each element in an array & accumulate result as single value.
 type: operators
-category: array
+category: array-expression
 ---
 
-# $range
+# $reduce
 
-The `$range` operator is used to generate an array of sequential integers. The operator helps create number arrays in a range, useful for pagination, indexing, or test data.
+The `$reduce` operator is used to apply an expression to each element in an array and accumulate the results into a single value. This operator is useful for performing operations that require iterating over array elements and aggregating their values.
 
 ## Syntax
 
 ```javascript
-{
-    $range: [ <start>, <end>, <step> ]
+$reduce: {
+   input: <array>,
+   initialValue: <expression>,
+   in: <expression>
 }
 ```
 
@@ -21,9 +23,9 @@ The `$range` operator is used to generate an array of sequential integers. The o
 
 | Parameter | Description |
 | --- | --- |
-| **`start`** | The starting value of the range (inclusive). |
-| **`end`** | The ending value of the range (exclusive). |
-| **`step`** | The increment value between each number in the range (optional, defaults to 1). |
+| **`input`** | The array to iterate over. |
+| **`initialValue`** | The initial cumulative value set before the array iteration begins. |
+| **`in`** | A valid expression that evaluates to the accumulated value for each element in the array. |
 
 ## Examples
 
@@ -139,71 +141,37 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Generate a range of numbers
+### Example 1: Aggregates the array values
 
-This query demonstrates usage of operator to generate an array of integers from 0 to 5, wherein it includes the left boundary while excludes the right.
+This query demonstrates how to use `$reduce` to sum the total sales across different categories in the `salesByCategory` array.
 
 ```javascript
 db.stores.aggregate([{
     $match: {
-        _id: "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6"
+        _id: "988d2dd1-2faa-4072-b420-b91b95cbfd60"
     }
 }, {
     $project: {
-        rangeArray: {
-            $range: [0, 5]
+        totalSalesByCategory: {
+            $reduce: {
+                input: "$sales.salesByCategory.totalSales",
+                initialValue: 0,
+                in: {
+                    $add: ["$$value", "$$this"]
+                }
+            }
         }
     }
 }])
 ```
 
-This query returns the following result.
+The query returns the following result.
 
 ```json
 [
-    {
-        "_id": "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6",
-        "rangeArray": [
-            0,
-            1,
-            2,
-            3,
-            4
-        ]
-    }
-]
-```
-
-### Example 2: Generate a range of numbers with a step value
-
-This query demonstrates usage of operator to generate an array of even numbers from 0 to 18.
-
-```javascript
-db.stores.aggregate([{
-    $match: {
-        _id: "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6"
-    }
-}, {
-    $project: {
-        evenNumbers: {
-            $range: [0, 8, 2]
-        }
-    }
-}])
-```
-
-This query results the following result.
-
-```json
-[
-    {
-        "_id": "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6",
-        "rangeArray": [
-            0,
-            2,
-            4,
-            6
-        ]
-    }
+  {
+      "_id": "988d2dd1-2faa-4072-b420-b91b95cbfd60",
+      "totalSalesByCategory": 149849
+  }
 ]
 ```

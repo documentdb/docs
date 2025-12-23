@@ -1,23 +1,19 @@
 ---
-title: $zip
-description: The $zip operator allows merging two or more arrays element-wise into a single array or arrays.
+title: $range
+description: The $range operator allows generating an array of sequential integers.
 type: operators
-category: array
+category: array-expression
 ---
 
-# $zip
+# $range
 
-The `$zip` operator is used to merge two or more arrays element-wise into a single array of arrays. It's useful when you want to combine related elements from multiple arrays into a single array structure.
+The `$range` operator is used to generate an array of sequential integers. The operator helps create number arrays in a range, useful for pagination, indexing, or test data.
 
 ## Syntax
 
 ```javascript
 {
-  $zip: {
-    inputs: [ <array1>, <array2>, ... ],
-    useLongestLength: <boolean>, // Optional
-    defaults: <array> // Optional
-  }
+    $range: [ <start>, <end>, <step> ]
 }
 ```
 
@@ -25,9 +21,9 @@ The `$zip` operator is used to merge two or more arrays element-wise into a sing
 
 | Parameter | Description |
 | --- | --- |
-| **`inputs`** | An array of arrays to be merged element-wise. |
-| **`useLongestLength`** | A boolean value that, if set to true, uses the longest length of the input arrays. If false or not specified, it uses the shortest length. |
-| **`defaults`** | An array of default values to use if `useLongestLength` is true and any input array is shorter than the longest array. |
+| **`start`** | The starting value of the range (inclusive). |
+| **`end`** | The ending value of the range (exclusive). |
+| **`step`** | The increment value between each number in the range (optional, defaults to 1). |
 
 ## Examples
 
@@ -143,42 +139,71 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Basic Usage
+### Example 1: Generate a range of numbers
 
-Suppose you want to merge the `categoryName` and `totalSales` fields from the `salesByCategory` array. This query returns individual array of arrays under `categoryWithSales` field. `useLongestLength` set to `true` would return the following output, while a value of `false` removes the `Napkins` array from the output.
+This query demonstrates usage of operator to generate an array of integers from 0 to 5, wherein it includes the left boundary while excludes the right.
 
 ```javascript
 db.stores.aggregate([{
-        $match: {
-            _id: "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6"
-        }
-    },
-    {
-        $project: {
-            name: 1,
-            categoryNames: "$sales.salesByCategory.categoryName",
-            totalSales: "$sales.salesByCategory.totalSales",
-            categoryWithSales: {
-                $zip: {
-                    inputs: ["$sales.salesByCategory.categoryName", "$sales.salesByCategory.totalSales"],
-                    useLongestLength: false
-                }
-            }
+    $match: {
+        _id: "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6"
+    }
+}, {
+    $project: {
+        rangeArray: {
+            $range: [0, 5]
         }
     }
-])
+}])
 ```
 
 This query returns the following result.
 
 ```json
 [
-  {
-    "_id": "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6",
-    "name": "Lakeshore Retail | Holiday Supply Hub - Marvinfort",
-    "categoryNames": ["Stockings"],
-    "totalSales": [25731],
-    "categoryWithSales": [["Stockings", 25731]]
-  }
+    {
+        "_id": "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6",
+        "rangeArray": [
+            0,
+            1,
+            2,
+            3,
+            4
+        ]
+    }
+]
+```
+
+### Example 2: Generate a range of numbers with a step value
+
+This query demonstrates usage of operator to generate an array of even numbers from 0 to 18.
+
+```javascript
+db.stores.aggregate([{
+    $match: {
+        _id: "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6"
+    }
+}, {
+    $project: {
+        evenNumbers: {
+            $range: [0, 8, 2]
+        }
+    }
+}])
+```
+
+This query results the following result.
+
+```json
+[
+    {
+        "_id": "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6",
+        "rangeArray": [
+            0,
+            2,
+            4,
+            6
+        ]
+    }
 ]
 ```

@@ -1,21 +1,22 @@
 ---
-title: $sortArray
-description: The $sortArray operator helps in sorting the elements in an array.
+title: $zip
+description: The $zip operator allows merging two or more arrays element-wise into a single array or arrays.
 type: operators
-category: array
+category: array-expression
 ---
 
-# $sortArray
+# $zip
 
-The `$sortArray` operator is used to sort the elements of an array. The operator can be useful when you need to sort arrays within your documents based on specific fields or criteria. It can be applied to arrays of embedded documents or simple arrays of values.
+The `$zip` operator is used to merge two or more arrays element-wise into a single array of arrays. It's useful when you want to combine related elements from multiple arrays into a single array structure.
 
 ## Syntax
 
 ```javascript
 {
-  $sortArray: {
-    input: <arrayExpression>,
-    sortBy: <sortSpecification>
+  $zip: {
+    inputs: [ <array1>, <array2>, ... ],
+    useLongestLength: <boolean>, // Optional
+    defaults: <array> // Optional
   }
 }
 ```
@@ -24,8 +25,9 @@ The `$sortArray` operator is used to sort the elements of an array. The operator
 
 | Parameter | Description |
 | --- | --- |
-| **`input`** | The array to be sorted. |
-| **`sortBy`** | Specifies the sort order. It can be a single field or multiple fields with their corresponding sort order (1 for ascending, -1 for descending). |
+| **`inputs`** | An array of arrays to be merged element-wise. |
+| **`useLongestLength`** | A boolean value that, if set to true, uses the longest length of the input arrays. If false or not specified, it uses the shortest length. |
+| **`defaults`** | An array of default values to use if `useLongestLength` is true and any input array is shorter than the longest array. |
 
 ## Examples
 
@@ -141,53 +143,42 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Sorting an Array of Embedded Documents
+### Example 1: Basic Usage
 
-This query sorts the `sales.salesByCategory` array within each document in descending order based on `totalSales`.
+Suppose you want to merge the `categoryName` and `totalSales` fields from the `salesByCategory` array. This query returns individual array of arrays under `categoryWithSales` field. `useLongestLength` set to `true` would return the following output, while a value of `false` removes the `Napkins` array from the output.
 
 ```javascript
 db.stores.aggregate([{
-    $match: {
-        _id: "d3c9df51-41bd-4b4e-a26b-b038d9cf8b45"
-    }
-}, {
-    $project: {
-        sortedSalesByCategory: {
-            $sortArray: {
-                input: "$sales.salesByCategory",
-                sortBy: {
-                    totalSales: -1
+        $match: {
+            _id: "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6"
+        }
+    },
+    {
+        $project: {
+            name: 1,
+            categoryNames: "$sales.salesByCategory.categoryName",
+            totalSales: "$sales.salesByCategory.totalSales",
+            categoryWithSales: {
+                $zip: {
+                    inputs: ["$sales.salesByCategory.categoryName", "$sales.salesByCategory.totalSales"],
+                    useLongestLength: false
                 }
             }
         }
     }
-}])
+])
 ```
 
 This query returns the following result.
 
 ```json
 [
-    {
-        "_id": "d3c9df51-41bd-4b4e-a26b-b038d9cf8b45",
-        "sortedSalesByCategory": [
-            {
-                "categoryName": "DJ Accessories",
-                "totalSales": 60000
-            },
-            {
-                "categoryName": "Music Accessories",
-                "totalSales": 40000
-            },
-            {
-                "categoryName": "DJ Speakers",
-                "totalSales": 36972
-            },
-            {
-                "categoryName": "DJ Headphones",
-                "totalSales": 12877
-            }
-        ]
-    }
+  {
+    "_id": "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6",
+    "name": "Lakeshore Retail | Holiday Supply Hub - Marvinfort",
+    "categoryNames": ["Stockings"],
+    "totalSales": [25731],
+    "categoryWithSales": [["Stockings", 25731]]
+  }
 ]
 ```

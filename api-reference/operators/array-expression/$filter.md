@@ -2,7 +2,7 @@
 title: $filter
 description: The $filter operator filters for elements from an array based on a specified condition.
 type: operators
-category: array
+category: array-expression
 ---
 
 # $filter

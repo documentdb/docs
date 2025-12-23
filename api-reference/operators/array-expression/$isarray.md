@@ -2,7 +2,7 @@
 title: $isArray
 description: The $isArray operator is used to determine if a specified value is an array.
 type: operators
-category: array
+category: array-expression
 ---
 
 # $isArray

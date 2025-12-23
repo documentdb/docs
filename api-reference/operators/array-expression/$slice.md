@@ -2,7 +2,7 @@
 title: $slice
 description: The $slice operator returns a subset of an array from any element onwards in the array.
 type: operators
-category: array
+category: array-expression
 ---
 
 # $slice

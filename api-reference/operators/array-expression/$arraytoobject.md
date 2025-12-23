@@ -1,19 +1,19 @@
 ---
-title: $concatArrays
-description: The $concatArrays is used to combine multiple arrays into a single array.
+title: $arrayToObject
+description: The $arrayToObject allows converting an array into a single document.
 type: operators
-category: array
+category: array-expression
 ---
 
-# $concatArrays
+# $arrayToObject
 
-The `$concatArrays` operator is used to combine multiple arrays into a single array. This operator is useful when you need to merge arrays from different documents or fields in a document.
+The `$arrayToObject` operator is used to convert an array into a single document. This operator is useful when you need to transform arrays of key-value pairs into a more structured document format.
 
 ## Syntax
 
 ```javascript
 {
-  $concatArrays: ["<array1>", "<array2>"]
+  $arrayToObject: "<array>"
 }
 ```
 
@@ -21,7 +21,7 @@ The `$concatArrays` operator is used to combine multiple arrays into a single ar
 
 | Parameter | Description |
 | --- | --- |
-| **`<array1>, <array2>`**| The array fields targeted for concatenation.|
+| **`<array>`**| The array to be converted into a document. Each element in the array must be either: a) A two-element array where the first element is the field name and the second element is the field value. b) A document with exactly two fields, "k" and "v", where "k" is the field name and "v" is the field value.|
 
 ## Examples
 
@@ -106,31 +106,47 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Concatenating Arrays in a document
+### Example 1: Convert the array to a key: value document
 
-This query merges the `categoryName` field from the `promotionEvents.discounts` array with the `tag` array into a single combinedTags array.
+This query converts the `salesByCategory` array into an object where each `categoryName` is a key and `totalSales` is the corresponding value. This transformation simplifies access to sales data by category directly from an object structure.
 
 ```javascript
 db.stores.aggregate([{
-    $match: {
-        _id: "7954bd5c-9ac2-4c10-bb7a-2b79bd0963c5"
-    }
-}, {
-    $project: {
-        combinedTags: {
-            $concatArrays: ["$promotionEvents.discounts.categoryName", "$tag"]
+        $match: {
+            _id: "7954bd5c-9ac2-4c10-bb7a-2b79bd0963c5"
+        }
+    },
+    {
+        $project: {
+            "sales.salesByCategory": {
+                $arrayToObject: {
+                    $map: {
+                        input: "$sales.salesByCategory",
+                        as: "item",
+                        in: {
+                            k: "$$item.categoryName",
+                            v: "$$item.totalSales"
+                        }
+                    }
+                }
+            }
         }
     }
-}])
+])
 ```
 
-This query returns the following result.
+The query returns the following result.
 
 ```json
 [
   {
       "_id": "7954bd5c-9ac2-4c10-bb7a-2b79bd0963c5",
-      "combinedTags": [ '#ShopLocal', '#NewArrival', '#NewArrival', '#FreeShipping' ]
+      "sales": {
+          "salesByCategory": {
+              "DJ Headphones": 35921,
+              "DJ Cables": 1000
+          }
+      }
   }
 ]
 ```

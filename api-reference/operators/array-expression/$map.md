@@ -2,7 +2,7 @@
 title: $map
 description: The $map operator allows applying an expression to each element in an array.
 type: operators
-category: array
+category: array-expression
 ---
 
 # $map

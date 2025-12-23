@@ -2,7 +2,7 @@
 title: $indexOfArray
 description: The $indexOfArray operator is used to search for an element in an array and return the index of the first occurrence of the element.
 type: operators
-category: array
+category: array-expression
 ---
 
 # $indexOfArray
