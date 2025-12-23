@@ -1,19 +1,19 @@
 ---
-title: $subtract
-description: The $subtract operator subtracts two numbers and returns the result.
+title: $trunc
+description: The $trunc operator truncates a number to a specified decimal place.
 type: operators
-category: arithmetic
+category: arithmetic-expression
 ---
 
-# $subtract
+# $trunc
 
-The `$subtract` operator is used to subtract two numbers and return the result.
+The `$trunc` operator truncates a number to a specified decimal place.
 
 ## Syntax
 
 ```javascript
 {
-  $subtract: [ <expression 1>, <expression 2> ]
+  $trunc: [ <number>, <decimal place> ]
 }
 ```
 
@@ -21,8 +21,8 @@ The `$subtract` operator is used to subtract two numbers and return the result.
 
 | Parameter | Description |
 | --- | --- |
-| **`<expression 1>`** | The minuend (the number from which another number is to be subtracted). |
-| **`<expression 2>`** | The subtrahend (the number to be subtracted). |
+| **`<number>`** | The number to truncate. |
+| **`<decimal place>`** | The decimal place to truncate the specified number to. A positive value truncates to the right of the decimal point, and a negative value truncates to the left of the decimal point. |
 
 ## Examples
 
@@ -138,28 +138,18 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Calculating the difference between full time and part time staff
+### Example 1 - Fetch truncated location coordinates
 
-To calculate the absolute difference in part time and full time staff for stores within the "First Up Consultants" company, first run a query to filter stores by the company name. Then, use the $diff operator along with the $abs operator to calculate the absolute difference between the full time and part time staff for each store.
+To retrieve the truncated coordinates of stores within the "First Up Consultants" company, first run a query to filter stores by the company name. Then, use the $trunc operator on the latitude and longitude fields to return the desired result.
 
 ```javascript
-db.stores.aggregate([{
-    $match: {
-        company: {
-            $in: ["First Up Consultants"]
-        }
-    }
-}, {
+db.stores.aggregate([
+  {
     $project: {
-        name: 1,
-        staff: 1,
-        staffCountDiff: {
-            $abs: {
-                $subtract: ["$staff.employeeCount.fullTime", "$staff.employeeCount.partTime"]
-            }
-        }
+      truncatedLat: { $trunc: ["$location.lat", 2] }
     }
-}])
+  }
+])
 ```
 
 The first three results returned by this query are:
@@ -167,37 +157,34 @@ The first three results returned by this query are:
 ```json
 [
     {
+        "_id": "39acb3aa-f350-41cb-9279-9e34c004415a",
+        "name": "First Up Consultants | Bed and Bath Pantry - Port Antone",
+        "location": {
+            "lat": 87.2239,
+            "lon": -129.0506
+        },
+        "truncatedLatitute": 87,
+        "truncatedLongitude": -129
+    },
+    {
+        "_id": "26afb024-53c7-4e94-988c-5eede72277d5",
+        "name": "First Up Consultants | Microphone Bazaar - South Lexusland",
+        "location": {
+            "lat": -29.1866,
+            "lon": -112.7858
+        },
+        "truncatedLatitute": -29,
+        "truncatedLongitude": -112
+    },
+    {
         "_id": "62438f5f-0c56-4a21-8c6c-6bfa479494ad",
         "name": "First Up Consultants | Plumbing Supply Shoppe - New Ubaldofort",
-        "staff": {
-            "employeeCount": {
-                "fullTime": 20,
-                "partTime": 18
-            }
+        "location": {
+            "lat": -0.2136,
+            "lon": 108.7466
         },
-        "staffCountDiff": 2
-    },
-    {
-        "_id": "bfb213fa-8db8-419f-8e5b-e7096120bad2",
-        "name": "First Up Consultants | Beauty Product Shop - Hansenton",
-        "staff": {
-            "employeeCount": {
-                "fullTime": 18,
-                "partTime": 10
-            }
-        },
-        "staffCountDiff": 8
-    },
-    {
-        "_id": "14ab145b-0819-4d22-9e02-9ae0725fcda9",
-        "name": "First Up Consultants | Flooring Haven - Otisville",
-        "staff": {
-            "employeeCount": {
-                "fullTime": 19,
-                "partTime": 10
-            }
-        },
-        "staffCountDiff": 9
+        "truncatedLatitute": 0,
+        "truncatedLongitude": 108
     }
 ]
 ```

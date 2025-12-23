@@ -1,19 +1,19 @@
 ---
-title: $add
-description: The $add operator returns the sum of two numbers or the sum of a date and numbers.
+title: $multiply
+description: The $multiply operator multiplies the input numerical values
 type: operators
-category: arithmetic
+category: arithmetic-expression
 ---
 
-# $add
+# $multiply
 
-The `$add` operator adds numbers together or adds numbers and dates. When adding numbers and dates, the numbers are interpreted as milliseconds.
+The `$multiply` operator calculates the product of the specified input numerical values.
 
 ## Syntax
 
 ```javascript
 {
-  $add: [ <listOfExpressions> ]
+  $multiply: [ <listOfValues> ]
 }
 ```
 
@@ -21,7 +21,7 @@ The `$add` operator adds numbers together or adds numbers and dates. When adding
 
 | Parameter | Description |
 | --- | --- |
-| **`<listOfExpressions>`** | Any valid expressions that resolve to numbers or dates. The expressions can be any combination of numbers and dates. |
+|**`<listOfValues>`**| A comma separated list of numerical values.
 
 ## Examples
 
@@ -137,37 +137,60 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1 - Get the current and project staff count
+### Example 1: Multiply a field by a constant
 
-To calculate the total staff and project the total staff looking forward, use the $add operator on the nested totalStaff object to return the desired results.
+To double the total sales for all stores under the "First Up Consultants" company, first run a query to filter on the name of the company. Then, use the $multiply operator on the totalSales field to return the desired results.
 
 ```javascript
 db.stores.aggregate([{
     $match: {
-        _id: "40d6f4d7-50cd-4929-9a07-0a7a133c2e74"
+        company: {
+            $in: ["First Up Consultants"]
+        }
     }
 }, {
     $project: {
-        name: 1,
-        currentTotalStaff: {
-            $add: ["$staff.totalStaff.fullTime", "$staff.totalStaff.partTime"]
-        },
-        projectedNextYearStaff: {
-            $add: ["$staff.totalStaff.fullTime", "$staff.totalStaff.partTime", 2]
+        company: 1,
+        "sales.revenue": 1,
+        salesVolumeDoubled: {
+            $multiply: ["$sales.revenue", 2]
         }
     }
 }])
 ```
 
-This query returns the following result:
+The first three results returned by this query are:
 
 ```json
 [
-  {
-    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
-    "name": "Proseware, Inc. | Home Entertainment Hub - East Linwoodbury",
-    "currentTotalStaff": 39,
-    "projectedNextYearStaff": 41
-  }
+    {
+        "_id": "39acb3aa-f350-41cb-9279-9e34c004415a",
+        "sales": {
+            "revenue": 279183
+        },
+        "company": "First Up Consultants",
+        "salesVolumeDoubled": 558366
+    },
+    {
+        "_id": "26afb024-53c7-4e94-988c-5eede72277d5",
+        "sales": {
+            "revenue": 50000
+        },
+        "company": "First Up Consultants",
+        "salesVolumeDoubled": 100000
+    },
+    {
+        "_id": "62438f5f-0c56-4a21-8c6c-6bfa479494ad",
+        "sales": {
+            "revenue": 68508
+        },
+        "company": "First Up Consultants",
+        "salesVolumeDoubled": 137016
+    }
 ]
 ```
+
+## Limitations
+
+- The `$multiply` operator works only with numerical expressions. Using it with non-numerical values result in an error.
+- Be cautious of overflow or precision issues when working with large numbers or floating-point arithmetic.

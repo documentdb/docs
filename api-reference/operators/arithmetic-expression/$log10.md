@@ -1,19 +1,19 @@
 ---
-title: $floor
-description: The $floor operator returns the largest integer less than or equal to the specified number
+title: $log10
+description: The $log10 operator calculates the log of a specified number in base 10
 type: operators
-category: arithmetic
+category: arithmetic-expression
 ---
 
-# $floor
+# $log10
 
-The `$floor` operator returns the largest integer less than or equal to the specified number.
+The `$log10` operator calculates the logarithm of a number in base 10 and returns the result.
 
 ## Syntax
 
 ```javascript
 {
-  $floor: <number>
+  $log10: <number>
 }
 ```
 
@@ -21,7 +21,7 @@ The `$floor` operator returns the largest integer less than or equal to the spec
 
 | Parameter | Description |
 | --- | --- |
-| **`<number>`** | Any valid expression that resolves to a number. |
+| **`<number>`** | Any valid expression that resolves to a positive number. |
 
 ## Examples
 
@@ -137,9 +137,9 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1 - Calculate the floor of total sales and discounts
+### Example 1 - Analyze sales distribution
 
-To calculate the floor of the average sales volume for a given store and the floor of sales per category, run a query using the $floor operator to return the desired results.
+To bucket the distribution of sales per category within a store, run a query using the $log10 operator on the totalSales field. Then, bucket the categories into "Low", "Medium" and "High" based on the result.
 
 ```javascript
 db.stores.aggregate([{
@@ -150,24 +150,45 @@ db.stores.aggregate([{
     {
         $project: {
             name: 1,
-            averageSalesFloor: {
-                $floor: {
-                    $divide: [
-                        "$sales.totalSales",
-                        {
-                            $size: "$sales.salesByCategory"
-                        }
-                    ]
-                }
-            },
-            categoriesWithFloorSales: {
+            salesAnalysis: {
                 $map: {
                     input: "$sales.salesByCategory",
                     as: "category",
                     in: {
                         categoryName: "$$category.categoryName",
-                        floorSales: {
-                            $floor: "$$category.totalSales"
+                        originalSales: "$$category.totalSales",
+                        logScale: {
+                            $log10: "$$category.totalSales"
+                        },
+                        magnitudeClass: {
+                            $switch: {
+                                branches: [{
+                                        case: {
+                                            $lt: [{
+                                                $log10: "$$category.totalSales"
+                                            }, 3]
+                                        },
+                                        then: "Low"
+                                    },
+                                    {
+                                        case: {
+                                            $lt: [{
+                                                $log10: "$$category.totalSales"
+                                            }, 4]
+                                        },
+                                        then: "Medium"
+                                    },
+                                    {
+                                        case: {
+                                            $lt: [{
+                                                $log10: "$$category.totalSales"
+                                            }, 5]
+                                        },
+                                        then: "High"
+                                    }
+                                ],
+                                default: "Very High"
+                            }
                         }
                     }
                 }
@@ -184,27 +205,36 @@ This query returns the following result:
   {
     "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
     "name": "Proseware, Inc. | Home Entertainment Hub - East Linwoodbury",
-    "averageSalesFloor": 30372,
-    "categoriesWithFloorSales": [
+    "salesAnalysis": [
       {
         "categoryName": "Sound Bars",
-        "floorSales": 2120
+        "originalSales": 2120,
+        "logScale": 3.326,
+        "magnitudeClass": "Medium"
       },
       {
         "categoryName": "Home Theater Projectors",
-        "floorSales": 45004
+        "originalSales": 45004,
+        "logScale": 4.653,
+        "magnitudeClass": "High"
       },
       {
         "categoryName": "Game Controllers",
-        "floorSales": 43522
+        "originalSales": 43522,
+        "logScale": 4.639,
+        "magnitudeClass": "High"
       },
       {
         "categoryName": "Remote Controls",
-        "floorSales": 28946
+        "originalSales": 28946,
+        "logScale": 4.462,
+        "magnitudeClass": "High"
       },
       {
         "categoryName": "VR Games",
-        "floorSales": 32272
+        "originalSales": 32272,
+        "logScale": 4.509,
+        "magnitudeClass": "High"
       }
     ]
   }

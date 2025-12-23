@@ -1,19 +1,19 @@
 ---
-title: $trunc
-description: The $trunc operator truncates a number to a specified decimal place.
+title: $abs
+description: The $abs operator returns the absolute value of a number.
 type: operators
-category: arithmetic
+category: arithmetic-expression
 ---
 
-# $trunc
+# $abs
 
-The `$trunc` operator truncates a number to a specified decimal place.
+The `$abs` operator returns the absolute value of a number. It removes any negative sign from a number, making it positive.
 
 ## Syntax
 
 ```javascript
 {
-  $trunc: [ <number>, <decimal place> ]
+  $abs: <expression>
 }
 ```
 
@@ -21,8 +21,7 @@ The `$trunc` operator truncates a number to a specified decimal place.
 
 | Parameter | Description |
 | --- | --- |
-| **`<number>`** | The number to truncate. |
-| **`<decimal place>`** | The decimal place to truncate the specified number to. A positive value truncates to the right of the decimal point, and a negative value truncates to the left of the decimal point. |
+| **`<expression>`** | Any expression that resolves to a number. If the expression is null or refers to a missing field, $abs returns null. |
 
 ## Examples
 
@@ -138,53 +137,73 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1 - Fetch truncated location coordinates
+### Example 1 - Use the absolute value of total sales
 
-To retrieve the truncated coordinates of stores within the "First Up Consultants" company, first run a query to filter stores by the company name. Then, use the $trunc operator on the latitude and longitude fields to return the desired result.
+To calculate the absolute difference in sales volume of each category and the average sales across all categories for a store, first run a query to filter on the specific store. Then, calculate the difference in sales between each category and the average across all categories. Lastly, project the absolute difference using the $abs operator.
 
 ```javascript
-db.stores.aggregate([
-  {
-    $project: {
-      truncatedLat: { $trunc: ["$location.lat", 2] }
+db.stores.aggregate([{
+    $match: {
+        _id: "40d6f4d7-50cd-4929-9a07-0a7a133c2e74"
     }
-  }
-])
+}, {
+    $project: {
+        name: 1,
+        salesByCategory: {
+            $map: {
+                input: "$sales.salesByCategory",
+                as: "category",
+                in: {
+                    categoryName: "$$category.categoryName",
+                    totalSales: "$$category.totalSales",
+                    differenceFromAverage: {
+                        $abs: {
+                            $subtract: ["$$category.totalSales", {
+                                $avg: "$sales.salesByCategory.totalSales"
+                            }]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}])
 ```
 
-The first three results returned by this query are:
+This query returns the following result:
 
 ```json
 [
-    {
-        "_id": "39acb3aa-f350-41cb-9279-9e34c004415a",
-        "name": "First Up Consultants | Bed and Bath Pantry - Port Antone",
-        "location": {
-            "lat": 87.2239,
-            "lon": -129.0506
-        },
-        "truncatedLatitute": 87,
-        "truncatedLongitude": -129
-    },
-    {
-        "_id": "26afb024-53c7-4e94-988c-5eede72277d5",
-        "name": "First Up Consultants | Microphone Bazaar - South Lexusland",
-        "location": {
-            "lat": -29.1866,
-            "lon": -112.7858
-        },
-        "truncatedLatitute": -29,
-        "truncatedLongitude": -112
-    },
-    {
-        "_id": "62438f5f-0c56-4a21-8c6c-6bfa479494ad",
-        "name": "First Up Consultants | Plumbing Supply Shoppe - New Ubaldofort",
-        "location": {
-            "lat": -0.2136,
-            "lon": 108.7466
-        },
-        "truncatedLatitute": 0,
-        "truncatedLongitude": 108
-    }
+  {
+    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
+    "name": "Proseware, Inc. | Home Entertainment Hub - East Linwoodbury",
+    "salesByCategory": [
+      {
+        "categoryName": "Sound Bars",
+        "totalSales": 2120,
+        "differenceFromAverage": 28252.8
+      },
+      {
+        "categoryName": "Home Theater Projectors",
+        "totalSales": 45004,
+        "differenceFromAverage": 14631.2
+      },
+      {
+        "categoryName": "Game Controllers",
+        "totalSales": 43522,
+        "differenceFromAverage": 13149.2
+      },
+      {
+        "categoryName": "Remote Controls",
+        "totalSales": 28946,
+        "differenceFromAverage": 1426.8
+      },
+      {
+        "categoryName": "VR Games",
+        "totalSales": 32272,
+        "differenceFromAverage": 1899.2
+      }
+    ]
+  }
 ]
 ```

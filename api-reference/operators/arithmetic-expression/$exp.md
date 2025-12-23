@@ -1,19 +1,19 @@
 ---
-title: $divide
-description: The $divide operator divides two numbers and returns the quotient.
+title: $exp
+description: The $exp operator raises e to the specified exponent and returns the result
 type: operators
-category: arithmetic
+category: arithmetic-expression
 ---
 
-# $divide
+# $exp
 
-The `$divide` operator divides two numbers and returns the quotient. The $divide operator returns an error if the divisor is zero.
+The `$exp` operator returns the value of e raised to the specified exponent. The mathematical constant e is approximately equal to 2.71828.
 
 ## Syntax
 
 ```javascript
 {
-  $divide: [ <dividend>, <divisor> ]
+  $exp: <exponent>
 }
 ```
 
@@ -21,8 +21,7 @@ The `$divide` operator divides two numbers and returns the quotient. The $divide
 
 | Parameter | Description |
 | --- | --- |
-| **`<dividend>`** | Any valid expression that resolves to a number to be divided. |
-| **`<divisor>`** | Any valid expression that resolves to a nonzero number to divide by. |
+| **`<exponent>`** | Any valid expression that resolves to a number. |
 
 ## Examples
 
@@ -138,9 +137,9 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1 - Calculate the average sales volume per employee
+### Example 1 - Calculate exponential growth rate
 
-To calculate the average sales volume per employee, first run a query using the $divide operator to divide the total sales by the staff count. To calculate the percentage of full time staff, use the $divide operator to dive the number of full time staff by the total staff count and project the result as a percentage.
+To calculate the exponential growth rate of total sales volume of a store by 10% and 20% respectively, use the $exp operator to multiple the value of the totalSales field by e^0.1 and e^0.2.
 
 ```javascript
 db.stores.aggregate([{
@@ -151,23 +150,24 @@ db.stores.aggregate([{
     {
         $project: {
             name: 1,
-            averageSalesPerStaff: {
-                $divide: [
-                    "$sales.totalSales",
-                    {
-                        $add: ["$staff.totalStaff.fullTime", "$staff.totalStaff.partTime"]
-                    }
-                ]
-            },
-            fullTimeStaffPercentage: {
-                $multiply: [{
-                    $divide: [
-                        "$staff.totalStaff.fullTime",
+            currentSales: "$sales.totalSales",
+            projectedGrowth: {
+                oneYear: {
+                    $multiply: [
+                        "$sales.totalSales",
                         {
-                            $add: ["$staff.totalStaff.fullTime", "$staff.totalStaff.partTime"]
-                        }
+                            $exp: 0.1
+                        } // 10% growth rate
                     ]
-                }, 100]
+                },
+                twoYears: {
+                    $multiply: [
+                        "$sales.totalSales",
+                        {
+                            $exp: 0.2
+                        } // 20% growth rate
+                    ]
+                }
             }
         }
     }
@@ -181,8 +181,11 @@ This query returns the following result:
   {
     "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
     "name": "Proseware, Inc. | Home Entertainment Hub - East Linwoodbury",
-    "averageSalesPerStaff": 3893.95,
-    "fullTimeStaffPercentage": 48.72
+    "currentSales": 151864,
+    "projectedGrowth": {
+      "oneYear": 167809.93,
+      "twoYears": 185304.95
+    }
   }
 ]
 ```

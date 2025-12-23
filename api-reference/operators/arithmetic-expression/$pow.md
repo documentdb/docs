@@ -1,19 +1,19 @@
 ---
-title: $multiply
-description: The $multiply operator multiplies the input numerical values
+title: $pow
+description: The `$pow` operator calculates the value of a numerical value raised to the power of a specified exponent.
 type: operators
-category: arithmetic
+category: arithmetic-expression
 ---
 
-# $multiply
+# $pow
 
-The `$multiply` operator calculates the product of the specified input numerical values.
+The `$pow` operator calculates the value of a number raised to a specified exponent.
 
 ## Syntax
 
 ```javascript
 {
-  $multiply: [ <listOfValues> ]
+  $pow: [ <number>, <exponent> ]
 }
 ```
 
@@ -21,7 +21,8 @@ The `$multiply` operator calculates the product of the specified input numerical
 
 | Parameter | Description |
 | --- | --- |
-|**`<listOfValues>`**| A comma separated list of numerical values.
+| **`<number>`** | The base number to be raised to the exponent. |
+| **`<exponent>`** | The exponent to raise the base number to. |
 
 ## Examples
 
@@ -137,9 +138,9 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Multiply a field by a constant
+### Example 1: Calculate the square of total sales volume
 
-To double the total sales for all stores under the "First Up Consultants" company, first run a query to filter on the name of the company. Then, use the $multiply operator on the totalSales field to return the desired results.
+To calculate the square of the sales volume of all stores under the "First Up Consultants" company, first run a query to filter on the name of the company. Then, use the $power operator on the nested fullSales field to calculate the desired result.
 
 ```javascript
 db.stores.aggregate([{
@@ -152,8 +153,8 @@ db.stores.aggregate([{
     $project: {
         company: 1,
         "sales.revenue": 1,
-        salesVolumeDoubled: {
-            $multiply: ["$sales.revenue", 2]
+        fullSalesSquare: {
+            $pow: ["$sales.revenue", 2]
         }
     }
 }])
@@ -189,8 +190,3 @@ The first three results returned by this query are:
     }
 ]
 ```
-
-## Limitations
-
-- The `$multiply` operator works only with numerical expressions. Using it with non-numerical values result in an error.
-- Be cautious of overflow or precision issues when working with large numbers or floating-point arithmetic.

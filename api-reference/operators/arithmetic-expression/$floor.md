@@ -1,19 +1,19 @@
 ---
-title: $sqrt
-description: The $sqrt operator calculates and returns the square root of an input number
+title: $floor
+description: The $floor operator returns the largest integer less than or equal to the specified number
 type: operators
-category: arithmetic
+category: arithmetic-expression
 ---
 
-# $sqrt
+# $floor
 
-The `$sqrt` operator is used to calculate the square root of a specified number.
+The `$floor` operator returns the largest integer less than or equal to the specified number.
 
 ## Syntax
 
 ```javascript
 {
-  $sqrt: <expression>
+  $floor: <number>
 }
 ```
 
@@ -21,7 +21,7 @@ The `$sqrt` operator is used to calculate the square root of a specified number.
 
 | Parameter | Description |
 | --- | --- |
-| **`<expression>`**| Any valid expression that resolves to a number. |
+| **`<number>`** | Any valid expression that resolves to a number. |
 
 ## Examples
 
@@ -137,84 +137,76 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Calculate the square root of sales
+### Example 1 - Calculate the floor of total sales and discounts
 
-To calculate the square root of the sales volumes of each store under the "First Up Consultants" company, first run a query to filter stores by the company name. Then, use the $sqrt operator on the totalSales field to retrieve the desired results.
+To calculate the floor of the average sales volume for a given store and the floor of sales per category, run a query using the $floor operator to return the desired results.
 
 ```javascript
 db.stores.aggregate([{
-    $match: {
-        company: {
-            $in: ["First Up Consultants"]
+        $match: {
+            _id: "40d6f4d7-50cd-4929-9a07-0a7a133c2e74"
+        }
+    },
+    {
+        $project: {
+            name: 1,
+            averageSalesFloor: {
+                $floor: {
+                    $divide: [
+                        "$sales.totalSales",
+                        {
+                            $size: "$sales.salesByCategory"
+                        }
+                    ]
+                }
+            },
+            categoriesWithFloorSales: {
+                $map: {
+                    input: "$sales.salesByCategory",
+                    as: "category",
+                    in: {
+                        categoryName: "$$category.categoryName",
+                        floorSales: {
+                            $floor: "$$category.totalSales"
+                        }
+                    }
+                }
+            }
         }
     }
-}, {
-    $project: {
-        name: 1,
-        "sales.revenue": 1,
-        categoryName: "$promotionEvents.discounts.categoryName",
-        sqrtFullSales: {
-            $sqrt: "$sales.revenue"
-        }
-    }
-}])
+])
 ```
 
-The first two results returned by this query are:
+This query returns the following result:
 
 ```json
 [
-    {
-        "_id": "c52c9f65-5b1a-4ef5-a7a2-d1af0426cbe4",
-        "name": "First Up Consultants | Jewelry Pantry - Nicolasberg",
-        "sales": {
-            "revenue": 4624
-        },
-        "categoryName": [
-            [
-                "Watches",
-                "Bracelets"
-            ],
-            [
-                "Brooches",
-                "Necklaces"
-            ],
-            [
-                "Charms",
-                "Brooches"
-            ],
-            [
-                "Brooches",
-                "Anklets"
-            ],
-            [
-                "Earrings",
-                "Anklets"
-            ]
-        ],
-        "sqrtFullSales": 68
-    },
-    {
-        "_id": "176aa484-c21c-44ce-ab6d-5e097bbdc2b4",
-        "name": "First Up Consultants | Medical Supply Shop - Daughertyville",
-        "sales": {
-            "revenue": 67311
-        },
-        "categoryName": [
-            [
-                "First Aid Kits",
-                "OTC Medications"
-            ],
-            [
-                "Blood Pressure Monitors",
-                "OTC Medications"
-            ],
-            [
-                "Face Masks",
-                "Stethoscopes"
-            ]
-        ],
-        "sqrtFullSales": 259.44363549719236
-    }
+  {
+    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
+    "name": "Proseware, Inc. | Home Entertainment Hub - East Linwoodbury",
+    "averageSalesFloor": 30372,
+    "categoriesWithFloorSales": [
+      {
+        "categoryName": "Sound Bars",
+        "floorSales": 2120
+      },
+      {
+        "categoryName": "Home Theater Projectors",
+        "floorSales": 45004
+      },
+      {
+        "categoryName": "Game Controllers",
+        "floorSales": 43522
+      },
+      {
+        "categoryName": "Remote Controls",
+        "floorSales": 28946
+      },
+      {
+        "categoryName": "VR Games",
+        "floorSales": 32272
+      }
+    ]
+  }
 ]
 ```

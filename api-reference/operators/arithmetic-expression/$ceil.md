@@ -1,19 +1,19 @@
 ---
-title: $round
-description: The $round operator rounds a number to a specified decimal place.
+title: $ceil
+description: The $ceil operator returns the smallest integer greater than or equal to the specified number.
 type: operators
-category: arithmetic
+category: arithmetic-expression
 ---
 
-# $round
+# $ceil
 
-The `$round` operator is used to round a number to a specified decimal place. It's useful in aggregations where numerical precision is important, such as financial calculations or statistical analysis.
+The `$ceil` operator computes the ceiling of the input number. This operator returns the smallest integer value that is greater than or equal to the input.
 
 ## Syntax
 
 ```javascript
 {
-  $round: [ <number>, <place> ]
+  $ceil: <number>
 }
 ```
 
@@ -21,8 +21,7 @@ The `$round` operator is used to round a number to a specified decimal place. It
 
 | Parameter | Description |
 | --- | --- |
-| **`<number>`** | The number to be rounded. |
-| **`<place>`** | The decimal place to which the number should be rounded. |
+| **`<number>`** | The input number whose ceiling needs to be returned. For a null or missing field, $ceil returns null. |
 
 ## Examples
 
@@ -138,112 +137,48 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1 - Round the location coordinates of stores
+### Example 1 - Calculate the ceiling of average sales volume per employee
 
-To round the latitude and longitude of all stores within the "First Up Consultants" company, first run a query to filter on the name of the company. Then, use the $round operator on the lat and lon fields to return the desired result.
-
-```javascript
-db.stores.aggregate([{
-    $match: {
-        company: {
-            $in: ["First Up Consultants"]
-        }
-    }
-}, {
-    $project: {
-        company: 1,
-        "location.lat": 1,
-        "location.lon": 1,
-        roundedLat: {
-            $round: ["$location.lat", 1]
-        },
-        roundedLon: {
-            $round: ["$location.lon", 1]
-        }
-    }
-}])
-```
-
-The first three results returned by this query are:
-
-```json
-[
-    {
-        "_id": "39acb3aa-f350-41cb-9279-9e34c004415a",
-        "location": {
-            "lat": 87.2239,
-            "lon": -129.0506
-        },
-        "company": "First Up Consultants",
-        "roundedLat": 87.2,
-        "roundedLon": -129.1
-    },
-    {
-        "_id": "26afb024-53c7-4e94-988c-5eede72277d5",
-        "location": {
-            "lat": -29.1866,
-            "lon": -112.7858
-        },
-        "company": "First Up Consultants",
-        "roundedLat": -29.2,
-        "roundedLon": -112.8
-    },
-    {
-        "_id": "62438f5f-0c56-4a21-8c6c-6bfa479494ad",
-        "location": {
-            "lat": -0.2136,
-            "lon": 108.7466
-        },
-        "company": "First Up Consultants",
-        "roundedLat": -0.2,
-        "roundedLon": 108.7
-    }
-]
-```
-
-### Example 2 - Round to the nearest thousand
-
-To round the total sales volume of stores within the "First Up Consultants" company, first run a query to filter stores by the company name. Then use the $round operator on the totalSales field to round the value to the nearest thousand.
+To calculate the ceiling of the sales volume per employee, first run a query to divide the total sales for the store by the number of staff. Then, use the $ceil operator to return the ceiling of the calculated value.
 
 ```javascript
 db.stores.aggregate([{
-    $match: {
-        company: {
-            $in: ["First Up Consultants"]
+        $match: {
+            _id: "40d6f4d7-50cd-4929-9a07-0a7a133c2e74"
+        }
+    },
+    {
+        $project: {
+            name: 1,
+            totalSales: "$sales.totalSales",
+            totalStaff: {
+                $add: ["$staff.totalStaff.fullTime", "$staff.totalStaff.partTime"]
+            },
+            ceiledAverageSalesPerStaff: {
+                $ceil: {
+                    $divide: [
+                        "$sales.totalSales",
+                        {
+                            $add: ["$staff.totalStaff.fullTime", "$staff.totalStaff.partTime"]
+                        }
+                    ]
+                }
+            }
         }
     }
-}, {
-    $project: {
-        company: 1,
-        "sales.totalSales": 1,
-        roundedSales: {
-            $round: ["$sales.totalSales", -3]
-        }
-    }
-}])
+])
 ```
 
-The first three results returned by this query are:
+This query returns the following result:
 
 ```json
 [
-    {
-        "_id": "39acb3aa-f350-41cb-9279-9e34c004415a",
-        "sales": {},
-        "company": "First Up Consultants",
-        "roundedSales": 279000
-    },
-    {
-        "_id": "26afb024-53c7-4e94-988c-5eede72277d5",
-        "sales": {},
-        "company": "First Up Consultants",
-        "roundedSales": 50000
-    },
-    {
-        "_id": "62438f5f-0c56-4a21-8c6c-6bfa479494ad",
-        "sales": {},
-        "company": "First Up Consultants",
-        "roundedSales": 69000
-    }
+  {
+    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
+    "name": "Proseware, Inc. | Home Entertainment Hub - East Linwoodbury",
+    "totalSales": 151864,
+    "totalStaff": 39,
+    "ceiledAverageSalesPerStaff": 3894
+  }
 ]
 ```

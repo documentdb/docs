@@ -1,19 +1,19 @@
 ---
-title: $log10
-description: The $log10 operator calculates the log of a specified number in base 10
+title: $add
+description: The $add operator returns the sum of two numbers or the sum of a date and numbers.
 type: operators
-category: arithmetic
+category: arithmetic-expression
 ---
 
-# $log10
+# $add
 
-The `$log10` operator calculates the logarithm of a number in base 10 and returns the result.
+The `$add` operator adds numbers together or adds numbers and dates. When adding numbers and dates, the numbers are interpreted as milliseconds.
 
 ## Syntax
 
 ```javascript
 {
-  $log10: <number>
+  $add: [ <listOfExpressions> ]
 }
 ```
 
@@ -21,7 +21,7 @@ The `$log10` operator calculates the logarithm of a number in base 10 and return
 
 | Parameter | Description |
 | --- | --- |
-| **`<number>`** | Any valid expression that resolves to a positive number. |
+| **`<listOfExpressions>`** | Any valid expressions that resolve to numbers or dates. The expressions can be any combination of numbers and dates. |
 
 ## Examples
 
@@ -137,65 +137,26 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1 - Analyze sales distribution
+### Example 1 - Get the current and project staff count
 
-To bucket the distribution of sales per category within a store, run a query using the $log10 operator on the totalSales field. Then, bucket the categories into "Low", "Medium" and "High" based on the result.
+To calculate the total staff and project the total staff looking forward, use the $add operator on the nested totalStaff object to return the desired results.
 
 ```javascript
 db.stores.aggregate([{
-        $match: {
-            _id: "40d6f4d7-50cd-4929-9a07-0a7a133c2e74"
-        }
-    },
-    {
-        $project: {
-            name: 1,
-            salesAnalysis: {
-                $map: {
-                    input: "$sales.salesByCategory",
-                    as: "category",
-                    in: {
-                        categoryName: "$$category.categoryName",
-                        originalSales: "$$category.totalSales",
-                        logScale: {
-                            $log10: "$$category.totalSales"
-                        },
-                        magnitudeClass: {
-                            $switch: {
-                                branches: [{
-                                        case: {
-                                            $lt: [{
-                                                $log10: "$$category.totalSales"
-                                            }, 3]
-                                        },
-                                        then: "Low"
-                                    },
-                                    {
-                                        case: {
-                                            $lt: [{
-                                                $log10: "$$category.totalSales"
-                                            }, 4]
-                                        },
-                                        then: "Medium"
-                                    },
-                                    {
-                                        case: {
-                                            $lt: [{
-                                                $log10: "$$category.totalSales"
-                                            }, 5]
-                                        },
-                                        then: "High"
-                                    }
-                                ],
-                                default: "Very High"
-                            }
-                        }
-                    }
-                }
-            }
+    $match: {
+        _id: "40d6f4d7-50cd-4929-9a07-0a7a133c2e74"
+    }
+}, {
+    $project: {
+        name: 1,
+        currentTotalStaff: {
+            $add: ["$staff.totalStaff.fullTime", "$staff.totalStaff.partTime"]
+        },
+        projectedNextYearStaff: {
+            $add: ["$staff.totalStaff.fullTime", "$staff.totalStaff.partTime", 2]
         }
     }
-])
+}])
 ```
 
 This query returns the following result:
@@ -205,38 +166,8 @@ This query returns the following result:
   {
     "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
     "name": "Proseware, Inc. | Home Entertainment Hub - East Linwoodbury",
-    "salesAnalysis": [
-      {
-        "categoryName": "Sound Bars",
-        "originalSales": 2120,
-        "logScale": 3.326,
-        "magnitudeClass": "Medium"
-      },
-      {
-        "categoryName": "Home Theater Projectors",
-        "originalSales": 45004,
-        "logScale": 4.653,
-        "magnitudeClass": "High"
-      },
-      {
-        "categoryName": "Game Controllers",
-        "originalSales": 43522,
-        "logScale": 4.639,
-        "magnitudeClass": "High"
-      },
-      {
-        "categoryName": "Remote Controls",
-        "originalSales": 28946,
-        "logScale": 4.462,
-        "magnitudeClass": "High"
-      },
-      {
-        "categoryName": "VR Games",
-        "originalSales": 32272,
-        "logScale": 4.509,
-        "magnitudeClass": "High"
-      }
-    ]
+    "currentTotalStaff": 39,
+    "projectedNextYearStaff": 41
   }
 ]
 ```

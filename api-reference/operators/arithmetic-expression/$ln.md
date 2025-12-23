@@ -2,7 +2,7 @@
 title: $ln
 description: The $ln operator calculates the natural logarithm of the input
 type: operators
-category: arithmetic
+category: arithmetic-expression
 ---
 
 # $ln

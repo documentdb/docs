@@ -1,19 +1,19 @@
 ---
-title: $pow
-description: The `$pow` operator calculates the value of a numerical value raised to the power of a specified exponent.
+title: $subtract
+description: The $subtract operator subtracts two numbers and returns the result.
 type: operators
-category: arithmetic
+category: arithmetic-expression
 ---
 
-# $pow
+# $subtract
 
-The `$pow` operator calculates the value of a number raised to a specified exponent.
+The `$subtract` operator is used to subtract two numbers and return the result.
 
 ## Syntax
 
 ```javascript
 {
-  $pow: [ <number>, <exponent> ]
+  $subtract: [ <expression 1>, <expression 2> ]
 }
 ```
 
@@ -21,8 +21,8 @@ The `$pow` operator calculates the value of a number raised to a specified expon
 
 | Parameter | Description |
 | --- | --- |
-| **`<number>`** | The base number to be raised to the exponent. |
-| **`<exponent>`** | The exponent to raise the base number to. |
+| **`<expression 1>`** | The minuend (the number from which another number is to be subtracted). |
+| **`<expression 2>`** | The subtrahend (the number to be subtracted). |
 
 ## Examples
 
@@ -138,9 +138,9 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Calculate the square of total sales volume
+### Example 1: Calculating the difference between full time and part time staff
 
-To calculate the square of the sales volume of all stores under the "First Up Consultants" company, first run a query to filter on the name of the company. Then, use the $power operator on the nested fullSales field to calculate the desired result.
+To calculate the absolute difference in part time and full time staff for stores within the "First Up Consultants" company, first run a query to filter stores by the company name. Then, use the $diff operator along with the $abs operator to calculate the absolute difference between the full time and part time staff for each store.
 
 ```javascript
 db.stores.aggregate([{
@@ -151,10 +151,12 @@ db.stores.aggregate([{
     }
 }, {
     $project: {
-        company: 1,
-        "sales.revenue": 1,
-        fullSalesSquare: {
-            $pow: ["$sales.revenue", 2]
+        name: 1,
+        staff: 1,
+        staffCountDiff: {
+            $abs: {
+                $subtract: ["$staff.employeeCount.fullTime", "$staff.employeeCount.partTime"]
+            }
         }
     }
 }])
@@ -165,28 +167,37 @@ The first three results returned by this query are:
 ```json
 [
     {
-        "_id": "39acb3aa-f350-41cb-9279-9e34c004415a",
-        "sales": {
-            "revenue": 279183
-        },
-        "company": "First Up Consultants",
-        "salesVolumeDoubled": 558366
-    },
-    {
-        "_id": "26afb024-53c7-4e94-988c-5eede72277d5",
-        "sales": {
-            "revenue": 50000
-        },
-        "company": "First Up Consultants",
-        "salesVolumeDoubled": 100000
-    },
-    {
         "_id": "62438f5f-0c56-4a21-8c6c-6bfa479494ad",
-        "sales": {
-            "revenue": 68508
+        "name": "First Up Consultants | Plumbing Supply Shoppe - New Ubaldofort",
+        "staff": {
+            "employeeCount": {
+                "fullTime": 20,
+                "partTime": 18
+            }
         },
-        "company": "First Up Consultants",
-        "salesVolumeDoubled": 137016
+        "staffCountDiff": 2
+    },
+    {
+        "_id": "bfb213fa-8db8-419f-8e5b-e7096120bad2",
+        "name": "First Up Consultants | Beauty Product Shop - Hansenton",
+        "staff": {
+            "employeeCount": {
+                "fullTime": 18,
+                "partTime": 10
+            }
+        },
+        "staffCountDiff": 8
+    },
+    {
+        "_id": "14ab145b-0819-4d22-9e02-9ae0725fcda9",
+        "name": "First Up Consultants | Flooring Haven - Otisville",
+        "staff": {
+            "employeeCount": {
+                "fullTime": 19,
+                "partTime": 10
+            }
+        },
+        "staffCountDiff": 9
     }
 ]
 ```

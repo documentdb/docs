@@ -2,7 +2,7 @@
 title: $log
 description: The $log operator calculates the logarithm of a number in the specified base
 type: operators
-category: arithmetic
+category: arithmetic-expression
 ---
 
 # $log
