@@ -7,7 +7,7 @@ category: timestamp-expression
 
 # $tsIncrement
 
-The `$tsIncrement` operator returns the increment value from a timestamp. Timestamps in MongoDB consist of two parts: a time value (in seconds since epoch) and an increment value. This operator extracts the increment portion.
+The `$tsIncrement` operator returns the increment value from a timestamp.
 
 ## Syntax
 
