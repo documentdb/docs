@@ -1,19 +1,23 @@
 ---
-title: $objectToArray
-description: The objectToArray command is used to transform a document (object) into an array of key-value pairs.
+title: $setField
+description: The setField command is used to add, update, or remove fields in embedded documents.
 type: operators
-category: object
+category: object-expression
 ---
 
-# $objectToArray
+# $setField
 
-The `$objectToArray` operator is used to transform a document (object) into an array of key-value pairs. Each key-value pair in the resulting array is represented as a document with `k` and `v` fields. This operator is useful when you need to manipulate or analyze the structure of documents within your collections.
+The `$setField` operator is used to add, update, or remove fields in embedded documents. The operator allows for precise manipulation of document fields, which makes it useful for tasks such as updating nested fields, restructuring documents, or even removing fields entirely.
 
 ## Syntax
 
 ```javascript
 {
-  $objectToArray: <object>
+  $setField: {
+    field: <fieldName>,
+    input: <expression>,
+    value: <expression>
+  }
 }
 ```
 
@@ -21,7 +25,9 @@ The `$objectToArray` operator is used to transform a document (object) into an a
 
 | Parameter | Description |
 | --- | --- |
-| **`<object>`** | The document (object) to be transformed into an array of key-value pairs. |
+| **`<field>`** | The document (object) to be transformed into an array of key-value pairs. |
+| **`<input>`** | The document or field being processed. |
+| **`<value>`** | The new value to assign to the field. If `value` is `null`, the field is removed.|
 
 ## Examples
 
@@ -137,107 +143,67 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Transforming the `location` object
+### Example 1: Updating a nested field
 
-This query transforms the `location` object into an array of key-value pairs.
-
-```javascript
-db.stores.aggregate([
-  {
-    $project: {
-      locationArray: { $objectToArray: "$location" }
-    }
-  },
-  {
-    $limit: 2  // Limit output to first 5 documents
-  }
-])
-```
-
-The first two results returned by this query are:
-
-```json
-[
-  {
-    "_id": "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6",
-    "locationArray": [
-      {
-        "k": "lat",
-        "v": -74.0427
-      },
-      {
-        "k": "lon",
-        "v": 160.8154
-      }
-    ]
-  },
-  {
-    "_id": "923d2228-6a28-4856-ac9d-77c39eaf1800",
-    "locationArray": [
-      {
-        "k": "lat",
-        "v": 61.3945
-      },
-      {
-        "k": "lon",
-        "v": -3.6196
-      }
-    ]
-  }
-]
-```
-
-### Example 2: Transforming the `salesByCategory` array
-
-To transform the `salesByCategory` array, first unwind the array and then apply the `$objectToArray` operator.
+This query performs a conditional update on nested discount values inside promotion events for the document matching a specific `_id`.
 
 ```javascript
-db.stores.aggregate([
-  { $unwind: "$sales.salesByCategory" },
-  {
-    $project: {
-      salesByCategoryArray: { $objectToArray: "$sales.salesByCategory" }
+db.stores.updateOne(
+  { "_id": "0fcc0bf0-ed18-4ab8-b558-9848e18058f4" },
+  [
+    {
+      $set: {
+        "store.promotionEvents": {
+          $map: {
+            input: "$store.promotionEvents",
+            as: "event",
+            in: {
+              $setField: {
+                field: "discounts",
+                input: "$$event",
+                value: {
+                  $map: {
+                    input: "$$event.discounts",
+                    as: "discount",
+                    in: {
+                      $cond: {
+                        if: { $eq: ["$$discount.categoryName", "Laptops"] },
+                        then: {
+                          categoryName: "$$discount.categoryName",
+                          discountPercentage: 18
+                        },
+                        else: "$$discount"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
-  },
-  { 
-    $limit: 2
-  }
-])
+  ]
+)
 ```
 
-The first two results returned by this query are:
+### Example 2: Removing a field
 
-```json
-[
-  {
-    "_id": "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6",
-    "salesByCategoryArray": [
-      {
-        "k": "categoryName",
-        "v": "Stockings"
-      },
-      {
-        "k": "totalSales",
-        "v": 25731
+This query removes the `totalStaff` field from the `staff` object.
+
+```javascript
+db.collection.updateOne(
+  { "store.storeId": "12345" },
+  [{
+    $set: {
+      "store.staff": {
+        $setField: {
+          field: "totalStaff",
+          input: "$store.staff",
+          value: null
+        }
       }
-    ]
-  },
-  {
-    "_id": "923d2228-6a28-4856-ac9d-77c39eaf1800",
-    "salesByCategoryArray": [
-      {
-        "k": "categoryName",
-        "v": "Lamps"
-      },
-      {
-        "k": "totalSales",
-        "v": 19880
-      }
-    ]
-  }
-]
+    }
+  }]
+)
 ```
-
-Converting subdocuments to key-value pairs is often used when you want to dynamically process field names, especially when:
-- Building generic pipelines.
-- Mapping field names into key-value structures for flexible transformations or further processing.

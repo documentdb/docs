@@ -2,7 +2,7 @@
 title: $mergeObjects
 description: The $mergeObjects operator merges multiple documents into a single document
 type: operators
-category: object
+category: object-expression
 ---
 
 # $mergeObjects
