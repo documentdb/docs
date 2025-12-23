@@ -2,7 +2,7 @@
 title: $cond
 description: The $cond operator is used to evaluate a condition and return one of two expressions based on the result.
 type: operators
-category: conditional
+category: conditional-expression
 ---
 
 # $cond

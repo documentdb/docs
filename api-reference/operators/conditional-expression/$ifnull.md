@@ -1,25 +1,19 @@
 ---
-title: $switch
-description: The $switch operator is used to evaluate a series of conditions and return a value based on the first condition that evaluates to true.
+title: $ifNull
+description: The $ifNull operator is used to evaluate an expression and return a specified value if the expression resolves to null.
 type: operators
-category: conditional
+category: conditional-expression
 ---
 
-# $switch
+# $ifNull
 
-The `$switch` operator is used to evaluate a series of conditions and return a value based on the first condition that evaluates to true. This is useful when you need to implement complex conditional logic within aggregation pipelines.
+The `$ifNull` operator is used to evaluate an expression and return a specified value if the expression resolves to `null`. This operator is useful in scenarios where you want to provide a default value for fields that may not exist or may have `null` values.
 
 ## Syntax
 
 ```javascript
 {
-  $switch: {
-    branches: [
-      { case: <expression>, then: <expression> },
-      { case: <expression>, then: <expression> }
-    ],
-    default: <expression>
-  }
+  $ifNull: [ <expression>, <replacement-value> ]
 }
 ```
 
@@ -27,10 +21,8 @@ The `$switch` operator is used to evaluate a series of conditions and return a v
 
 | Parameter | Description |
 | --- | --- |
-| **branches**| An array of documents, each containing|
-| **case**| An expression that evaluates to either `true` or `false`|
-| **then**| The expression to return if the associated `case` expression evaluates to `true`|
-| **default**| The expression to return if none of the `case` expressions evaluate to `true`. This field is optional.|
+| **`<expression>`**| The expression to evaluate.|
+| **`<replacement-value>`**| The value to return if the expression evaluates to `null`|
 
 ## Examples
 
@@ -146,38 +138,20 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: To determine staff type based on full-time and part-time counts
+### Example 1: Default value for missing `store.manager` field
 
-This query determines the type of staff based on their count.
+To ensure that the `$staff.totalStaff.intern` field is always a number, you can use `$ifNull` to replace `null` values with `0`.
 
 ```javascript
-db.stores.aggregate([{
-        $project: {
-            name: 1,
-            staffType: {
-                $switch: {
-                    branches: [{
-                            case: {
-                                $eq: ["$staff.totalStaff.partTime", 0]
-                            },
-                            then: "Only Full time"
-                        },
-                        {
-                            case: {
-                                $eq: ["$staff.totalStaff.fullTime", 0]
-                            },
-                            then: "Only Part time"
-                        }
-                    ],
-                    default: "Both"
-                }
-            }
-        }
-    },
-    // Limit the result to the first 3 documents
-    {
-        $limit: 3
+db.stores.aggregate([
+  {
+    $project: {
+      name: 1,
+      interns: { $ifNull: ["$staff.totalStaff.intern", 0] }
     }
+  },
+  // Limit the result to the first 3 documents
+  { $limit: 3 } 
 ])
 ```
 
@@ -188,17 +162,18 @@ The first three results returned by this query are:
   {
     "_id": "7954bd5c-9ac2-4c10-bb7a-2b79bd0963c5",
     "name": "Lakeshore Retail | DJ Equipment Stop - Port Cecile",
-    "staffType": "Only Full time"
+    "interns": 0
   },
   {
     "_id": "649626c9-eda1-46c0-a27f-dcee19d97f41",
     "name": "VanArsdel, Ltd. | Musical Instrument Outlet - East Cassie",
-    "staffType": "Both"
+    "interns": 0
   },
   {
     "_id": "8345de34-73ec-4a99-9cb6-a81f7b145c34",
     "name": "Northwind Traders | Bed and Bath Place - West Oraland",
-    "staffType": "Both"
+    "interns": 0
   }
 ]
+
 ```
