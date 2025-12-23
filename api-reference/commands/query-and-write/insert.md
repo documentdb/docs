@@ -214,7 +214,7 @@ If the _id field is not specified, the server auto generates a unique ObjectId()
 
 If a duplicate value for the _id field is specified, a duplicate key violation error will be thrown by the server.
 
-```javascript
+```json
 {
     "WriteErrors": [
         {
@@ -340,7 +340,7 @@ db.stores.insertMany([
 
 The ordered insert command returns a response confirming the order in which documents were inserted:
 
-```javascript
+```json
 {
     "acknowledged": true,
     "insertedIds": {

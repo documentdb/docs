@@ -51,46 +51,41 @@ db.stores.findAndModify({
 
 #### Sample output
 
-```javascript
-[mongos] StoreData> db.stores.findAndModify({
-...    query: { "_id": "e5767a9f-cd95-439c-9ec4-7ddc13d22926" },
-...    update: { $set: { "sales.totalSales": 550000.00 } },
-...    new: true
-... })
+```json
 {
-  _id: 'e5767a9f-cd95-439c-9ec4-7ddc13d22926',
-  name: "Marina's Eyewear Bargains",
-  location: { lat: -87.4376, lon: 42.2928 },
-  staff: { totalStaff: { fullTime: 20, partTime: 6 } },
-  sales: {
-    totalSales: 550000,
-    salesByCategory: [
-      { categoryName: 'Round Sunglasses', totalSales: 39621 },
-      { categoryName: 'Reading Glasses', totalSales: 1146 },
-      { categoryName: 'Aviators', totalSales: 9385 }
+  "_id": "e5767a9f-cd95-439c-9ec4-7ddc13d22926",
+  "name": "Marina's Eyewear Bargains",
+  "location": { "lat": -87.4376, "lon": 42.2928 },
+  "staff": { "totalStaff": { "fullTime": 20, "partTime": 6 } },
+  "sales": {
+    "totalSales": 550000,
+    "salesByCategory": [
+      { "categoryName": "Round Sunglasses", "totalSales": 39621 },
+      { "categoryName": "Reading Glasses", "totalSales": 1146 },
+      { "categoryName": "Aviators", "totalSales": 9385 }
     ]
   },
-  promotionEvents: [
+  "promotionEvents": [
     {
-      eventName: 'Incredible Discount Days',
-      promotionalDates: {
-        startDate: { Year: 2024, Month: 2, Day: 11 },
-        endDate: { Year: 2024, Month: 2, Day: 18 }
+      "eventName": "Incredible Discount Days",
+      "promotionalDates": {
+        "startDate": { "Year": 2024, "Month": 2, "Day": 11 },
+        "endDate": { "Year": 2024, "Month": 2, "Day": 18 }
       },
-      discounts: [
-        { categoryName: 'Square Sunglasses', discountPercentage: 16 },
-        { categoryName: 'Safety Glasses', discountPercentage: 17 },
-        { categoryName: 'Wayfarers', discountPercentage: 7 },
-        { categoryName: 'Eyewear Accessories', discountPercentage: 12 }
+      "discounts": [
+        { "categoryName": "Square Sunglasses", "discountPercentage": 16 },
+        { "categoryName": "Safety Glasses", "discountPercentage": 17 },
+        { "categoryName": "Wayfarers", "discountPercentage": 7 },
+        { "categoryName": "Eyewear Accessories", "discountPercentage": 12 }
       ]
     }
 ],
-  tag: [
-    '#ShopLocal',
-    '#FashionStore',
-    '#SeasonalSale',
-    '#FreeShipping',
-    '#MembershipDeals'
+  "tag": [
+    "#ShopLocal",
+    "#FashionStore",
+    "#SeasonalSale",
+    "#FreeShipping",
+    "#MembershipDeals"
   ]
 }
 ```
@@ -125,58 +120,36 @@ db.stores.findAndModify({
 
 #### Sample output
 
-```javascript
-[mongos] StoreData> db.stores.findAndModify({
-...    query: { "_id": "e5767a9f-cd95-439c-9ec4-7ddc13d22926" },
-...    update: { $push: { "promotionEvents": {
-...        "eventName": "Electronics Super Saver",
-...        "promotionalDates": {
-...          "startDate": "2025-09-31",
-...          "endDate": "2025-09-31"
-...        },
-...        "discounts": [
-...          {
-...            "categoryName": "Laptops",
-...            "discountPercentage": 45
-...          },
-...          {
-...            "categoryName": "Smartphones",
-...            "discountPercentage": 25
-...          }
-...        ]
-...    }}},
-...    new: true
-... })
-
+```json
 {
-  _id: 'e5767a9f-cd95-439c-9ec4-7ddc13d22926',
-  name: "Marina's Eyewear Bargains",
-  location: { lat: -87.4376, lon: 42.2928 },
-  staff: { totalStaff: { fullTime: 20, partTime: 6 } },
-  sales: {
-    totalSales: 550000,
-    salesByCategory: [
-      { categoryName: 'Round Sunglasses', totalSales: 39621 },
-      { categoryName: 'Reading Glasses', totalSales: 1146 },
-      { categoryName: 'Aviators', totalSales: 9385 }
+  "_id": "e5767a9f-cd95-439c-9ec4-7ddc13d22926",
+  "name": "Marina's Eyewear Bargains",
+  "location": { "lat": -87.4376, "lon": 42.2928 },
+  "staff": { "totalStaff": { "fullTime": 20, "partTime": 6 } },
+  "sales": {
+    "totalSales": 550000,
+    "salesByCategory": [
+      { "categoryName": "Round Sunglasses", "totalSales": 39621 },
+      { "categoryName": "Reading Glasses", "totalSales": 1146 },
+      { "categoryName": "Aviators", "totalSales": 9385 }
     ]
   },
-  promotionEvents: [
+  "promotionEvents": [
     {
-      eventName: 'Electronics Super Saver',
-      promotionalDates: { startDate: '2025-09-31', endDate: '2025-09-31' },
-      discounts: [
-        { categoryName: 'Laptops', discountPercentage: 45 },
-        { categoryName: 'Smartphones', discountPercentage: 25 }
+      "eventName": "Electronics Super Saver",
+      "promotionalDates": { "startDate": "2025-09-31", "endDate": "2025-09-31" },
+      "discounts": [
+        { "categoryName": "Laptops", "discountPercentage": 45 },
+        { "categoryName": "Smartphones", "discountPercentage": 25 }
       ]
     }
   ],
-  tag: [
-    '#ShopLocal',
-    '#FashionStore',
-    '#SeasonalSale',
-    '#FreeShipping',
-    '#MembershipDeals'
+  "tag": [
+    "#ShopLocal",
+    "#FashionStore",
+    "#SeasonalSale",
+    "#FreeShipping",
+    "#MembershipDeals"
   ]
 }
 ```
@@ -195,52 +168,41 @@ db.stores.findAndModify({
 
 #### Sample output
 
-```javascript
-[mongos] StoreData> db.stores.findAndModify({
-...    query: { "_id_": "e5767a9f-cd95-439c-9ec4-7ddc13d22926" },
-...    update: { $pull: { "promotionEvents": { "eventName": "Electronics Super Saver" } } },
-...    new: true
-... })
-null
-[mongos] StoreData> db.stores.findAndModify({
-...    query: { "_id": "e5767a9f-cd95-439c-9ec4-7ddc13d22926" },
-...    update: { $pull: { "promotionEvents": { "eventName": "Electronics Super Saver" } } },
-...    new: true
-... })
+```json
 {
-  _id: 'e5767a9f-cd95-439c-9ec4-7ddc13d22926',
-  name: "Marina's Eyewear Bargains",
-  location: { lat: -87.4376, lon: 42.2928 },
-  staff: { totalStaff: { fullTime: 20, partTime: 6 } },
-  sales: {
-    totalSales: 550000,
-    salesByCategory: [
-      { categoryName: 'Round Sunglasses', totalSales: 39621 },
-      { categoryName: 'Reading Glasses', totalSales: 1146 },
-      { categoryName: 'Aviators', totalSales: 9385 }
+  "_id": "e5767a9f-cd95-439c-9ec4-7ddc13d22926",
+  "name": "Marina's Eyewear Bargains",
+  "location": { "lat": -87.4376, "lon": 42.2928 },
+  "staff": { "totalStaff": { "fullTime": 20, "partTime": 6 } },
+  "sales": {
+    "totalSales": 550000,
+    "salesByCategory": [
+      { "categoryName": "Round Sunglasses", "totalSales": 39621 },
+      { "categoryName": "Reading Glasses", "totalSales": 1146 },
+      { "categoryName": "Aviators", "totalSales": 9385 }
     ]
   },
-  promotionEvents: [
+  "promotionEvents": [
     {
-      eventName: 'Incredible Discount Days',
-      promotionalDates: {
-        startDate: { Year: 2024, Month: 2, Day: 11 },
-        endDate: { Year: 2024, Month: 2, Day: 18 }
+      "eventName": "Incredible Discount Days",
+      "promotionalDates": {
+        "startDate": { "Year": 2024, "Month": 2, "Day": 11 },
+        "endDate": { "Year": 2024, "Month": 2, "Day": 18 }
       },
-      discounts: [
-        { categoryName: 'Square Sunglasses', discountPercentage: 16 },
-        { categoryName: 'Safety Glasses', discountPercentage: 17 },
-        { categoryName: 'Wayfarers', discountPercentage: 7 },
-        { categoryName: 'Eyewear Accessories', discountPercentage: 12 }
+      "discounts": [
+        { "categoryName": "Square Sunglasses", "discountPercentage": 16 },
+        { "categoryName": "Safety Glasses", "discountPercentage": 17 },
+        { "categoryName": "Wayfarers", "discountPercentage": 7 },
+        { "categoryName": "Eyewear Accessories", "discountPercentage": 12 }
       ]
     }
   ],
-  tag: [
-    '#ShopLocal',
-    '#FashionStore',
-    '#SeasonalSale',
-    '#FreeShipping',
-    '#MembershipDeals'
+  "tag": [
+    "#ShopLocal",
+    "#FashionStore",
+    "#SeasonalSale",
+    "#FreeShipping",
+    "#MembershipDeals"
   ]
 }
 ```
