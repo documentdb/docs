@@ -1,6 +1,6 @@
 ---
 title: $bucket
-description: Groups input documents into buckets based on specified boundaries.
+description: The $bucket operator groups input documents into buckets based on specified boundaries.
 type: operators
 category: aggregation
 ---

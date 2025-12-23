@@ -1,6 +1,6 @@
 ---
 title: $densify
-description: Adds missing data points in a sequence of values within an array or collection.
+description: The $densify operator adds missing data points in a sequence of values within an array or collection.
 type: operators
 category: aggregation
 ---

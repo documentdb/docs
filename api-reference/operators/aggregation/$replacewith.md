@@ -11,7 +11,7 @@ The `$replaceWith` aggregation stage operator is used to replace the input docum
 
 ## Syntax
 
-```mongodb
+```javascript
 {
   "$replaceWith": <newDocument>
 }

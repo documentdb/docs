@@ -1,6 +1,6 @@
 ---
 title: $redact
-description: Filters the content of the documents based on access rights.
+description: The $redact operator filters the content of the documents based on access rights.
 type: operators
 category: aggregation
 ---
