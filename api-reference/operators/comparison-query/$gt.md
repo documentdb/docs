@@ -1,20 +1,20 @@
 ---
-title: $lte
-description: The $lte operator retrieves documents where the value of a field is less than or equal to a specified value
+title: $gt
+description: The $gt query operator retrieves documents where the value of a field is greater than a specified value
 type: operators
-category: comparison
+category: comparison-query
 ---
 
-# $lte
+# $gt
 
-The `$lte` operator retrieves documents where the value of a field is less than or equal to a specified value. The `$lte` operator filters documents based on numerical, date, or other comparable fields.
+The `$gt` operator retrieves documents where the value of a field is greater than a specified value. The `$gt` operator queries numerical and date values to filter records that exceed a specified threshold.
 
 ## Syntax
 
 ```javascript
 {
     field: {
-        $lte: <value>
+        $gt: value
     }
 }
 ```
@@ -23,8 +23,8 @@ The `$lte` operator retrieves documents where the value of a field is less than 
 
 | Parameter | Description |
 | --- | --- |
-| **`field`** | The field to be compared|
-| **`value`** | The value to compare against|
+| **`field`** | The field in the document you want to compare|
+| **`value`** | The value that the field should be greater than|
 
 ## Examples
 
@@ -140,17 +140,18 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Find a store with sales <= $35,000
+### Example 1: Retrieve stores with sales exceeding $35,000
 
-To find a store with sales <= $35,000, run a query using $lte on the sales.totalSales field and limit the resulting documents to a single store.
+To retrieve a store with over $35,000 in sales, first run a query with $gt operator on the sales.totalSales field. Then limit the query results to one store.
 
 ```javascript
 db.stores.find({
     "sales.totalSales": {
-        $lte: 35000
+        $gt: 35000
     }
 }, {
-    _id: 1
+    name: 1,
+    "sales.totalSales": 1
 }, {
     limit: 1
 })
@@ -160,24 +161,26 @@ The first result returned by this query is:
 
 ```json
 [
-  {
-    "_id": "e6895a31-a5cd-4103-8889-3b95a864e5a6"
-  }
+    {
+        "_id": "2cf3f885-9962-4b67-a172-aa9039e9ae2f",
+        "name": "First Up Consultants | Bed and Bath Center - South Amir",
+        "sales": { "totalSales": 37701 }
+    }
 ]
 ```
 
-### Example 2: Find a store with 12 or fewer full-time staff
+### Example 2: Find a store with more than 12 full-time staff
 
-To find a store with <= 12 full-time staff, run a query using $lte on the nested fullTime field. Then project only the name and full time staff count and limit the results to one store from the result set.
+To find a store with more than 12 full time staff, first run a query with the $gt operator on the staff.totalStaff.fullTime field. Then project just the name and totalStaff fields and limit the result set to a single store from the list of matching results.
 
 ```javascript
 db.stores.find({
     "staff.totalStaff.fullTime": {
-        $lte: 12
+        $gt: 12
     }
 }, {
     name: 1,
-    "staff.totalStaff.fullTime": 1
+    "staff.totalStaff": 1
 }, {
     limit: 1
 })
@@ -187,10 +190,10 @@ The first result returned by this query is:
 
 ```json
 [
-  {
-      "_id": "e6895a31-a5cd-4103-8889-3b95a864e5a6",
-      "name": "VanArsdel, Ltd. | Picture Frame Store - Port Clevelandton",
-      "staff": { "totalStaff": { "fullTime": 6 } }
-  }
+    {
+        "_id": "2cf3f885-9962-4b67-a172-aa9039e9ae2f",
+        "name": "First Up Consultants | Bed and Bath Center - South Amir",
+        "staff": { "totalStaff": { "fullTime": 18, "partTime": 17 } }
+    }
 ]
 ```

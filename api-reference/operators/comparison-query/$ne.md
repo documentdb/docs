@@ -1,19 +1,21 @@
 ---
-title: $cmp
-description: The $cmp operator compares two values
+title: $ne
+description: The $ne operator retrieves documents where the value of a field doesn't equal a specified value
 type: operators
-category: comparison
+category: comparison-query
 ---
 
-# $cmp
+# $ne
 
-The `$cmp` operator compares two specified values. The $cmp operator returns -1 if the first value is less than the second, 0 if the two values are equal and 1 if the first value is greater than the second.
+The `$ne` operator retrieves documents where the value of a field doesn't equal a specified value.
 
 ## Syntax
 
 ```javascript
 {
-  $cmp: [<firstValueToCompare>, <secondValueToCompare>]
+    field: {
+        $ne: value
+    }
 }
 ```
 
@@ -21,8 +23,8 @@ The `$cmp` operator compares two specified values. The $cmp operator returns -1 
 
 | Parameter | Description |
 | --- | --- |
-| **`<firstValueToCompare>`** | The first value which is compared to the second by the $cmp operator|
-| **`<secondValueToCompare>`** | The second value being compared to by the $cmp operator|
+| **`field`** | The field to be compared|
+| **`value`** | The value that the field shouldn't be equal to|
 
 ## Examples
 
@@ -138,58 +140,63 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1 - Compare the total sales of stores to $25,000
+### Example 1 - Find a store whose name isn't "Fourth Coffee"
 
-To compare the total sales of stores within the Boulder Innovations Company to $25,000, first run a query to filter on the company name of stores. Then, use $cmp to compare the sales.totalSales field to 25000. Lastly, project only the name and total sales for the resulting stores.
+To find a store with a name that isn't "Fourth Coffee", first run a query using $ne on the name field. Then project only the name of the resulting documents and limit the results to one store from the result set.
 
 ```javascript
-db.stores.aggregate([{
-    $match: {
-        company: {
-            $in: ["Boulder Innovations"]
-        }
+db.stores.find({
+    name: {
+        $ne: "Fourth Coffee"
     }
 }, {
-    $project: {
-        name: 1,
-        "sales.salesByCategory.totalSales": 1,
-        greaterThan25000: {
-            $cmp: ["$sales.revenue", 25000]
-        }
-    }
-}])
+    _id: 1,
+    name: 1
+}, {
+    limit: 1
+})
 ```
 
-The first two results returned by this query are:
+The first result returned by this query is:
 
 ```json
 [
     {
-        "_id": "a5040801-d127-4950-a320-e55f6aed4b36",
-        "name": "Boulder Innovations | DJ Equipment Pantry - West Christopher",
-        "sales": {
-            "salesByCategory": [
-                {
-                    "totalSales": 21522
-                }
-            ]
-        },
-        "greaterThan25000": -1
-    },
+        "_id": "2cf3f885-9962-4b67-a172-aa9039e9ae2f",
+        "name": "First Up Consultants | Bed and Bath Center - South Amir"
+    }
+]
+```
+
+### Example 2 - Find a store with promotion events that aren't in 2024
+
+To find a store with promotions events that don't start in 2024, first run a query using $ne on the nested startDate field. Then project the name and promotions offered by the stores and limit the results to one document from the result set.
+
+```javascript
+db.stores.find({
+    "promotionEvents.promotionalDates.startDate": {
+        $ne: "2024"
+    }
+}, {
+    name: 1,
+    "promotionEvents.promotionalDates.startDate": 1
+}, {
+    limit: 1
+})
+```
+
+The first result returned by this query is:
+
+```json
+[
     {
-        "_id": "bb6e097a-e204-4b64-9f13-5ae8426fcc76",
-        "name": "Boulder Innovations | Kitchen Appliance Outlet - Lake Chazville",
-        "sales": {
-            "salesByCategory": [
-                {
-                    "totalSales": 24062
-                },
-                {
-                    "totalSales": 24815
-                }
-            ]
-        },
-        "greaterThan25000": 1
+        "_id": "2cf3f885-9962-4b67-a172-aa9039e9ae2f",
+        "name": "First Up Consultants | Bed and Bath Center - South Amir",
+        "promotionEvents": [
+          {
+            "promotionalDates": { "startDate": { "Year": 2024, "Month": 9, "Day": 21 } }
+          }
+        ]
     }
 ]
 ```

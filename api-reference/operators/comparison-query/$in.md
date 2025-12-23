@@ -1,30 +1,23 @@
 ---
-title: $nin
-description: The $nin operator retrieves documents where the value of a field doesn't match a list of values
+title: $in
+description: The $in operator matches value of a field against an array of specified values
 type: operators
-category: comparison
+category: comparison-query
 ---
 
-# $nin
+# $in
 
-The `$nin` operator retrieves documents where the value of a specified field doesn't match a list of values.
+The `$in` operator matches values of a field against an array of possible values. The `$in` operator filters documents where the value of a field equals any of the specified values.
 
 ## Syntax
 
 ```javascript
 {
     field: {
-        $nin: [ < listOfValues > ]
+        $in: [ listOfValues ]
     }
 }
 ```
-
-## Parameters
-
-| Parameter | Description |
-| --- | --- |
-| **`field`** | The field to compare|
-| **`[<listOfValues>]`** | An array of values that shouldn't match the value of the field being compared|
 
 ## Examples
 
@@ -140,65 +133,19 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1 - Find a store with a discount that isn't 10%, 15%, or 20%
+### Example 1 - Use $in operator as comparison-query to find a store with specific categories of promotions
 
-To find a store with promotions offering discounts that are not 10%, 15%, or 20%, first run a query using $nin on the nested discountPercentage field. Then project only the name and discount offered by the result store and limit the result to a single document from the result set.
-
-```javascript
-db.stores.find({
-    "promotionEvents.discounts.discountPercentage": {
-        $nin: [10, 15, 20]
-    }
-}, {
-    name: 1,
-    "promotionEvents.discounts.discountPercentage": 1
-}, {
-    limit: 1
-})
-```
-
-The first result returned by this query is:
-
-```json
-[
-    {
-        "_id": "2cf3f885-9962-4b67-a172-aa9039e9ae2f",
-        "name": "First Up Consultants | Bed and Bath Center - South Amir",
-        "promotionEvents": [
-          {
-            "discounts": [
-              { "discountPercentage": 18 },
-              { "discountPercentage": 17 },
-              { "discountPercentage": 9 },
-              { "discountPercentage": 5 },
-              { "discountPercentage": 5 },
-              { "discountPercentage": 6 },
-              { "discountPercentage": 9 },
-              { "discountPercentage": 5 },
-              { "discountPercentage": 19 },
-              { "discountPercentage": 21 }
-            ]
-          }
-        ]
-    }
-]
-```
-
-### Example 2 - Find a store with no discounts on specific categories of promotions
-
-To find a store without promotions on Smoked Salmon and Anklets, first run a query using $nin on the nested categoryName field. Then project the name and promotions offered by the store and limit the results to one document from the result set.
+This query finds stores that offer discounts in either "Smoked Salmon" or "Anklets" categories via promotion events.
 
 ```javascript
 db.stores.find({
     "promotionEvents.discounts.categoryName": {
-        $nin: ["Smoked Salmon", "Anklets"]
+        $in: ["Smoked Salmon", "Anklets"]
     }
 }, {
     name: 1,
     "promotionEvents.discounts.categoryName": 1
-}, {
-    limit: 1
-})
+}).limit(1)
 ```
 
 The first result returned by this query is:
@@ -206,24 +153,100 @@ The first result returned by this query is:
 ```json
 [
     {
-        "_id": "2cf3f885-9962-4b67-a172-aa9039e9ae2f",
-        "name": "First Up Consultants | Bed and Bath Center - South Amir",
-        "promotionEvents": [
-          {
-            "discounts": [
-              { "categoryName": "Bath Accessories" },
-              { "categoryName": "Pillow Top Mattresses" },
-              { "categoryName": "Bathroom Scales" },
-              { "categoryName": "Towels" },
-              { "categoryName": "Bathrobes" },
-              { "categoryName": "Mattress Toppers" },
-              { "categoryName": "Hand Towels" },
-              { "categoryName": "Shower Heads" },
-              { "categoryName": "Bedspreads" },
-              { "categoryName": "Bath Mats" }
-            ]
-          }
-        ]
+      "_id": "48fcdab8-b961-480e-87a9-19ad880e9a0a",
+      "name": "Lakeshore Retail | Jewelry Collection - South Nicholas",
+      "promotionEvents": [
+        {
+          "discounts": [
+            {"categoryName": "Anklets"},
+            {"categoryName": "Cufflinks"}
+          ]
+        },
+        {
+          "discounts": [
+            {"categoryName": "Anklets"},
+            {"categoryName": "Brooches"}
+          ]
+        },
+        {
+          "discounts": [
+            {"categoryName": "Rings"},
+            {"categoryName": "Bracelets"}
+          ]
+        },
+        {
+          "discounts": [
+            {"categoryName": "Charms"},
+            {"categoryName": "Bracelets"}
+          ]
+        },
+        {
+          "discounts": [
+            {"categoryName": "Watches"},
+            {"categoryName": "Pendants"}
+          ]
+        }
+      ]
+    }
+]
+```
+
+### Example 2 - Use $in operator as array-expression in an array for a specified value or set of values
+
+This query searches for the specified store and filters documents where at least one `discountPercentage` within any `promotionEvents.discounts` is either 15 or 20. It uses a dot notation path and the $in operator to match nested discount values across the array hierarchy.
+
+```javascript
+db.stores.find({
+    _id: "48fcdab8-b961-480e-87a9-19ad880e9a0a",
+    "promotionEvents.discounts.discountPercentage": {
+        $in: [15, 20]
+    }
+}, {
+    _id: 1,
+    name: 1,
+    "promotionEvents.discounts": 1
+})
+```
+
+This query returns the following result:
+
+```json
+[
+    {
+      "_id": "48fcdab8-b961-480e-87a9-19ad880e9a0a",
+      "name": "Lakeshore Retail | Jewelry Collection - South Nicholas",
+      "promotionEvents": [
+        {
+          "discounts": [
+            { "categoryName": "Anklets", "discountPercentage": 12 },
+            { "categoryName": "Cufflinks", "discountPercentage": 9 }
+          ]
+        },
+        {
+          "discounts": [
+            { "categoryName": "Anklets", "discountPercentage": 23 },
+            { "categoryName": "Brooches", "discountPercentage": 12 }
+          ]
+        },
+        {
+          "discounts": [
+            { "categoryName": "Rings", "discountPercentage": 10 },
+            { "categoryName": "Bracelets", "discountPercentage": 21 }
+          ]
+        },
+        {
+          "discounts": [
+            { "categoryName": "Charms", "discountPercentage": 9 },
+            { "categoryName": "Bracelets", "discountPercentage": 13 }
+          ]
+        },
+        {
+          "discounts": [
+            { "categoryName": "Watches", "discountPercentage": 20 },
+            { "categoryName": "Pendants", "discountPercentage": 7 }
+          ]
+        }
+      ]
     }
 ]
 ```

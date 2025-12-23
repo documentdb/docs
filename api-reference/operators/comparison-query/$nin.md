@@ -1,20 +1,20 @@
 ---
-title: $ne
-description: The $ne operator retrieves documents where the value of a field doesn't equal a specified value
+title: $nin
+description: The $nin operator retrieves documents where the value of a field doesn't match a list of values
 type: operators
-category: comparison
+category: comparison-query
 ---
 
-# $ne
+# $nin
 
-The `$ne` operator retrieves documents where the value of a field doesn't equal a specified value.
+The `$nin` operator retrieves documents where the value of a specified field doesn't match a list of values.
 
 ## Syntax
 
 ```javascript
 {
     field: {
-        $ne: value
+        $nin: [ < listOfValues > ]
     }
 }
 ```
@@ -23,8 +23,8 @@ The `$ne` operator retrieves documents where the value of a field doesn't equal 
 
 | Parameter | Description |
 | --- | --- |
-| **`field`** | The field to be compared|
-| **`value`** | The value that the field shouldn't be equal to|
+| **`field`** | The field to compare|
+| **`[<listOfValues>]`** | An array of values that shouldn't match the value of the field being compared|
 
 ## Examples
 
@@ -140,46 +140,18 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1 - Find a store whose name isn't "Fourth Coffee"
+### Example 1 - Find a store with a discount that isn't 10%, 15%, or 20%
 
-To find a store with a name that isn't "Fourth Coffee", first run a query using $ne on the name field. Then project only the name of the resulting documents and limit the results to one store from the result set.
-
-```javascript
-db.stores.find({
-    name: {
-        $ne: "Fourth Coffee"
-    }
-}, {
-    _id: 1,
-    name: 1
-}, {
-    limit: 1
-})
-```
-
-The first result returned by this query is:
-
-```json
-[
-    {
-        "_id": "2cf3f885-9962-4b67-a172-aa9039e9ae2f",
-        "name": "First Up Consultants | Bed and Bath Center - South Amir"
-    }
-]
-```
-
-### Example 2 - Find a store with promotion events that aren't in 2024
-
-To find a store with promotions events that don't start in 2024, first run a query using $ne on the nested startDate field. Then project the name and promotions offered by the stores and limit the results to one document from the result set.
+To find a store with promotions offering discounts that are not 10%, 15%, or 20%, first run a query using $nin on the nested discountPercentage field. Then project only the name and discount offered by the result store and limit the result to a single document from the result set.
 
 ```javascript
 db.stores.find({
-    "promotionEvents.promotionalDates.startDate": {
-        $ne: "2024"
+    "promotionEvents.discounts.discountPercentage": {
+        $nin: [10, 15, 20]
     }
 }, {
     name: 1,
-    "promotionEvents.promotionalDates.startDate": 1
+    "promotionEvents.discounts.discountPercentage": 1
 }, {
     limit: 1
 })
@@ -194,7 +166,62 @@ The first result returned by this query is:
         "name": "First Up Consultants | Bed and Bath Center - South Amir",
         "promotionEvents": [
           {
-            "promotionalDates": { "startDate": { "Year": 2024, "Month": 9, "Day": 21 } }
+            "discounts": [
+              { "discountPercentage": 18 },
+              { "discountPercentage": 17 },
+              { "discountPercentage": 9 },
+              { "discountPercentage": 5 },
+              { "discountPercentage": 5 },
+              { "discountPercentage": 6 },
+              { "discountPercentage": 9 },
+              { "discountPercentage": 5 },
+              { "discountPercentage": 19 },
+              { "discountPercentage": 21 }
+            ]
+          }
+        ]
+    }
+]
+```
+
+### Example 2 - Find a store with no discounts on specific categories of promotions
+
+To find a store without promotions on Smoked Salmon and Anklets, first run a query using $nin on the nested categoryName field. Then project the name and promotions offered by the store and limit the results to one document from the result set.
+
+```javascript
+db.stores.find({
+    "promotionEvents.discounts.categoryName": {
+        $nin: ["Smoked Salmon", "Anklets"]
+    }
+}, {
+    name: 1,
+    "promotionEvents.discounts.categoryName": 1
+}, {
+    limit: 1
+})
+```
+
+The first result returned by this query is:
+
+```json
+[
+    {
+        "_id": "2cf3f885-9962-4b67-a172-aa9039e9ae2f",
+        "name": "First Up Consultants | Bed and Bath Center - South Amir",
+        "promotionEvents": [
+          {
+            "discounts": [
+              { "categoryName": "Bath Accessories" },
+              { "categoryName": "Pillow Top Mattresses" },
+              { "categoryName": "Bathroom Scales" },
+              { "categoryName": "Towels" },
+              { "categoryName": "Bathrobes" },
+              { "categoryName": "Mattress Toppers" },
+              { "categoryName": "Hand Towels" },
+              { "categoryName": "Shower Heads" },
+              { "categoryName": "Bedspreads" },
+              { "categoryName": "Bath Mats" }
+            ]
           }
         ]
     }

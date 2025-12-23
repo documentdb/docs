@@ -1,21 +1,19 @@
 ---
-title: $gt
-description: The $gt query operator retrieves documents where the value of a field is greater than a specified value
+title: $cmp
+description: The $cmp operator compares two values
 type: operators
-category: comparison
+category: comparison-query
 ---
 
-# $gt
+# $cmp
 
-The `$gt` operator retrieves documents where the value of a field is greater than a specified value. The `$gt` operator queries numerical and date values to filter records that exceed a specified threshold.
+The `$cmp` operator compares two specified values. The $cmp operator returns -1 if the first value is less than the second, 0 if the two values are equal and 1 if the first value is greater than the second.
 
 ## Syntax
 
 ```javascript
 {
-    field: {
-        $gt: value
-    }
+  $cmp: [<firstValueToCompare>, <secondValueToCompare>]
 }
 ```
 
@@ -23,8 +21,8 @@ The `$gt` operator retrieves documents where the value of a field is greater tha
 
 | Parameter | Description |
 | --- | --- |
-| **`field`** | The field in the document you want to compare|
-| **`value`** | The value that the field should be greater than|
+| **`<firstValueToCompare>`** | The first value which is compared to the second by the $cmp operator|
+| **`<secondValueToCompare>`** | The second value being compared to by the $cmp operator|
 
 ## Examples
 
@@ -140,60 +138,58 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Retrieve stores with sales exceeding $35,000
+### Example 1 - Compare the total sales of stores to $25,000
 
-To retrieve a store with over $35,000 in sales, first run a query with $gt operator on the sales.totalSales field. Then limit the query results to one store.
+To compare the total sales of stores within the Boulder Innovations Company to $25,000, first run a query to filter on the company name of stores. Then, use $cmp to compare the sales.totalSales field to 25000. Lastly, project only the name and total sales for the resulting stores.
 
 ```javascript
-db.stores.find({
-    "sales.totalSales": {
-        $gt: 35000
+db.stores.aggregate([{
+    $match: {
+        company: {
+            $in: ["Boulder Innovations"]
+        }
     }
 }, {
-    name: 1,
-    "sales.totalSales": 1
-}, {
-    limit: 1
-})
+    $project: {
+        name: 1,
+        "sales.salesByCategory.totalSales": 1,
+        greaterThan25000: {
+            $cmp: ["$sales.revenue", 25000]
+        }
+    }
+}])
 ```
 
-The first result returned by this query is:
+The first two results returned by this query are:
 
 ```json
 [
     {
-        "_id": "2cf3f885-9962-4b67-a172-aa9039e9ae2f",
-        "name": "First Up Consultants | Bed and Bath Center - South Amir",
-        "sales": { "totalSales": 37701 }
-    }
-]
-```
-
-### Example 2: Find a store with more than 12 full-time staff
-
-To find a store with more than 12 full time staff, first run a query with the $gt operator on the staff.totalStaff.fullTime field. Then project just the name and totalStaff fields and limit the result set to a single store from the list of matching results.
-
-```javascript
-db.stores.find({
-    "staff.totalStaff.fullTime": {
-        $gt: 12
-    }
-}, {
-    name: 1,
-    "staff.totalStaff": 1
-}, {
-    limit: 1
-})
-```
-
-The first result returned by this query is:
-
-```json
-[
+        "_id": "a5040801-d127-4950-a320-e55f6aed4b36",
+        "name": "Boulder Innovations | DJ Equipment Pantry - West Christopher",
+        "sales": {
+            "salesByCategory": [
+                {
+                    "totalSales": 21522
+                }
+            ]
+        },
+        "greaterThan25000": -1
+    },
     {
-        "_id": "2cf3f885-9962-4b67-a172-aa9039e9ae2f",
-        "name": "First Up Consultants | Bed and Bath Center - South Amir",
-        "staff": { "totalStaff": { "fullTime": 18, "partTime": 17 } }
+        "_id": "bb6e097a-e204-4b64-9f13-5ae8426fcc76",
+        "name": "Boulder Innovations | Kitchen Appliance Outlet - Lake Chazville",
+        "sales": {
+            "salesByCategory": [
+                {
+                    "totalSales": 24062
+                },
+                {
+                    "totalSales": 24815
+                }
+            ]
+        },
+        "greaterThan25000": 1
     }
 ]
 ```

@@ -2,7 +2,7 @@
 title: $gte
 description: The $gte operator retrieves documents where the value of a field is greater than or equal to a specified value
 type: operators
-category: comparison
+category: comparison-query
 ---
 
 # $gte

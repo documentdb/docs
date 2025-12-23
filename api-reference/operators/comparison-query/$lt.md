@@ -2,7 +2,7 @@
 title: $lt
 description: The $lt operator retrieves documents where the value of field is less than a specified value
 type: operators
-category: comparison
+category: comparison-query
 ---
 
 # $lt
