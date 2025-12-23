@@ -1,6 +1,6 @@
 ---
 title: $elemMatch
-description: The $elemmatch operator returns complete array, qualifying criteria with at least one matching array element.
+description: The $elemMatch operator returns complete array, qualifying criteria with at least one matching array element.
 type: operators
 category: array-query
 ---
