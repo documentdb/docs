@@ -11,7 +11,7 @@ The `aggregate` command is used to process data records and return computed resu
 
 ## Syntax
 
-```console
+```javascript
 db.collection.aggregate(pipeline, options)
 ```
 
