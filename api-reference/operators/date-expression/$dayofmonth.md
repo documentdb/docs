@@ -1,34 +1,27 @@
 ---
-title: $dateTrunc
-description: The $dateTrunc operator truncates a date to a specified unit.
+title: $dayOfMonth
+description: The $dayOfMonth operator extracts the day of the month from a date.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $dateTrunc
+# $dayOfMonth
 
-The `$dateTrunc` expression operator truncates a date to the nearest specified unit (for example, hour, day, month). It's useful when working with time-series data or when grouping data by specific time intervals. This operator can be used to simplify and standardize date calculations.
+The `$dayOfMonth` operator extracts the day of the month (1–31) from a date value. It's useful for grouping or filtering documents based on the day of the month.
 
 ## Syntax
 
 ```javascript
-  $dateTrunc: {
-    date: <dateExpression>,
-    unit: "<unit>",
-    binSize: <number>,       // optional
-    timezone: "<timezone>",  // optional
-    startOfWeek: "<day>"     // optional (used when unit is "week")
-  }
+{
+  $dayOfMonth: <dateExpression>
+}
 ```
 
 ## Parameters
 
-| Parameter | Description |
-| --- | --- |
-| **`date`** | The date to truncate. |
-| **`unit`** | The unit to truncate the date to. Supported values include `year`, `month`, `week`, `day`, `hour`, `minute`, `second`, and `millisecond`. |
-| **`binSize`** | (Optional) The size of each bin for truncation. For example, if `binSize` is 2 and `unit` is `hour`, the date is truncated to every 2 hours. |
-| **`timezone`** | (Optional) The timezone to use for truncation. Defaults to UTC if not specified. |
+| Parameter              | Description                                                     |
+| ---------------------- | --------------------------------------------------------------- |
+| **`<dateExpression>`** | The date expression from which to extract the day of the month. |
 
 ## Examples
 
@@ -144,9 +137,9 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Truncate to the day
+### Example 1: Extract day of the month
 
-This query uses `$dateTrunc` to truncate the `lastUpdated` timestamp to the start of the day (00:00:00) in UTC. The operator is useful for grouping or comparing data by calendar day regardless of time.
+This query uses the `$dayOfMonth` operator to extract the day of the month (1–31) from the `lastUpdated` timestamp and isolates the date component of the field for reporting or grouping.
 
 ```javascript
 db.stores.aggregate([
@@ -156,12 +149,7 @@ db.stores.aggregate([
   {
     $project: {
       _id: 0,
-      truncatedToDay: {
-        $dateTrunc: {
-          date: "$lastUpdated",
-          unit: "day"
-        }
-      }
+      dayOfMonth: { $dayOfMonth: "$lastUpdated" }
     }
   }
 ])
@@ -172,41 +160,7 @@ This query returns the following result.
 ```json
 [
   {
-    "truncatedToDay": "2024-11-29T00:00:00.000Z"
-  }
-]
-```
-
-### Example 2: Truncate to the start of the week
-
-This query uses `$dateTrunc` to round the `lastUpdated` timestamp down to the start of its week. It specifies Monday as the start of the week to ensure consistent calendar alignment.
-
-```javascript
-db.stores.aggregate([
-  {
-    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
-  },
-  {
-    $project: {
-      _id: 0,
-      truncatedToWeek: {
-        $dateTrunc: {
-          date: "$lastUpdated",
-          unit: "week",
-          startOfWeek: "Monday"
-        }
-      }
-    }
-  }
-])
-```
-
-This query returns the following result.
-
-```json
-[
-  {
-    "truncatedToWeek": "2024-11-25T00:00:00.000Z"
+    "dayOfMonth": "4"
   }
 ]
 ```

@@ -1,27 +1,27 @@
 ---
-title: $month
-description: The $month operator extracts the month portion from a date value.
+title: $dayOfYear
+description: The $dayOfYear operator extracts the day of the year from a date.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $month
+# $dayOfYear
 
-The `$month` operator extracts the month portion from a date value, returning a number between 1 and 12, where 1 represents January and 12 represents December. This operator is essential for seasonal analysis and monthly reporting.
+The `$dayOfYear` operator extracts the day of the year from a date value, where 1 represents January 1. It's useful for grouping or filtering documents based on the day of the year.
 
 ## Syntax
 
 ```javascript
 {
-  $month: <dateExpression>
+  $dayOfYear: <dateExpression>
 }
 ```
 
 ## Parameters
 
-| Parameter | Description |
-| --- | --- |
-| **`dateExpression`** | An expression that resolves to a Date, a Timestamp, or an ObjectId. If the expression resolves to `null` or is missing, `$month` returns `null`. |
+| Parameter              | Description                                                    |
+| ---------------------- | -------------------------------------------------------------- |
+| **`<dateExpression>`** | The date expression from which to extract the day of the year. |
 
 ## Examples
 
@@ -137,38 +137,19 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Extract month from store opening date
+### Example 1: Extract day of the year
 
-This query extracts the month portion from the store opening date to analyze seasonal opening patterns.
+This query uses the `$dayOfYear` operator to extract the ordinal day of the year (1–366) from the `lastUpdated` timestamp.
 
 ```javascript
 db.stores.aggregate([
-  { $match: {_id: "905d1939-e03a-413e-a9c4-221f74055aac"} },
+  {
+    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
+  },
   {
     $project: {
-      name: 1,
-      storeOpeningDate: 1,
-      openingMonth: {
-        $month: "$storeOpeningDate"
-      },
-      openingMonthName: {
-        $switch: {
-          branches: [
-            { case: { $eq: [{ $month: "$storeOpeningDate" }, 1] }, then: "January" },
-            { case: { $eq: [{ $month: "$storeOpeningDate" }, 2] }, then: "February" },
-            { case: { $eq: [{ $month: "$storeOpeningDate" }, 3] }, then: "March" },
-            { case: { $eq: [{ $month: "$storeOpeningDate" }, 4] }, then: "April" },
-            { case: { $eq: [{ $month: "$storeOpeningDate" }, 5] }, then: "May" },
-            { case: { $eq: [{ $month: "$storeOpeningDate" }, 6] }, then: "June" },
-            { case: { $eq: [{ $month: "$storeOpeningDate" }, 7] }, then: "July" },
-            { case: { $eq: [{ $month: "$storeOpeningDate" }, 8] }, then: "August" },
-            { case: { $eq: [{ $month: "$storeOpeningDate" }, 9] }, then: "September" },
-            { case: { $eq: [{ $month: "$storeOpeningDate" }, 10] }, then: "October" },
-            { case: { $eq: [{ $month: "$storeOpeningDate" }, 11] }, then: "November" },
-            { case: { $eq: [{ $month: "$storeOpeningDate" }, 12] }, then: "December" }
-          ]
-        }
-      }
+      _id: 0,
+      dayOfYear: { $dayOfYear: "$lastUpdated" }
     }
   }
 ])
@@ -179,11 +160,11 @@ This query returns the following result.
 ```json
 [
   {
-    "_id": "905d1939-e03a-413e-a9c4-221f74055aac",
-    "name": "Trey Research | Home Office Depot - Lake Freeda",
-    "storeOpeningDate": "2024-12-30T22:55:25.779Z",
-    "openingMonth": 12,
-    "openingMonthName": "December"
+    "dayOfYear": 339
   }
 ]
+```
+
+```json
+{ "dayOfYear": 339 }
 ```

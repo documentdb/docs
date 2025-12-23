@@ -1,19 +1,19 @@
 ---
-title: $isoDayOfWeek
-description: The $isoDayOfWeek operator returns the weekday number in ISO 8601 format, ranging from 1 (Monday) to 7 (Sunday).
+title: $isoWeekYear
+description: The $isoWeekYear operator returns the year number in ISO 8601 format, which can differ from the calendar year for dates at the beginning or end of the year.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $isoDayOfWeek
+# $isoWeekYear
 
-The `$isoDayOfWeek` operator returns the weekday number in ISO 8601 format, ranging from 1 (Monday) to 7 (Sunday). The operator accepts a date expression that resolves to a Date, Timestamp, or ObjectId.
+The `$isoWeekYear` operator returns the year number in ISO 8601 format. The ISO week-numbering year can differ from the calendar year for dates at the beginning or end of the year. The ISO week year is the year that contains the Thursday of the week in question.
 
 ## Syntax
 
 ```javascript
 {
-  $isoDayOfWeek: <dateExpression>
+  $isoWeekYear: <dateExpression>
 }
 ```
 
@@ -21,7 +21,7 @@ The `$isoDayOfWeek` operator returns the weekday number in ISO 8601 format, rang
 
 | Parameter | Description |
 | --- | --- |
-| **`dateExpression`** | An expression that resolves to a Date, Timestamp, or ObjectId. If the expression resolves to null or is missing, `$isoDayOfWeek` returns null. |
+| **`dateExpression`** | An expression that resolves to a Date, Timestamp, or ObjectId. If the expression resolves to null or is missing, `$isoWeekYear` returns null. |
 
 ## Examples
 
@@ -137,13 +137,13 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Analyze promotion events by day of week
+### Example 1: Compare calendar year vs ISO week year
 
-This query reviews promotion events to see which days of the week they started on.
+This query demonstrates the difference between calendar year and ISO week year, especially for dates near year boundaries.
 
 ```javascript
 db.stores.aggregate([
-  { $match: {"_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74"} },
+  { $match: {_id: "40d6f4d7-50cd-4929-9a07-0a7a133c2e74"} },
   { $unwind: "$promotionEvents" },
   {
     $project: {
@@ -154,79 +154,48 @@ db.stores.aggregate([
           month: "$promotionEvents.promotionalDates.startDate.Month",
           day: "$promotionEvents.promotionalDates.startDate.Day"
         }
+      },
+      endDate: {
+        $dateFromParts: {
+          year: "$promotionEvents.promotionalDates.endDate.Year",
+          month: "$promotionEvents.promotionalDates.endDate.Month",
+          day: "$promotionEvents.promotionalDates.endDate.Day"
+        }
       }
     }
   },
   {
-    $group: {
-      _id: { $isoDayOfWeek: "$startDate" },
-      eventCount: { $sum: 1 },
-      events: { $push: "$eventName" }
-    }
-  },
-  {
     $project: {
-      _id: 1,
-      dayName: {
-        $switch: {
-          branches: [
-            { case: { $eq: ["$_id", 1] }, then: "Monday" },
-            { case: { $eq: ["$_id", 2] }, then: "Tuesday" },
-            { case: { $eq: ["$_id", 3] }, then: "Wednesday" },
-            { case: { $eq: ["$_id", 4] }, then: "Thursday" },
-            { case: { $eq: ["$_id", 5] }, then: "Friday" },
-            { case: { $eq: ["$_id", 6] }, then: "Saturday" },
-            { case: { $eq: ["$_id", 7] }, then: "Sunday" }
-          ]
-        }
-      },
-      eventCount: 1,
-      events: 1
+      eventName: 1,
+      startDate: 1,
+      endDate: 1,
+      startCalendarYear: { $year: "$startDate" },
+      startISOWeekYear: { $isoWeekYear: "$startDate" },
+      endCalendarYear: { $year: "$endDate" },
+      endISOWeekYear: { $isoWeekYear: "$endDate" },
+      yearDifference: {
+        $ne: [{ $year: "$startDate" }, { $isoWeekYear: "$startDate" }]
+      }
     }
   },
-  { $sort: { "_id": 1 } }
+  { $match: {"eventName": "Discount Delight Days" } }
 ])
 ```
 
-This query returns the following results:
+This query returns the following result.
 
 ```json
 [
   {
-    "_id": 1,
-    "eventCount": 1,
-    "events": ["Super Sale Spectacular"],
-    "dayName": "Monday"
-  },
-  {
-    "_id": 2,
-    "eventCount": 1,
-    "events": ["Discount Delight Days"],
-    "dayName": "Tuesday"
-  },
-  {
-    "_id": 3,
-    "eventCount": 1,
-    "events": ["Fantastic Deal Days"],
-    "dayName": "Wednesday"
-  },
-  {
-    "_id": 4,
-    "eventCount": 1,
-    "events": ["Massive Markdown Mania"],
-    "dayName": "Thursday"
-  },
-  {
-    "_id": 6,
-    "eventCount": 1,
-    "events": ["Major Bargain Bash"],
-    "dayName": "Saturday"
-  },
-  {
-    "_id": 7,
-    "eventCount": 1,
-    "events": ["Grand Deal Days"],
-    "dayName": "Sunday"
+    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
+    "eventName": "Discount Delight Days",
+    "startDate": "2023-12-26T00:00:00.000Z",
+    "endDate": "2024-01-05T00:00:00.000Z",
+    "startCalendarYear": 2023,
+    "startISOWeekYear": Long("2023"),
+    "endCalendarYear": 2024,
+    "endISOWeekYear": Long("2024"),
+    "yearDifference": true
   }
 ]
 ```

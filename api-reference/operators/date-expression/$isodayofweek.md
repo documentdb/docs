@@ -1,23 +1,19 @@
 ---
-title: $dateDiff
-description: The $dateDiff operator calculates the difference between two dates in various units such as years, months, days, etc.
+title: $isoDayOfWeek
+description: The $isoDayOfWeek operator returns the weekday number in ISO 8601 format, ranging from 1 (Monday) to 7 (Sunday).
 type: operators
-category: date
+category: date-expression
 ---
 
-# $dateDiff
+# $isoDayOfWeek
 
-The `$dateDiff` operator calculates the difference between two dates in various units such as years, months, days, etc. It's useful for determining the duration between two timestamps in your dataset.
+The `$isoDayOfWeek` operator returns the weekday number in ISO 8601 format, ranging from 1 (Monday) to 7 (Sunday). The operator accepts a date expression that resolves to a Date, Timestamp, or ObjectId.
 
 ## Syntax
 
 ```javascript
-$dateDiff: {
-   startDate: <expression>,
-   endDate: <expression>,
-   unit: <string>,
-   timezone: <string>, // Optional
-   startOfWeek: <string> // Optional
+{
+  $isoDayOfWeek: <dateExpression>
 }
 ```
 
@@ -25,11 +21,7 @@ $dateDiff: {
 
 | Parameter | Description |
 | --- | --- |
-| **`startDate`**| The beginning date for the calculation.|
-| **`endDate`**| The ending date for the calculation.|
-| **`unit`**| The unit of time to measure the difference. Valid values include: `year`, `quarter`, `month`, `week`, `day`, `hour`, `minute`, `second`, `millisecond`.|
-| **`timezone`**| Optional. The timezone to use for the calculation.|
-| **`startOfWeek`**| Optional. The starting day of the week. Valid values are: `Sunday`, `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday`, `Saturday`.|
+| **`dateExpression`** | An expression that resolves to a Date, Timestamp, or ObjectId. If the expression resolves to null or is missing, `$isoDayOfWeek` returns null. |
 
 ## Examples
 
@@ -145,13 +137,13 @@ Consider this sample document from the stores collection.
 }
 ```
 
-## Example 1: Calculate duration in days between two dates
+### Example 1: Analyze promotion events by day of week
 
-This query uses `$dateDiff` to compute the number of units (e.g., days, months) between two date fields. It helps measure durations like event length or time since a given date. This query returns the durationInDays along with other fields for the specified `stores` document.
+This query reviews promotion events to see which days of the week they started on.
 
 ```javascript
 db.stores.aggregate([
-  { $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" } },
+  { $match: {"_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74"} },
   { $unwind: "$promotionEvents" },
   {
     $project: {
@@ -162,48 +154,79 @@ db.stores.aggregate([
           month: "$promotionEvents.promotionalDates.startDate.Month",
           day: "$promotionEvents.promotionalDates.startDate.Day"
         }
-      },
-      endDate: {
-        $dateFromParts: {
-          year: "$promotionEvents.promotionalDates.endDate.Year",
-          month: "$promotionEvents.promotionalDates.endDate.Month",
-          day: "$promotionEvents.promotionalDates.endDate.Day"
-        }
-      },
-      durationInDays: {
-        $dateDiff: {
-          startDate: {
-            $dateFromParts: {
-              year: "$promotionEvents.promotionalDates.startDate.Year",
-              month: "$promotionEvents.promotionalDates.startDate.Month",
-              day: "$promotionEvents.promotionalDates.startDate.Day"
-            }
-          },
-          endDate: {
-            $dateFromParts: {
-              year: "$promotionEvents.promotionalDates.endDate.Year",
-              month: "$promotionEvents.promotionalDates.endDate.Month",
-              day: "$promotionEvents.promotionalDates.endDate.Day"
-            }
-          },
-          unit: "day"
-        }
       }
     }
-  }
+  },
+  {
+    $group: {
+      _id: { $isoDayOfWeek: "$startDate" },
+      eventCount: { $sum: 1 },
+      events: { $push: "$eventName" }
+    }
+  },
+  {
+    $project: {
+      _id: 1,
+      dayName: {
+        $switch: {
+          branches: [
+            { case: { $eq: ["$_id", 1] }, then: "Monday" },
+            { case: { $eq: ["$_id", 2] }, then: "Tuesday" },
+            { case: { $eq: ["$_id", 3] }, then: "Wednesday" },
+            { case: { $eq: ["$_id", 4] }, then: "Thursday" },
+            { case: { $eq: ["$_id", 5] }, then: "Friday" },
+            { case: { $eq: ["$_id", 6] }, then: "Saturday" },
+            { case: { $eq: ["$_id", 7] }, then: "Sunday" }
+          ]
+        }
+      },
+      eventCount: 1,
+      events: 1
+    }
+  },
+  { $sort: { "_id": 1 } }
 ])
 ```
 
-This query returns the following result.
+This query returns the following results:
 
 ```json
 [
-   {
-     "_id": "e6410bb3-843d-4fa6-8c70-7472925f6d0a",
-     "eventName": "Massive Markdown Mania",
-     "startDate": "2024-09-21T00:00:00.000Z",
-     "endDate": "2024-09-29T00:00:00.000Z",
-     "durationInDays": 8
-   }
+  {
+    "_id": 1,
+    "eventCount": 1,
+    "events": ["Super Sale Spectacular"],
+    "dayName": "Monday"
+  },
+  {
+    "_id": 2,
+    "eventCount": 1,
+    "events": ["Discount Delight Days"],
+    "dayName": "Tuesday"
+  },
+  {
+    "_id": 3,
+    "eventCount": 1,
+    "events": ["Fantastic Deal Days"],
+    "dayName": "Wednesday"
+  },
+  {
+    "_id": 4,
+    "eventCount": 1,
+    "events": ["Massive Markdown Mania"],
+    "dayName": "Thursday"
+  },
+  {
+    "_id": 6,
+    "eventCount": 1,
+    "events": ["Major Bargain Bash"],
+    "dayName": "Saturday"
+  },
+  {
+    "_id": 7,
+    "eventCount": 1,
+    "events": ["Grand Deal Days"],
+    "dayName": "Sunday"
+  }
 ]
 ```

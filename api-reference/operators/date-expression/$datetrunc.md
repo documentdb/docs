@@ -1,27 +1,34 @@
 ---
-title: $millisecond
-description: The $millisecond operator extracts the milliseconds portion from a date value.
+title: $dateTrunc
+description: The $dateTrunc operator truncates a date to a specified unit.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $millisecond
+# $dateTrunc
 
-The `$millisecond` operator extracts the milliseconds portion from a date value, returning a number between 0 and 999. This operator is useful for precise timestamp analysis and filtering operations that require millisecond-level granularity.
+The `$dateTrunc` expression operator truncates a date to the nearest specified unit (for example, hour, day, month). It's useful when working with time-series data or when grouping data by specific time intervals. This operator can be used to simplify and standardize date calculations.
 
 ## Syntax
 
 ```javascript
-{
-  $millisecond: <dateExpression>
-}
+  $dateTrunc: {
+    date: <dateExpression>,
+    unit: "<unit>",
+    binSize: <number>,       // optional
+    timezone: "<timezone>",  // optional
+    startOfWeek: "<day>"     // optional (used when unit is "week")
+  }
 ```
 
 ## Parameters
 
 | Parameter | Description |
 | --- | --- |
-| **`dateExpression`** | An expression that resolves to a Date, a Timestamp, or an ObjectId. If the expression resolves to `null` or is missing, `$millisecond` returns `null`. |
+| **`date`** | The date to truncate. |
+| **`unit`** | The unit to truncate the date to. Supported values include `year`, `month`, `week`, `day`, `hour`, `minute`, `second`, and `millisecond`. |
+| **`binSize`** | (Optional) The size of each bin for truncation. For example, if `binSize` is 2 and `unit` is `hour`, the date is truncated to every 2 hours. |
+| **`timezone`** | (Optional) The timezone to use for truncation. Defaults to UTC if not specified. |
 
 ## Examples
 
@@ -137,19 +144,23 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Extract milliseconds from store opening date
+### Example 1: Truncate to the day
 
-This query extracts the milliseconds portion from the store opening date.
+This query uses `$dateTrunc` to truncate the `lastUpdated` timestamp to the start of the day (00:00:00) in UTC. The operator is useful for grouping or comparing data by calendar day regardless of time.
 
 ```javascript
 db.stores.aggregate([
-  { $match: {_id: "905d1939-e03a-413e-a9c4-221f74055aac"} },
+  {
+    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
+  },
   {
     $project: {
-      name: 1,
-      storeOpeningDate: 1,
-      openingMilliseconds: {
-        $millisecond: "$storeOpeningDate"
+      _id: 0,
+      truncatedToDay: {
+        $dateTrunc: {
+          date: "$lastUpdated",
+          unit: "day"
+        }
       }
     }
   }
@@ -161,10 +172,41 @@ This query returns the following result.
 ```json
 [
   {
-    "_id": "905d1939-e03a-413e-a9c4-221f74055aac",
-    "name": "Trey Research | Home Office Depot - Lake Freeda",
-    "storeOpeningDate": ISODate("2024-09-26T22:55:25.779Z"),
-    "openingMilliseconds": 779
+    "truncatedToDay": "2024-11-29T00:00:00.000Z"
+  }
+]
+```
+
+### Example 2: Truncate to the start of the week
+
+This query uses `$dateTrunc` to round the `lastUpdated` timestamp down to the start of its week. It specifies Monday as the start of the week to ensure consistent calendar alignment.
+
+```javascript
+db.stores.aggregate([
+  {
+    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
+  },
+  {
+    $project: {
+      _id: 0,
+      truncatedToWeek: {
+        $dateTrunc: {
+          date: "$lastUpdated",
+          unit: "week",
+          startOfWeek: "Monday"
+        }
+      }
+    }
+  }
+])
+```
+
+This query returns the following result.
+
+```json
+[
+  {
+    "truncatedToWeek": "2024-11-25T00:00:00.000Z"
   }
 ]
 ```

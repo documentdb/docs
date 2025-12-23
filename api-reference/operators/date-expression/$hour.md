@@ -1,24 +1,19 @@
 ---
-title: $dateToString
-description: The $dateToString operator converts a date object into a formatted string.
+title: $hour
+description: The $hour operator returns the hour portion of a date as a number between 0 and 23.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $dateToString
+# $hour
 
-The `$dateToString` operator is used to convert a date object to a string in a specified format. It's commonly used in aggregation pipelines to format date fields for reporting, querying, or display purposes. This operator is highly versatile and allows you to define custom date formats.
+The `$hour` operator returns the hour portion of a date as a number between 0 and 23. The operator accepts a date expression that resolves to a Date, Timestamp, or ObjectId.
 
 ## Syntax
 
 ```javascript
 {
-  $dateToString: {
-    format: "<format_string>",
-    date: <date_expression>,
-    timezone: "<timezone>",
-    onNull: "<replacement_value>"
-  }
+  $hour: <dateExpression>
 }
 ```
 
@@ -26,22 +21,7 @@ The `$dateToString` operator is used to convert a date object to a string in a s
 
 | Parameter | Description |
 | --- | --- |
-| **`format`** | A string that specifies the format of the output date. |
-| **`date`** | The date expression to format. |
-| **`timezone`** | (Optional) A string that specifies the timezone. Defaults to UTC if not provided. |
-| **`onNull`** | (Optional) A value to return if the `date` field is `null` or missing. |
-
-## Format Specifiers
-
-| Symbol | Meaning                  |
-| ------ | ------------------------ |
-| `%Y`   | Year (four digits)          |
-| `%m`   | Month (two digits)         |
-| `%d`   | Day of month (two digits)  |
-| `%H`   | Hour (24-hour, two digits) |
-| `%M`   | Minute (two digits)        |
-| `%S`   | Second (two digits)        |
-| `%L`   | Millisecond (three digits)   |
+| **`dateExpression`** | An expression that resolves to a Date, Timestamp, or ObjectId. If the expression resolves to null or is missing, `$hour` returns null. |
 
 ## Examples
 
@@ -157,24 +137,19 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Formatting a date field to an ISO-like string
+### Example 1: Extract hour from current date
 
-This query uses `$dateToString` operator to format the `lastUpdated` timestamp into a `YYYY-MM-DD` string. It helps present dates in a readable format suitable for logs, reports, or UI.
+This query extracts the `hour` from the current date and time.
 
 ```javascript
 db.stores.aggregate([
-  {
-    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
-  },
+  { $match: { "_id": "e6410bb3-843d-4fa6-8c70-7472925f6d0a" } },
   {
     $project: {
-      _id: 0,
-      formattedDate: {
-        $dateToString: {
-          format: "%Y-%m-%d",
-          date: "$lastUpdated"
-        }
-      }
+      name: 1,
+      storeOpeningDate: 1,
+      currentHour: { $hour: new Date() },
+      documentHour: { $hour: "$storeOpeningDate" }
     }
   }
 ])
@@ -185,41 +160,11 @@ This query returns the following result.
 ```json
 [
   {
-    "formattedDate": "2024-12-04"
-  }
-]
-```
-
-### Example 2: Handling Null Values
-
-This query formats the nonexistent field `lastUpdated_new` timestamp as a `YYYY-MM-DD` string using `$dateToString`. Considering the date is missing or null, it substitutes a fallback string "No date available" via the onNull option.
-
-```javascript
-db.stores.aggregate([
-  {
-    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
-  },
-  {
-    $project: {
-      _id: 0,
-      formattedDateOrDefault: {
-        $dateToString: {
-          format: "%Y-%m-%d",
-          date: "$lastUpdated_new", // field doesn't exist
-          onNull: "No date available"
-        }
-      }
-    }
-  }
-])
-```
-
-This query returns the following result.
-
-```json
-[
-  {
-    "formattedDateOrDefault": "No date available"
+    "_id": "e6410bb3-843d-4fa6-8c70-7472925f6d0a",
+    "name": "Relecloud | Toy Collection - North Jaylan",
+    "storeOpeningDate": "2024-09-05T11:50:06.549Z",
+    "currentHour": 12,
+    "documentHour": 11
   }
 ]
 ```

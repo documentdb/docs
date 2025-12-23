@@ -1,19 +1,19 @@
 ---
-title: $isoWeek
-description: The $isoWeek operator returns the week number of the year in ISO 8601 format, ranging from 1 to 53.
+title: $month
+description: The $month operator extracts the month portion from a date value.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $isoWeek
+# $month
 
-The `$isoWeek` operator returns the week number of the year in ISO 8601 format, ranging from 1 to 53. The operator accepts a date expression that resolves to a Date, Timestamp, or ObjectId. In ISO 8601, weeks start on Monday and the first week of the year is the week that contains the first Thursday of the year.
+The `$month` operator extracts the month portion from a date value, returning a number between 1 and 12, where 1 represents January and 12 represents December. This operator is essential for seasonal analysis and monthly reporting.
 
 ## Syntax
 
 ```javascript
 {
-  $isoWeek: <dateExpression>
+  $month: <dateExpression>
 }
 ```
 
@@ -21,7 +21,7 @@ The `$isoWeek` operator returns the week number of the year in ISO 8601 format, 
 
 | Parameter | Description |
 | --- | --- |
-| **`dateExpression`** | An expression that resolves to a Date, Timestamp, or ObjectId. If the expression resolves to null or is missing, `$isoWeek` returns null. |
+| **`dateExpression`** | An expression that resolves to a Date, a Timestamp, or an ObjectId. If the expression resolves to `null` or is missing, `$month` returns `null`. |
 
 ## Examples
 
@@ -137,82 +137,53 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Get ISO week number for promotion events
+### Example 1: Extract month from store opening date
 
-This query extracts the ISO week number for promotion event start dates.
+This query extracts the month portion from the store opening date to analyze seasonal opening patterns.
 
 ```javascript
 db.stores.aggregate([
-  { $match: {"_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74"} },
-  { $unwind: "$promotionEvents" },
+  { $match: {_id: "905d1939-e03a-413e-a9c4-221f74055aac"} },
   {
     $project: {
-      eventName: "$promotionEvents.eventName",
-      startDate: {
-        $dateFromParts: {
-          year: "$promotionEvents.promotionalDates.startDate.Year",
-          month: "$promotionEvents.promotionalDates.startDate.Month",
-          day: "$promotionEvents.promotionalDates.startDate.Day"
+      name: 1,
+      storeOpeningDate: 1,
+      openingMonth: {
+        $month: "$storeOpeningDate"
+      },
+      openingMonthName: {
+        $switch: {
+          branches: [
+            { case: { $eq: [{ $month: "$storeOpeningDate" }, 1] }, then: "January" },
+            { case: { $eq: [{ $month: "$storeOpeningDate" }, 2] }, then: "February" },
+            { case: { $eq: [{ $month: "$storeOpeningDate" }, 3] }, then: "March" },
+            { case: { $eq: [{ $month: "$storeOpeningDate" }, 4] }, then: "April" },
+            { case: { $eq: [{ $month: "$storeOpeningDate" }, 5] }, then: "May" },
+            { case: { $eq: [{ $month: "$storeOpeningDate" }, 6] }, then: "June" },
+            { case: { $eq: [{ $month: "$storeOpeningDate" }, 7] }, then: "July" },
+            { case: { $eq: [{ $month: "$storeOpeningDate" }, 8] }, then: "August" },
+            { case: { $eq: [{ $month: "$storeOpeningDate" }, 9] }, then: "September" },
+            { case: { $eq: [{ $month: "$storeOpeningDate" }, 10] }, then: "October" },
+            { case: { $eq: [{ $month: "$storeOpeningDate" }, 11] }, then: "November" },
+            { case: { $eq: [{ $month: "$storeOpeningDate" }, 12] }, then: "December" }
+          ]
         }
       }
-    }
-  },
-  {
-    $project: {
-      eventName: 1,
-      startDate: 1,
-      isoWeekNumber: { $isoWeek: "$startDate" },
-      year: { $year: "$startDate" }
     }
   }
 ])
 ```
 
-This query returns the following results:
+This query returns the following result.
 
 ```json
 [
   {
-    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
-    "eventName": "Massive Markdown Mania",
-    "startDate": "2023-06-29T00:00:00.000Z",
-    "isoWeekNumber": 26,
-    "year": 2023
-  },
-  {
-    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
-    "eventName": "Fantastic Deal Days",
-    "startDate": "2023-09-27T00:00:00.000Z",
-    "isoWeekNumber": 39,
-    "year": 2023
-  },
-  {
-    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
-    "eventName": "Discount Delight Days",
-    "startDate": "2023-12-26T00:00:00.000Z",
-    "isoWeekNumber": 52,
-    "year": 2023
-  },
-  {
-    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
-    "eventName": "Super Sale Spectacular",
-    "startDate": "2024-03-25T00:00:00.000Z",
-    "isoWeekNumber": 13,
-    "year": 2024
-  },
-  {
-    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
-    "eventName": "Grand Deal Days",
-    "startDate": "2024-06-23T00:00:00.000Z",
-    "isoWeekNumber": 25,
-    "year": 2024
-  },
-  {
-    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
-    "eventName": "Major Bargain Bash",
-    "startDate": "2024-09-21T00:00:00.000Z",
-    "isoWeekNumber": 38,
-    "year": 2024
+    "_id": "905d1939-e03a-413e-a9c4-221f74055aac",
+    "name": "Trey Research | Home Office Depot - Lake Freeda",
+    "storeOpeningDate": "2024-12-30T22:55:25.779Z",
+    "openingMonth": 12,
+    "openingMonthName": "December"
   }
 ]
 ```

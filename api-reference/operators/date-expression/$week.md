@@ -1,19 +1,32 @@
 ---
-title: $hour
-description: The $hour operator returns the hour portion of a date as a number between 0 and 23.
+title: $week
+description: The $week operator returns the week number for a date as a value between 0 and 53.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $hour
+# $week
 
-The `$hour` operator returns the hour portion of a date as a number between 0 and 23. The operator accepts a date expression that resolves to a Date, Timestamp, or ObjectId.
+The `$week` operator returns the week number for a date as a value between 0 and 53. Week 0 begins on January 1, and subsequent weeks begin on Sundays. If the date is null or missing, `$week` returns null.
 
 ## Syntax
 
+The syntax for the `$week` operator is as follows:
+
 ```javascript
 {
-  $hour: <dateExpression>
+  $week: <dateExpression>
+}
+```
+
+Or with timezone specification
+
+```javascript
+{
+  $week: {
+    date: <dateExpression>,
+    timezone: <timezoneExpression>
+  }
 }
 ```
 
@@ -21,7 +34,8 @@ The `$hour` operator returns the hour portion of a date as a number between 0 an
 
 | Parameter | Description |
 | --- | --- |
-| **`dateExpression`** | An expression that resolves to a Date, Timestamp, or ObjectId. If the expression resolves to null or is missing, `$hour` returns null. |
+| **`dateExpression`** | Any expression that resolves to a Date, Timestamp, or ObjectId. |
+| **`timezone`** | Optional. The timezone to use for the calculation. Can be an Olson Timezone Identifier (for example, "America/New_York") or a UTC offset (for example, "+0530"). |
 
 ## Examples
 
@@ -137,19 +151,18 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Extract hour from current date
+### Example 1: Get week number for store opening date
 
-This query extracts the `hour` from the current date and time.
+This query extracts the week number from the store opening date.
 
 ```javascript
 db.stores.aggregate([
-  { $match: { "_id": "e6410bb3-843d-4fa6-8c70-7472925f6d0a" } },
+  { $match: { _id: "905d1939-e03a-413e-a9c4-221f74055aac" } },
   {
     $project: {
       name: 1,
       storeOpeningDate: 1,
-      currentHour: { $hour: new Date() },
-      documentHour: { $hour: "$storeOpeningDate" }
+      openingWeek: { $week: { $toDate: "$storeOpeningDate" } }
     }
   }
 ])
@@ -160,11 +173,59 @@ This query returns the following result.
 ```json
 [
   {
-    "_id": "e6410bb3-843d-4fa6-8c70-7472925f6d0a",
-    "name": "Relecloud | Toy Collection - North Jaylan",
-    "storeOpeningDate": "2024-09-05T11:50:06.549Z",
-    "currentHour": 12,
-    "documentHour": 11
+    "_id": "905d1939-e03a-413e-a9c4-221f74055aac",
+    "name": "Trey Research | Home Office Depot - Lake Freeda",
+    "storeOpeningDate": ISODate("2024-12-30T22:55:25.779Z"),
+    "openingWeek": 52
+  }
+]
+```
+
+### Example 2: Group stores by opening week
+
+This query groups stores by the week they were opened for analysis.
+
+```javascript
+db.stores.aggregate([
+  {
+    $project: {
+      name: 1,
+      openingWeek: { $week: { $toDate: "$storeOpeningDate" } },
+      openingYear: { $year: { $toDate: "$storeOpeningDate" } }
+    }
+  },
+  {
+    $group: {
+      _id: { week: "$openingWeek", year: "$openingYear" },
+      storeCount: { $sum: 1 },
+      stores: { $push: "$name" }
+    }
+  },
+  { $sort: { "_id.year": 1, "_id.week": -1 } },
+  { $limit : 3 } ])
+```
+
+This query returns the following results:
+
+```json
+[
+  {
+    "_id": { "week": 40, "year": 2021 },
+    "storeCount": 1,
+    "stores": [ "First Up Consultants | Bed and Bath Center - South Amir" ]
+  },
+  {
+    "_id": { "week": 52, "year": 2024 },
+    "storeCount": 1,
+    "stores": [ "Trey Research | Home Office Depot - Lake Freeda" ]
+  },
+  {
+    "_id": { "week": 50, "year": 2024 },
+    "storeCount": 2,
+    "stores": [
+      "Fourth Coffee | Paper Product Bazaar - Jordanechester",
+      "Adatum Corporation | Pet Supply Center - West Cassie"
+    ]
   }
 ]
 ```

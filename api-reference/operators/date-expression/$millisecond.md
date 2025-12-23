@@ -1,22 +1,19 @@
 ---
-title: $dateAdd
-description: The $dateAdd operator adds a specified number of time units (day, hour, month etc) to a date.
+title: $millisecond
+description: The $millisecond operator extracts the milliseconds portion from a date value.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $dateAdd
+# $millisecond
 
-The `$dateAdd` operator adds a specified number of time units to a date. It's useful in scenarios where you need to calculate future dates based on a given date and a time interval.
+The `$millisecond` operator extracts the milliseconds portion from a date value, returning a number between 0 and 999. This operator is useful for precise timestamp analysis and filtering operations that require millisecond-level granularity.
 
 ## Syntax
 
 ```javascript
-$dateAdd: {
-   startDate: <expression>,
-   unit: <string>,
-   amount: <number>,
-   timezone: <string>  // Optional
+{
+  $millisecond: <dateExpression>
 }
 ```
 
@@ -24,10 +21,7 @@ $dateAdd: {
 
 | Parameter | Description |
 | --- | --- |
-| **`startDate`** | The starting date for the addition operation. |
-| **`unit`** | The unit of time to add. Valid units include: `year`, `quarter`, `month`, `week`, `day`, `hour`, `minute`, `second`, `millisecond`. |
-| **`amount`** | The number of units to add. |
-| **`timezone`** | Optional. The timezone to use for the operation. |
+| **`dateExpression`** | An expression that resolves to a Date, a Timestamp, or an ObjectId. If the expression resolves to `null` or is missing, `$millisecond` returns `null`. |
 
 ## Examples
 
@@ -143,30 +137,19 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Adding days to a date
+### Example 1: Extract milliseconds from store opening date
 
-This query projects `eventName` and computes a `newEndDate` by adding 7 days to a date constructed from nested year, month, and day fields. The result is a simplified document showing the event name and its extended end date.
+This query extracts the milliseconds portion from the store opening date.
 
 ```javascript
 db.stores.aggregate([
-  { $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" } },
-  { $unwind: "$promotionEvents" },
-  { $unwind: "$promotionEvents.promotionalDates" },
+  { $match: {_id: "905d1939-e03a-413e-a9c4-221f74055aac"} },
   {
     $project: {
-      eventName: 1,
-      newEndDate: {
-        $dateAdd: {
-          startDate: {
-            $dateFromParts: {
-              year: "$promotionEvents.promotionalDates.endDate.Year",
-              month: "$promotionEvents.promotionalDates.endDate.Month",
-              day: "$promotionEvents.promotionalDates.endDate.Day"
-            }
-          },
-          unit: "day",
-          amount: 7
-        }
+      name: 1,
+      storeOpeningDate: 1,
+      openingMilliseconds: {
+        $millisecond: "$storeOpeningDate"
       }
     }
   }
@@ -177,51 +160,11 @@ This query returns the following result.
 
 ```json
 [
-   {
-     "_id": "e6410bb3-843d-4fa6-8c70-7472925f6d0a",
-     "newEndDate": "2024-10-06T00:00:00.000Z"
-   }
-]
-```
-
-### Example 2: Adding months to a date
-
-This aggregation query projects the `eventName` and calculates a newStartDate by adding 1 month to a reconstructed start date from nested promotion fields. It helps determine an adjusted event start date based on the original schedule. This query returns each document’s eventName and a newStartDate that is 1 month after the original startDate from nested promotion event data.
-
-```javascript
-db.stores.aggregate([
-  { $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" } },
-  { $unwind: "$promotionEvents" },
-  { $unwind: "$promotionEvents.promotionalDates" },
   {
-    $project: {
-      eventName: "$promotionEvents.eventName",
-      newStartDate: {
-        $dateAdd: {
-          startDate: {
-            $dateFromParts: {
-              year: "$promotionEvents.promotionalDates.startDate.Year",
-              month: "$promotionEvents.promotionalDates.startDate.Month",
-              day: "$promotionEvents.promotionalDates.startDate.Day"
-            }
-          },
-          unit: "month",
-          amount: 1
-        }
-      }
-    }
+    "_id": "905d1939-e03a-413e-a9c4-221f74055aac",
+    "name": "Trey Research | Home Office Depot - Lake Freeda",
+    "storeOpeningDate": ISODate("2024-09-26T22:55:25.779Z"),
+    "openingMilliseconds": 779
   }
-])
-```
-
-This query returns the following result.
-
-```json
-[
-   {
-     "_id": "e6410bb3-843d-4fa6-8c70-7472925f6d0a",
-     "eventName": "Massive Markdown Mania",
-     "newStartDate": "2024-10-21T00:00:00.000Z"
-   }
 ]
 ```

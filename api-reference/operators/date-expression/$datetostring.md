@@ -1,31 +1,23 @@
 ---
-title: $week
-description: The $week operator returns the week number for a date as a value between 0 and 53.
+title: $dateToString
+description: The $dateToString operator converts a date object into a formatted string.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $week
+# $dateToString
 
-The `$week` operator returns the week number for a date as a value between 0 and 53. Week 0 begins on January 1, and subsequent weeks begin on Sundays. If the date is null or missing, `$week` returns null.
+The `$dateToString` operator is used to convert a date object to a string in a specified format. It's commonly used in aggregation pipelines to format date fields for reporting, querying, or display purposes. This operator is highly versatile and allows you to define custom date formats.
 
 ## Syntax
 
-The syntax for the `$week` operator is as follows:
-
 ```javascript
 {
-  $week: <dateExpression>
-}
-```
-
-Or with timezone specification
-
-```javascript
-{
-  $week: {
-    date: <dateExpression>,
-    timezone: <timezoneExpression>
+  $dateToString: {
+    format: "<format_string>",
+    date: <date_expression>,
+    timezone: "<timezone>",
+    onNull: "<replacement_value>"
   }
 }
 ```
@@ -34,8 +26,22 @@ Or with timezone specification
 
 | Parameter | Description |
 | --- | --- |
-| **`dateExpression`** | Any expression that resolves to a Date, Timestamp, or ObjectId. |
-| **`timezone`** | Optional. The timezone to use for the calculation. Can be an Olson Timezone Identifier (for example, "America/New_York") or a UTC offset (for example, "+0530"). |
+| **`format`** | A string that specifies the format of the output date. |
+| **`date`** | The date expression to format. |
+| **`timezone`** | (Optional) A string that specifies the timezone. Defaults to UTC if not provided. |
+| **`onNull`** | (Optional) A value to return if the `date` field is `null` or missing. |
+
+## Format Specifiers
+
+| Symbol | Meaning                  |
+| ------ | ------------------------ |
+| `%Y`   | Year (four digits)          |
+| `%m`   | Month (two digits)         |
+| `%d`   | Day of month (two digits)  |
+| `%H`   | Hour (24-hour, two digits) |
+| `%M`   | Minute (two digits)        |
+| `%S`   | Second (two digits)        |
+| `%L`   | Millisecond (three digits)   |
 
 ## Examples
 
@@ -151,18 +157,24 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Get week number for store opening date
+### Example 1: Formatting a date field to an ISO-like string
 
-This query extracts the week number from the store opening date.
+This query uses `$dateToString` operator to format the `lastUpdated` timestamp into a `YYYY-MM-DD` string. It helps present dates in a readable format suitable for logs, reports, or UI.
 
 ```javascript
 db.stores.aggregate([
-  { $match: { _id: "905d1939-e03a-413e-a9c4-221f74055aac" } },
+  {
+    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
+  },
   {
     $project: {
-      name: 1,
-      storeOpeningDate: 1,
-      openingWeek: { $week: { $toDate: "$storeOpeningDate" } }
+      _id: 0,
+      formattedDate: {
+        $dateToString: {
+          format: "%Y-%m-%d",
+          date: "$lastUpdated"
+        }
+      }
     }
   }
 ])
@@ -173,59 +185,41 @@ This query returns the following result.
 ```json
 [
   {
-    "_id": "905d1939-e03a-413e-a9c4-221f74055aac",
-    "name": "Trey Research | Home Office Depot - Lake Freeda",
-    "storeOpeningDate": ISODate("2024-12-30T22:55:25.779Z"),
-    "openingWeek": 52
+    "formattedDate": "2024-12-04"
   }
 ]
 ```
 
-### Example 2: Group stores by opening week
+### Example 2: Handling Null Values
 
-This query groups stores by the week they were opened for analysis.
+This query formats the nonexistent field `lastUpdated_new` timestamp as a `YYYY-MM-DD` string using `$dateToString`. Considering the date is missing or null, it substitutes a fallback string "No date available" via the onNull option.
 
 ```javascript
 db.stores.aggregate([
   {
-    $project: {
-      name: 1,
-      openingWeek: { $week: { $toDate: "$storeOpeningDate" } },
-      openingYear: { $year: { $toDate: "$storeOpeningDate" } }
-    }
+    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
   },
   {
-    $group: {
-      _id: { week: "$openingWeek", year: "$openingYear" },
-      storeCount: { $sum: 1 },
-      stores: { $push: "$name" }
+    $project: {
+      _id: 0,
+      formattedDateOrDefault: {
+        $dateToString: {
+          format: "%Y-%m-%d",
+          date: "$lastUpdated_new", // field doesn't exist
+          onNull: "No date available"
+        }
+      }
     }
-  },
-  { $sort: { "_id.year": 1, "_id.week": -1 } },
-  { $limit : 3 } ])
+  }
+])
 ```
 
-This query returns the following results:
+This query returns the following result.
 
 ```json
 [
   {
-    "_id": { "week": 40, "year": 2021 },
-    "storeCount": 1,
-    "stores": [ "First Up Consultants | Bed and Bath Center - South Amir" ]
-  },
-  {
-    "_id": { "week": 52, "year": 2024 },
-    "storeCount": 1,
-    "stores": [ "Trey Research | Home Office Depot - Lake Freeda" ]
-  },
-  {
-    "_id": { "week": 50, "year": 2024 },
-    "storeCount": 2,
-    "stores": [
-      "Fourth Coffee | Paper Product Bazaar - Jordanechester",
-      "Adatum Corporation | Pet Supply Center - West Cassie"
-    ]
+    "formattedDateOrDefault": "No date available"
   }
 ]
 ```

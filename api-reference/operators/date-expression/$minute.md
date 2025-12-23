@@ -1,19 +1,19 @@
 ---
-title: $second
-description: The $second operator extracts the seconds portion from a date value.
+title: $minute
+description: The $minute operator extracts the minute portion from a date value.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $second
+# $minute
 
-The `$second` operator extracts the seconds portion from a date value, returning a number between 0 and 59. This operator is useful for precise timestamp analysis and time-sensitive operations that require second-level granularity.
+The `$minute` operator extracts the minute portion from a date value, returning a number between 0 and 59. This operator is commonly used for time-based analysis and scheduling operations.
 
 ## Syntax
 
 ```javascript
 {
-  $second: <dateExpression>
+  $minute: <dateExpression>
 }
 ```
 
@@ -21,7 +21,7 @@ The `$second` operator extracts the seconds portion from a date value, returning
 
 | Parameter | Description |
 | --- | --- |
-| **`dateExpression`** | An expression that resolves to a Date, a Timestamp, or an ObjectId. If the expression resolves to `null` or is missing, `$second` returns `null`. |
+| **`dateExpression`** | An expression that resolves to a Date, a Timestamp, or an ObjectId. If the expression resolves to `null` or is missing, `$minute` returns `null`. |
 
 ## Examples
 
@@ -137,9 +137,9 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Extract seconds from store opening date
+### Example 1: Extract minutes from store opening date
 
-This query extracts the seconds portion from the store opening date for precise timing analysis.
+This query extracts the minute portion from the store opening date to analyze opening time patterns.
 
 ```javascript
 db.stores.aggregate([
@@ -148,8 +148,8 @@ db.stores.aggregate([
     $project: {
       name: 1,
       storeOpeningDate: 1,
-      openingSecond: {
-        $second: "$storeOpeningDate"
+      openingMinute: {
+        $minute: "$storeOpeningDate"
       }
     }
   }
@@ -163,8 +163,8 @@ This query returns the following result.
   {
     "_id": "905d1939-e03a-413e-a9c4-221f74055aac",
     "name": "Trey Research | Home Office Depot - Lake Freeda",
-    "storeOpeningDate": ISODate("2024-12-30T22:55:25.779Z"),
-    "openingSecond": 25
+    "storeOpeningDate": ISODate("2024-09-26T22:55:25.779Z"),
+    "openingMinute": 55
   }
 ]
 ```

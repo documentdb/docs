@@ -1,35 +1,31 @@
 ---
-title: $dateSubtract
-description: The $dateSubtract operator subtracts a specified amount of time from a date.
+title: $dateToParts
+description: The $dateToParts operator decomposes a date into its individual parts such as year, month, day, and more.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $dateSubtract
+# $dateToParts
 
-The `$dateSubtract` operator subtracts a specified time unit from a date. It's useful for calculating past dates or intervals in aggregation pipelines.
+The `$dateToParts` operator is used to extract individual components (Year, Month, Day, Hour, Minute, Second, Millisecond, etc.) from a date object. The operator is useful for scenarios where manipulation or analysis of specific date parts is required, such as sorting, filtering, or aggregating data based on individual date components.
 
 ## Syntax
 
 ```javascript
-{
-  $dateSubtract: {
-    startDate: <dateExpression>,
-    unit: "<unit>",
-    amount: <number>,
-    timezone: "<timezone>" // optional
-  }
+$dateToParts: {
+  date: <dateExpression>,
+  timezone: <string>, // optional
+  iso8601: <boolean> // optional
 }
 ```
 
 ## Parameters
 
-| Parameter       | Description                                      |
-| --------------- | ------------------------------------------------ |
-| **`startDate`** | The date expression to subtract from.            |
-| **`unit`**      | The time unit to subtract (for example, "day", "hour"). |
-| **`amount`**    | The amount of the time unit to subtract.         |
-| **`timezone`**  | *(Optional)* Timezone for date calculation.      |
+| Parameter | Description |
+| --- | --- |
+| **`date`** | The date expression to extract parts from. |
+| **`timezone`** | Optional. Specifies the timezone for the date. Defaults to UTC if not provided. |
+| **`iso8601`** | Optional. If true, the operator uses ISO 8601 week date calendar system. Defaults to false. |
 
 ## Examples
 
@@ -145,9 +141,9 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Subtract seven days
+### Example 1: Extracting date parts from a field
 
-This query calculates the date one week before the `lastUpdated` field. This query uses `$dateSubtract` to calculate the date exactly seven days before the `storeOpeningDate` timestamp.
+This query uses `$dateToParts` to break down the `lastUpdated` date into components like year, month, day, and time. It helps in analyzing or transforming individual parts of a date for further processing.
 
 ```javascript
 db.stores.aggregate([
@@ -157,11 +153,9 @@ db.stores.aggregate([
   {
     $project: {
       _id: 0,
-      dateOneWeekAgo: {
-        $dateSubtract: {
-          startDate: "$storeOpeningDate",
-          unit: "day",
-          amount: 7
+      dateParts: {
+        $dateToParts: { 
+          date: "$lastUpdated" 
         }
       }
     }
@@ -174,7 +168,56 @@ This query returns the following result.
 ```json
 [
   {
-    "dateOneWeekAgo": "2024-08-29T11:50:06.549Z"
+    "dateParts": {
+      "year": 2024,
+      "month": 12,
+      "day": 4,
+      "hour": 11,
+      "minute": 50,
+      "second": 6,
+      "millisecond": 0
+    }
+  }
+]
+```
+
+### Example 2: Using timezone
+
+This query extracts the `lastUpdated` timestamp of a specific document and breaks it into date parts like year, month, day, and hour using $dateToParts. Including the "America/New_York" timezone permits the breakdown, reflects the local time instead of UTC.
+
+```javascript
+db.stores.aggregate([
+  {
+    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
+  },
+  {
+    $project: {
+      _id: 0,
+      datePartsWithTimezone: {
+        $dateToParts: { 
+          date: "$lastUpdated", 
+          timezone: "America/New_York" 
+        }
+      }
+    }
+  }
+])
+```
+
+This query returns the following result.
+
+```json
+[
+  {
+    "datePartsWithTimezone": {
+      "year": 2024,
+      "month": 12,
+      "day": 4,
+      "hour": 6,
+      "minute": 50,
+      "second": 6,
+      "millisecond": 0
+    }
   }
 ]
 ```

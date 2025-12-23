@@ -1,21 +1,23 @@
 ---
-title: $dateToParts
-description: The $dateToParts operator decomposes a date into its individual parts such as year, month, day, and more.
+title: $dateDiff
+description: The $dateDiff operator calculates the difference between two dates in various units such as years, months, days, etc.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $dateToParts
+# $dateDiff
 
-The `$dateToParts` operator is used to extract individual components (Year, Month, Day, Hour, Minute, Second, Millisecond, etc.) from a date object. The operator is useful for scenarios where manipulation or analysis of specific date parts is required, such as sorting, filtering, or aggregating data based on individual date components.
+The `$dateDiff` operator calculates the difference between two dates in various units such as years, months, days, etc. It's useful for determining the duration between two timestamps in your dataset.
 
 ## Syntax
 
 ```javascript
-$dateToParts: {
-  date: <dateExpression>,
-  timezone: <string>, // optional
-  iso8601: <boolean> // optional
+$dateDiff: {
+   startDate: <expression>,
+   endDate: <expression>,
+   unit: <string>,
+   timezone: <string>, // Optional
+   startOfWeek: <string> // Optional
 }
 ```
 
@@ -23,9 +25,11 @@ $dateToParts: {
 
 | Parameter | Description |
 | --- | --- |
-| **`date`** | The date expression to extract parts from. |
-| **`timezone`** | Optional. Specifies the timezone for the date. Defaults to UTC if not provided. |
-| **`iso8601`** | Optional. If true, the operator uses ISO 8601 week date calendar system. Defaults to false. |
+| **`startDate`**| The beginning date for the calculation.|
+| **`endDate`**| The ending date for the calculation.|
+| **`unit`**| The unit of time to measure the difference. Valid values include: `year`, `quarter`, `month`, `week`, `day`, `hour`, `minute`, `second`, `millisecond`.|
+| **`timezone`**| Optional. The timezone to use for the calculation.|
+| **`startOfWeek`**| Optional. The starting day of the week. Valid values are: `Sunday`, `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday`, `Saturday`.|
 
 ## Examples
 
@@ -141,21 +145,48 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Extracting date parts from a field
+## Example 1: Calculate duration in days between two dates
 
-This query uses `$dateToParts` to break down the `lastUpdated` date into components like year, month, day, and time. It helps in analyzing or transforming individual parts of a date for further processing.
+This query uses `$dateDiff` to compute the number of units (e.g., days, months) between two date fields. It helps measure durations like event length or time since a given date. This query returns the durationInDays along with other fields for the specified `stores` document.
 
 ```javascript
 db.stores.aggregate([
-  {
-    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
-  },
+  { $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" } },
+  { $unwind: "$promotionEvents" },
   {
     $project: {
-      _id: 0,
-      dateParts: {
-        $dateToParts: { 
-          date: "$lastUpdated" 
+      eventName: "$promotionEvents.eventName",
+      startDate: {
+        $dateFromParts: {
+          year: "$promotionEvents.promotionalDates.startDate.Year",
+          month: "$promotionEvents.promotionalDates.startDate.Month",
+          day: "$promotionEvents.promotionalDates.startDate.Day"
+        }
+      },
+      endDate: {
+        $dateFromParts: {
+          year: "$promotionEvents.promotionalDates.endDate.Year",
+          month: "$promotionEvents.promotionalDates.endDate.Month",
+          day: "$promotionEvents.promotionalDates.endDate.Day"
+        }
+      },
+      durationInDays: {
+        $dateDiff: {
+          startDate: {
+            $dateFromParts: {
+              year: "$promotionEvents.promotionalDates.startDate.Year",
+              month: "$promotionEvents.promotionalDates.startDate.Month",
+              day: "$promotionEvents.promotionalDates.startDate.Day"
+            }
+          },
+          endDate: {
+            $dateFromParts: {
+              year: "$promotionEvents.promotionalDates.endDate.Year",
+              month: "$promotionEvents.promotionalDates.endDate.Month",
+              day: "$promotionEvents.promotionalDates.endDate.Day"
+            }
+          },
+          unit: "day"
         }
       }
     }
@@ -167,57 +198,12 @@ This query returns the following result.
 
 ```json
 [
-  {
-    "dateParts": {
-      "year": 2024,
-      "month": 12,
-      "day": 4,
-      "hour": 11,
-      "minute": 50,
-      "second": 6,
-      "millisecond": 0
-    }
-  }
-]
-```
-
-### Example 2: Using timezone
-
-This query extracts the `lastUpdated` timestamp of a specific document and breaks it into date parts like year, month, day, and hour using $dateToParts. Including the "America/New_York" timezone permits the breakdown, reflects the local time instead of UTC.
-
-```javascript
-db.stores.aggregate([
-  {
-    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
-  },
-  {
-    $project: {
-      _id: 0,
-      datePartsWithTimezone: {
-        $dateToParts: { 
-          date: "$lastUpdated", 
-          timezone: "America/New_York" 
-        }
-      }
-    }
-  }
-])
-```
-
-This query returns the following result.
-
-```json
-[
-  {
-    "datePartsWithTimezone": {
-      "year": 2024,
-      "month": 12,
-      "day": 4,
-      "hour": 6,
-      "minute": 50,
-      "second": 6,
-      "millisecond": 0
-    }
-  }
+   {
+     "_id": "e6410bb3-843d-4fa6-8c70-7472925f6d0a",
+     "eventName": "Massive Markdown Mania",
+     "startDate": "2024-09-21T00:00:00.000Z",
+     "endDate": "2024-09-29T00:00:00.000Z",
+     "durationInDays": 8
+   }
 ]
 ```

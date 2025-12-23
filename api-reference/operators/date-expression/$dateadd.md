@@ -1,19 +1,22 @@
 ---
-title: $isoWeekYear
-description: The $isoWeekYear operator returns the year number in ISO 8601 format, which can differ from the calendar year for dates at the beginning or end of the year.
+title: $dateAdd
+description: The $dateAdd operator adds a specified number of time units (day, hour, month etc) to a date.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $isoWeekYear
+# $dateAdd
 
-The `$isoWeekYear` operator returns the year number in ISO 8601 format. The ISO week-numbering year can differ from the calendar year for dates at the beginning or end of the year. The ISO week year is the year that contains the Thursday of the week in question.
+The `$dateAdd` operator adds a specified number of time units to a date. It's useful in scenarios where you need to calculate future dates based on a given date and a time interval.
 
 ## Syntax
 
 ```javascript
-{
-  $isoWeekYear: <dateExpression>
+$dateAdd: {
+   startDate: <expression>,
+   unit: <string>,
+   amount: <number>,
+   timezone: <string>  // Optional
 }
 ```
 
@@ -21,7 +24,10 @@ The `$isoWeekYear` operator returns the year number in ISO 8601 format. The ISO 
 
 | Parameter | Description |
 | --- | --- |
-| **`dateExpression`** | An expression that resolves to a Date, Timestamp, or ObjectId. If the expression resolves to null or is missing, `$isoWeekYear` returns null. |
+| **`startDate`** | The starting date for the addition operation. |
+| **`unit`** | The unit of time to add. Valid units include: `year`, `quarter`, `month`, `week`, `day`, `hour`, `minute`, `second`, `millisecond`. |
+| **`amount`** | The number of units to add. |
+| **`timezone`** | Optional. The timezone to use for the operation. |
 
 ## Examples
 
@@ -137,48 +143,33 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Compare calendar year vs ISO week year
+### Example 1: Adding days to a date
 
-This query demonstrates the difference between calendar year and ISO week year, especially for dates near year boundaries.
+This query projects `eventName` and computes a `newEndDate` by adding 7 days to a date constructed from nested year, month, and day fields. The result is a simplified document showing the event name and its extended end date.
 
 ```javascript
 db.stores.aggregate([
-  { $match: {_id: "40d6f4d7-50cd-4929-9a07-0a7a133c2e74"} },
+  { $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" } },
   { $unwind: "$promotionEvents" },
-  {
-    $project: {
-      eventName: "$promotionEvents.eventName",
-      startDate: {
-        $dateFromParts: {
-          year: "$promotionEvents.promotionalDates.startDate.Year",
-          month: "$promotionEvents.promotionalDates.startDate.Month",
-          day: "$promotionEvents.promotionalDates.startDate.Day"
-        }
-      },
-      endDate: {
-        $dateFromParts: {
-          year: "$promotionEvents.promotionalDates.endDate.Year",
-          month: "$promotionEvents.promotionalDates.endDate.Month",
-          day: "$promotionEvents.promotionalDates.endDate.Day"
-        }
-      }
-    }
-  },
+  { $unwind: "$promotionEvents.promotionalDates" },
   {
     $project: {
       eventName: 1,
-      startDate: 1,
-      endDate: 1,
-      startCalendarYear: { $year: "$startDate" },
-      startISOWeekYear: { $isoWeekYear: "$startDate" },
-      endCalendarYear: { $year: "$endDate" },
-      endISOWeekYear: { $isoWeekYear: "$endDate" },
-      yearDifference: {
-        $ne: [{ $year: "$startDate" }, { $isoWeekYear: "$startDate" }]
+      newEndDate: {
+        $dateAdd: {
+          startDate: {
+            $dateFromParts: {
+              year: "$promotionEvents.promotionalDates.endDate.Year",
+              month: "$promotionEvents.promotionalDates.endDate.Month",
+              day: "$promotionEvents.promotionalDates.endDate.Day"
+            }
+          },
+          unit: "day",
+          amount: 7
+        }
       }
     }
-  },
-  { $match: {"eventName": "Discount Delight Days" } }
+  }
 ])
 ```
 
@@ -186,16 +177,51 @@ This query returns the following result.
 
 ```json
 [
+   {
+     "_id": "e6410bb3-843d-4fa6-8c70-7472925f6d0a",
+     "newEndDate": "2024-10-06T00:00:00.000Z"
+   }
+]
+```
+
+### Example 2: Adding months to a date
+
+This aggregation query projects the `eventName` and calculates a newStartDate by adding 1 month to a reconstructed start date from nested promotion fields. It helps determine an adjusted event start date based on the original schedule. This query returns each document’s eventName and a newStartDate that is 1 month after the original startDate from nested promotion event data.
+
+```javascript
+db.stores.aggregate([
+  { $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" } },
+  { $unwind: "$promotionEvents" },
+  { $unwind: "$promotionEvents.promotionalDates" },
   {
-    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
-    "eventName": "Discount Delight Days",
-    "startDate": "2023-12-26T00:00:00.000Z",
-    "endDate": "2024-01-05T00:00:00.000Z",
-    "startCalendarYear": 2023,
-    "startISOWeekYear": Long("2023"),
-    "endCalendarYear": 2024,
-    "endISOWeekYear": Long("2024"),
-    "yearDifference": true
+    $project: {
+      eventName: "$promotionEvents.eventName",
+      newStartDate: {
+        $dateAdd: {
+          startDate: {
+            $dateFromParts: {
+              year: "$promotionEvents.promotionalDates.startDate.Year",
+              month: "$promotionEvents.promotionalDates.startDate.Month",
+              day: "$promotionEvents.promotionalDates.startDate.Day"
+            }
+          },
+          unit: "month",
+          amount: 1
+        }
+      }
+    }
   }
+])
+```
+
+This query returns the following result.
+
+```json
+[
+   {
+     "_id": "e6410bb3-843d-4fa6-8c70-7472925f6d0a",
+     "eventName": "Massive Markdown Mania",
+     "newStartDate": "2024-10-21T00:00:00.000Z"
+   }
 ]
 ```

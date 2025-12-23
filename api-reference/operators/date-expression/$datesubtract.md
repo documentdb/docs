@@ -1,27 +1,35 @@
 ---
-title: $dayOfMonth
-description: The $dayOfMonth operator extracts the day of the month from a date.
+title: $dateSubtract
+description: The $dateSubtract operator subtracts a specified amount of time from a date.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $dayOfMonth
+# $dateSubtract
 
-The `$dayOfMonth` operator extracts the day of the month (1–31) from a date value. It's useful for grouping or filtering documents based on the day of the month.
+The `$dateSubtract` operator subtracts a specified time unit from a date. It's useful for calculating past dates or intervals in aggregation pipelines.
 
 ## Syntax
 
 ```javascript
 {
-  $dayOfMonth: <dateExpression>
+  $dateSubtract: {
+    startDate: <dateExpression>,
+    unit: "<unit>",
+    amount: <number>,
+    timezone: "<timezone>" // optional
+  }
 }
 ```
 
 ## Parameters
 
-| Parameter              | Description                                                     |
-| ---------------------- | --------------------------------------------------------------- |
-| **`<dateExpression>`** | The date expression from which to extract the day of the month. |
+| Parameter       | Description                                      |
+| --------------- | ------------------------------------------------ |
+| **`startDate`** | The date expression to subtract from.            |
+| **`unit`**      | The time unit to subtract (for example, "day", "hour"). |
+| **`amount`**    | The amount of the time unit to subtract.         |
+| **`timezone`**  | *(Optional)* Timezone for date calculation.      |
 
 ## Examples
 
@@ -137,9 +145,9 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Extract day of the month
+### Example 1: Subtract seven days
 
-This query uses the `$dayOfMonth` operator to extract the day of the month (1–31) from the `lastUpdated` timestamp and isolates the date component of the field for reporting or grouping.
+This query calculates the date one week before the `lastUpdated` field. This query uses `$dateSubtract` to calculate the date exactly seven days before the `storeOpeningDate` timestamp.
 
 ```javascript
 db.stores.aggregate([
@@ -149,7 +157,13 @@ db.stores.aggregate([
   {
     $project: {
       _id: 0,
-      dayOfMonth: { $dayOfMonth: "$lastUpdated" }
+      dateOneWeekAgo: {
+        $dateSubtract: {
+          startDate: "$storeOpeningDate",
+          unit: "day",
+          amount: 7
+        }
+      }
     }
   }
 ])
@@ -160,7 +174,7 @@ This query returns the following result.
 ```json
 [
   {
-    "dayOfMonth": "4"
+    "dateOneWeekAgo": "2024-08-29T11:50:06.549Z"
   }
 ]
 ```

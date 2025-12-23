@@ -1,25 +1,19 @@
 ---
-title: $dateFromString
-description: The $dateDiff operator converts a date/time string to a date object.
+title: $isoWeek
+description: The $isoWeek operator returns the week number of the year in ISO 8601 format, ranging from 1 to 53.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $dateFromString
+# $isoWeek
 
-The `$dateFromString` operator is used to convert a date/time string to a date object. This operation can be useful when dealing with string representations of dates that need to be manipulated or queried as date objects.
+The `$isoWeek` operator returns the week number of the year in ISO 8601 format, ranging from 1 to 53. The operator accepts a date expression that resolves to a Date, Timestamp, or ObjectId. In ISO 8601, weeks start on Monday and the first week of the year is the week that contains the first Thursday of the year.
 
 ## Syntax
 
 ```javascript
 {
-    $dateFromString: {
-        dateString: < string > ,
-        format: < string > ,
-        timezone: < string > ,
-        onError: < expression > ,
-        onNull: < expression >
-    }
+  $isoWeek: <dateExpression>
 }
 ```
 
@@ -27,11 +21,7 @@ The `$dateFromString` operator is used to convert a date/time string to a date o
 
 | Parameter | Description |
 | --- | --- |
-| **`dateString`** | The date/time string to convert to a date object. |
-| **`format`** | (Optional) The date format specification of the `dateString`. |
-| **`timezone`** | (Optional) The timezone to use to format the date. |
-| **`onError`** | (Optional) The value to return if an error occurs while parsing the `dateString`. |
-| **`onNull`** | (Optional) The value to return if the `dateString` is `null` or missing. |
+| **`dateExpression`** | An expression that resolves to a Date, Timestamp, or ObjectId. If the expression resolves to null or is missing, `$isoWeek` returns null. |
 
 ## Examples
 
@@ -147,85 +137,82 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Convert promotional event dates to ISO dates
+### Example 1: Get ISO week number for promotion events
 
-This query constructs full ISO date strings from individual year, month, and day fields using `$concat` and converts them to startDate and endDate using `$dateFromString`. It’s useful when date components are stored separately in documents.
+This query extracts the ISO week number for promotion event start dates.
 
 ```javascript
 db.stores.aggregate([
-  {
-    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
-  },
-  {
-    $unwind: "$promotionEvents"
-  },
+  { $match: {"_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74"} },
+  { $unwind: "$promotionEvents" },
   {
     $project: {
       eventName: "$promotionEvents.eventName",
       startDate: {
-        $dateFromString: {
-          dateString: {
-            $concat: [
-              { $toString: "$promotionEvents.promotionalDates.startDate.Year" },
-              "-",
-              {
-                $cond: {
-                  if: { $lt: ["$promotionEvents.promotionalDates.startDate.Month", 10] },
-                  then: { $concat: ["0", { $toString: "$promotionEvents.promotionalDates.startDate.Month" }] },
-                  else: { $toString: "$promotionEvents.promotionalDates.startDate.Month" }
-                }
-              },
-              "-",
-              {
-                $cond: {
-                  if: { $lt: ["$promotionEvents.promotionalDates.startDate.Day", 10] },
-                  then: { $concat: ["0", { $toString: "$promotionEvents.promotionalDates.startDate.Day" }] },
-                  else: { $toString: "$promotionEvents.promotionalDates.startDate.Day" }
-                }
-              }
-            ]
-          }
-        }
-      },
-      endDate: {
-        $dateFromString: {
-          dateString: {
-            $concat: [
-              { $toString: "$promotionEvents.promotionalDates.endDate.Year" },
-              "-",
-              {
-                $cond: {
-                  if: { $lt: ["$promotionEvents.promotionalDates.endDate.Month", 10] },
-                  then: { $concat: ["0", { $toString: "$promotionEvents.promotionalDates.endDate.Month" }] },
-                  else: { $toString: "$promotionEvents.promotionalDates.endDate.Month" }
-                }
-              },
-              "-",
-              {
-                $cond: {
-                  if: { $lt: ["$promotionEvents.promotionalDates.endDate.Day", 10] },
-                  then: { $concat: ["0", { $toString: "$promotionEvents.promotionalDates.endDate.Day" }] },
-                  else: { $toString: "$promotionEvents.promotionalDates.endDate.Day" }
-                }
-              }
-            ]
-          }
+        $dateFromParts: {
+          year: "$promotionEvents.promotionalDates.startDate.Year",
+          month: "$promotionEvents.promotionalDates.startDate.Month",
+          day: "$promotionEvents.promotionalDates.startDate.Day"
         }
       }
+    }
+  },
+  {
+    $project: {
+      eventName: 1,
+      startDate: 1,
+      isoWeekNumber: { $isoWeek: "$startDate" },
+      year: { $year: "$startDate" }
     }
   }
 ])
 ```
 
-This query returns the following result.
+This query returns the following results:
 
 ```json
 [
   {
-    "_id": "e6410bb3-843d-4fa6-8c70-7472925f6d0a",
+    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
     "eventName": "Massive Markdown Mania",
+    "startDate": "2023-06-29T00:00:00.000Z",
+    "isoWeekNumber": 26,
+    "year": 2023
+  },
+  {
+    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
+    "eventName": "Fantastic Deal Days",
+    "startDate": "2023-09-27T00:00:00.000Z",
+    "isoWeekNumber": 39,
+    "year": 2023
+  },
+  {
+    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
+    "eventName": "Discount Delight Days",
+    "startDate": "2023-12-26T00:00:00.000Z",
+    "isoWeekNumber": 52,
+    "year": 2023
+  },
+  {
+    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
+    "eventName": "Super Sale Spectacular",
+    "startDate": "2024-03-25T00:00:00.000Z",
+    "isoWeekNumber": 13,
+    "year": 2024
+  },
+  {
+    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
+    "eventName": "Grand Deal Days",
+    "startDate": "2024-06-23T00:00:00.000Z",
+    "isoWeekNumber": 25,
+    "year": 2024
+  },
+  {
+    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
+    "eventName": "Major Bargain Bash",
     "startDate": "2024-09-21T00:00:00.000Z",
-    "endDate": "2024-09-29T00:00:00.000Z"
+    "isoWeekNumber": 38,
+    "year": 2024
   }
 ]
 ```

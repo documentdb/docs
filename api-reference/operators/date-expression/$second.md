@@ -1,27 +1,27 @@
 ---
-title: $dayOfYear
-description: The $dayOfYear operator extracts the day of the year from a date.
+title: $second
+description: The $second operator extracts the seconds portion from a date value.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $dayOfYear
+# $second
 
-The `$dayOfYear` operator extracts the day of the year from a date value, where 1 represents January 1. It's useful for grouping or filtering documents based on the day of the year.
+The `$second` operator extracts the seconds portion from a date value, returning a number between 0 and 59. This operator is useful for precise timestamp analysis and time-sensitive operations that require second-level granularity.
 
 ## Syntax
 
 ```javascript
 {
-  $dayOfYear: <dateExpression>
+  $second: <dateExpression>
 }
 ```
 
 ## Parameters
 
-| Parameter              | Description                                                    |
-| ---------------------- | -------------------------------------------------------------- |
-| **`<dateExpression>`** | The date expression from which to extract the day of the year. |
+| Parameter | Description |
+| --- | --- |
+| **`dateExpression`** | An expression that resolves to a Date, a Timestamp, or an ObjectId. If the expression resolves to `null` or is missing, `$second` returns `null`. |
 
 ## Examples
 
@@ -137,19 +137,20 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Extract day of the year
+### Example 1: Extract seconds from store opening date
 
-This query uses the `$dayOfYear` operator to extract the ordinal day of the year (1–366) from the `lastUpdated` timestamp.
+This query extracts the seconds portion from the store opening date for precise timing analysis.
 
 ```javascript
 db.stores.aggregate([
-  {
-    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
-  },
+  { $match: {_id: "905d1939-e03a-413e-a9c4-221f74055aac"} },
   {
     $project: {
-      _id: 0,
-      dayOfYear: { $dayOfYear: "$lastUpdated" }
+      name: 1,
+      storeOpeningDate: 1,
+      openingSecond: {
+        $second: "$storeOpeningDate"
+      }
     }
   }
 ])
@@ -160,11 +161,10 @@ This query returns the following result.
 ```json
 [
   {
-    "dayOfYear": 339
+    "_id": "905d1939-e03a-413e-a9c4-221f74055aac",
+    "name": "Trey Research | Home Office Depot - Lake Freeda",
+    "storeOpeningDate": ISODate("2024-12-30T22:55:25.779Z"),
+    "openingSecond": 25
   }
 ]
-```
-
-```json
-{ "dayOfYear": 339 }
 ```

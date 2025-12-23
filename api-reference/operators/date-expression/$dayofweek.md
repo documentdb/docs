@@ -1,27 +1,27 @@
 ---
-title: $minute
-description: The $minute operator extracts the minute portion from a date value.
+title: $dayOfWeek
+description: The $dayOfWeek operator extracts the day of the week from a date.
 type: operators
-category: date
+category: date-expression
 ---
 
-# $minute
+# $dayOfWeek
 
-The `$minute` operator extracts the minute portion from a date value, returning a number between 0 and 59. This operator is commonly used for time-based analysis and scheduling operations.
+The `$dayOfWeek` operator extracts the day of the week from a date value, where 1 represents Sunday and 7 represents Saturday. It's useful for grouping or filtering documents based on the day of the week.
 
 ## Syntax
 
 ```javascript
 {
-  $minute: <dateExpression>
+  $dayOfWeek: <dateExpression>
 }
 ```
 
 ## Parameters
 
-| Parameter | Description |
-| --- | --- |
-| **`dateExpression`** | An expression that resolves to a Date, a Timestamp, or an ObjectId. If the expression resolves to `null` or is missing, `$minute` returns `null`. |
+| Parameter              | Description                                                    |
+| ---------------------- | -------------------------------------------------------------- |
+| **`<dateExpression>`** | The date expression from which to extract the day of the week. |
 
 ## Examples
 
@@ -137,20 +137,19 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Extract minutes from store opening date
+### Example 1: Extract day of the week
 
-This query extracts the minute portion from the store opening date to analyze opening time patterns.
+This query uses the `$dayOfWeek` operator to extract the day of the week from the `lastUpdated` timestamp. The returned value ranges from 1 (Sunday) to 7 (Saturday), based on ISO-8601 ordering.
 
 ```javascript
 db.stores.aggregate([
-  { $match: {_id: "905d1939-e03a-413e-a9c4-221f74055aac"} },
+  {
+    $match: { _id: "e6410bb3-843d-4fa6-8c70-7472925f6d0a" }
+  },
   {
     $project: {
-      name: 1,
-      storeOpeningDate: 1,
-      openingMinute: {
-        $minute: "$storeOpeningDate"
-      }
+      _id: 0,
+      dayOfWeek: { $dayOfWeek: "$lastUpdated" }
     }
   }
 ])
@@ -161,10 +160,7 @@ This query returns the following result.
 ```json
 [
   {
-    "_id": "905d1939-e03a-413e-a9c4-221f74055aac",
-    "name": "Trey Research | Home Office Depot - Lake Freeda",
-    "storeOpeningDate": ISODate("2024-09-26T22:55:25.779Z"),
-    "openingMinute": 55
+    "dayOfWeek": "4"
   }
 ]
 ```
