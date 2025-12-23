@@ -2,7 +2,7 @@
 title: $let
 description: The $let operator allows defining variables for use in a specified expression, enabling complex calculations and reducing code repetition.
 type: operators
-category: variable
+category: variable-expression
 ---
 
 # $let
