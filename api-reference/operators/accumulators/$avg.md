@@ -1,6 +1,6 @@
 ---
 title: $avg
-description: Computes the average of numeric values for documents in a group, bucket, or window.
+description: The $avg operator computes the average of numeric values for documents in a group, bucket, or window.
 type: operators
 category: accumulators
 ---

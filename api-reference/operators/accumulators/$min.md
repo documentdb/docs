@@ -1,6 +1,6 @@
 ---
 title: $min
-description: Retrieves the minimum value for a specified field
+description: The $min operator retrieves the minimum value for a specified field
 type: operators
 category: accumulators
 ---

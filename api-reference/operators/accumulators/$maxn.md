@@ -1,6 +1,6 @@
 ---
 title: $maxN
-description: Retrieves the top N values based on a specified filtering criteria
+description: The $maxN opertor retrieves the top N values based on a specified filtering criteria
 type: operators
 category: accumulators
 ---

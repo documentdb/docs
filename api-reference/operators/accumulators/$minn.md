@@ -1,6 +1,6 @@
 ---
 title: $minN
-description: Retrieves the bottom N values based on a specified filtering criteria
+description: The $minN operator retrieves the bottom N values based on a specified filtering criteria
 type: operators
 category: accumulators
 ---
