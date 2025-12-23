@@ -13,7 +13,7 @@ The `count` command is used to count the number of documents in a collection tha
 
 The syntax for the `count` command is as follows:
 
-```
+```javascript
 db.collection.count(query, options)
 ```
 
@@ -34,8 +34,7 @@ db.stores.count({})
 
 #### Sample output
 
-```javascript
-[mongos] StoreData> db.stores.countDocuments({})
+```json
 60570
 ```
 
@@ -49,8 +48,7 @@ db.stores.count({ "_id": "e5767a9f-cd95-439c-9ec4-7ddc13d22926" })
 
 #### Sample output
 
-```javascript
-[mongos] StoreData> db.stores.count({ "_id": "e5767a9f-cd95-439c-9ec4-7ddc13d22926" })
+```json
 1
 ```
 
@@ -64,8 +62,7 @@ db.stores.count({ "promotionEvents.eventName": "Incredible Discount Days" })
 
 #### Sample output
 
-```javascript
-[mongos] StoreData> db.stores.count({ "promotionEvents.eventName": "Incredible Discount Days" })
+```json
 2156
 ```
 
@@ -79,7 +76,6 @@ db.stores.count({ "location.lat": -2.4111, "location.lon": 72.1041 })
 
 #### Sample output
 
-```javascript
-[mongos] StoreData> db.stores.count({ "location.lat": -2.4111, "location.lon": 72.1041 })
+```json
 1
 ```
