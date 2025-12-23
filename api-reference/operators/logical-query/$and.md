@@ -1,19 +1,19 @@
 ---
-title: $or
-description: The $or operator joins query clauses with a logical OR and returns documents that match at least one of the specified conditions.
+title: $and
+description: The $and operator joins multiple query clauses and returns documents that match all specified conditions.
 type: operators
-category: logical
+category: logical-query
 ---
 
-# $or
+# $and
 
-The `$or` operator performs a logical OR operation on an array of expressions and retrieves documents that satisfy at least one of the specified conditions.
+The `$and` operator performs a logical AND operation on an array of expressions and retrieves documents that satisfy all the expressions.
 
 ## Syntax
 
 ```javascript
 {
-    $or: [{
+    $and: [{
         < expression1 >
     }, {
         < expression2 >
@@ -27,7 +27,7 @@ The `$or` operator performs a logical OR operation on an array of expressions an
 
 | Parameter | Description |
 |-----------|-------------|
-| `expression` | An array of expressions, where at least one must be true for a document to be included |
+| `expression` | An array of expressions that must all be true for a document to be included in the results |
 
 ## Examples
 
@@ -143,55 +143,67 @@ Consider this sample document from the stores collection.
 }
 ```
 
-### Example 1: Use OR operation as logical-query
+### Example 1: Use AND operator as logical-query
 
-This query retrieves stores with more than 15 full-time staff or more than 20 part-time staff, run a query using the $or operator on both the conditions. Then, project only the name and staff fields from the stores in the result set.
+This query filters for stores where the number of full-time employees is greater than 10 and part-time employees is less than 15 using the `$and` operator. It projects only the `name` and `staff` fields and limits the result to three records.
 
 ```javascript
-db.stores.find(
-  {
-    $or: [
-      { "staff.employeeCount.fullTime": { $gt: 15 } },
-      { "staff.employeeCount.partTime": { $gt: 20 } }
-    ]
-  },
-  {
+db.stores.find({
+    $and: [{
+        "staff.employeeCount.fullTime": {
+            $gt: 10
+        }
+    }, {
+        "staff.employeeCount.partTime": {
+            $lt: 15
+        }
+    }]
+}, {
     "name": 1,
     "staff": 1
-  }
-).limit(2)
+}).limit(3)
 ```
 
-The first two results returned by this query are:
+The first three results returned by this query are:
 
 ```json
 [
-  {
-    "_id": "dda2a7d2-6984-40cc-bbea-4cbfbc06d8a3",
-    "name": "Contoso, Ltd. | Home Improvement Closet - Jaskolskiview",
-    "staff": {
-      "employeeCount": {
-        "fullTime": 16,
-        "partTime": 8
-      }
+    {
+        "_id": "e60c807b-d31c-4903-befb-5d608f260ba3",
+        "name": "Wide World Importers | Appliance Emporium - Craigfort",
+        "staff": {
+            "totalStaff": {
+                "fullTime": 11,
+                "partTime": 8
+            }
+        }
+    },
+    {
+        "_id": "70032165-fded-47b4-84a3-8d9c18a4d1e7",
+        "name": "Northwind Traders | Picture Frame Bazaar - Lake Joesph",
+        "staff": {
+            "totalStaff": {
+                "fullTime": 14,
+                "partTime": 0
+            }
+        }
+    },
+    {
+        "_id": "dda2a7d2-6984-40cc-bbea-4cbfbc06d8a3",
+        "name": "Contoso, Ltd. | Home Improvement Closet - Jaskolskiview",
+        "staff": {
+            "totalStaff": {
+                "fullTime": 16,
+                "partTime": 8
+            }
+        }
     }
-  },
-  {
-    "_id": "44fdb9b9-df83-4492-8f71-b6ef648aa312",
-    "name": "Fourth Coffee | Storage Solution Gallery - Port Camilla",
-    "staff": {
-      "employeeCount": {
-        "fullTime": 17,
-        "partTime": 15
-      }
-    }
-  }
 ]
 ```
 
-### Example 2: Use OR operator as boolean-expression to identify stores with either high sales or large staff
+### Example 2: Use AND operator as boolean-expression to find stores with high sales and sufficient staff
 
-This query retrieves stores that have either total sales greater than 50,000 or more than 25 total staff members.
+This query finds stores that have both total sales greater than 100,000 and more than 30 total staff members.
 
 ```javascript
 db.stores.aggregate([
@@ -199,57 +211,36 @@ db.stores.aggregate([
     $project: {
       name: 1,
       totalSales: "$sales.totalSales",
-      totalStaff: { 
-        $add: ["$staff.employeeCount.fullTime", "$staff.employeeCount.partTime"] 
+      totalStaff: {
+        $add: ["$staff.employeeCount.fullTime", "$staff.employeeCount.partTime"]
       },
-      qualifiesForProgram: {
-        $or: [
-          { $gt: ["$sales.totalSales", 50000] },
-          { $gt: [{ $add: ["$staff.employeeCount.fullTime", "$staff.employeeCount.partTime"] }, 25] }
+      meetsHighPerformanceCriteria: {
+        $and: [
+          { $gt: ["$sales.totalSales", 100000] },
+          { $gt: [{ $add: ["$staff.employeeCount.fullTime", "$staff.employeeCount.partTime"] }, 30] }
         ]
       }
     }
   },
-  { $limit: 4 }
+  { $limit: 2 }
 ])
 ```
 
-The first four results returned by this query are:
+The first two results returned by this query are:
 
 ```json
 [
-  {
+ {
     "_id": "905d1939-e03a-413e-a9c4-221f74055aac",
     "name": "Trey Research | Home Office Depot - Lake Freeda",
     "totalStaff": 31,
-    "qualifiesForProgram": true
+    "meetsHighPerformanceCriteria": false
   },
   {
     "_id": "a715ab0f-4c6e-4e9d-a812-f2fab11ce0b6",
     "name": "Lakeshore Retail | Holiday Supply Hub - Marvinfort",
     "totalStaff": 27,
-    "qualifiesForProgram": true
-  },
-  {
-    "_id": "923d2228-6a28-4856-ac9d-77c39eaf1800",
-    "name": "Lakeshore Retail | Home Decor Hub - Franciscoton",
-    "totalStaff": 13,
-    "qualifiesForProgram": false
-  },
-  {
-    "_id": "7e53ca0f-6e24-4177-966c-fe62a11e9af5",
-    "name": "Contoso, Ltd. | Office Supply Deals - South Shana",
-    "totalStaff": 2,
-    "qualifiesForProgram": false
+    "meetsHighPerformanceCriteria": false
   }
 ]
 ```
-
-## Performance Considerations
-
-- Review the suggestions for finding better performance.
-  - Each condition in the `$or` array is evaluated independently
-  - Use indexes when possible for better performance
-  - Consider the order of conditions for optimal execution
-  - Use `$in` instead of `$or` for multiple equality checks on the same field
-  - Keep the number of `$or` conditions reasonable
