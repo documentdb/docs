@@ -344,7 +344,6 @@ The VS Code extension is particularly useful for migrating from MongoDB to Docum
 
 ## Next Steps
 
-- Explore [MongoDB Migration Guide](mongodb-migration-guide.md) for detailed migration steps
-- Learn about [DocumentDB Features](../postgres-api/index.md) for advanced capabilities
+- Learn about [DocumentDB Features]([../postgres-api/index.md](https://documentdb.io/docs/reference)) for advanced capabilities
 - Join our [Discord community](https://discord.gg/vH7bYu524D) for support and discussions
 - Report issues and contribute on [GitHub](https://github.com/documentdb/documentdb)
