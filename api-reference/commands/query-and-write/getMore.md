@@ -7,7 +7,7 @@ category: query-and-write
 
 # getMore
 
-The `getMore` command is used to retrieve extra batches of documents from an existing cursor. This command is useful when dealing with large datasets that can't be fetched in a single query due to size limitations. The command allows clients to paginate through the results in manageable chunks with commands that return a cursor. For example, [find](./find) and [aggregate](../aggregation/aggregate), to return subsequent batches of documents currently pointed to by the cursor.
+The `getMore` command is used to retrieve extra batches of documents from an existing cursor. This command is useful when dealing with large datasets that can't be fetched in a single query due to size limitations. The command allows clients to paginate through the results in manageable chunks with commands that return a cursor. For example, [find](./find.md) and [aggregate](../aggregation/aggregate.md), to return subsequent batches of documents currently pointed to by the cursor.
 
 ## Syntax
 
