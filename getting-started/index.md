@@ -56,23 +56,16 @@ DocumentDB consists of two primary components:
 Choose the getting started guide that best fits your needs:
 
 ### Quick Start Guides
-- [VS Code Extension Quick Start](vscode-quickstart.md) - Recommended for developers new to DocumentDB
+- [VS Code Extension Quick Start](https://documentdb.io/docs/getting-started/vscode-quickstart) - Recommended for developers new to DocumentDB
 - [MongoDB Shell Quick Start](mongo-shell-quickstart.md) - Ideal for MongoDB users
-- [VS Code Extension Guide](vscode-extension-guide.md) - Comprehensive guide to the VS Code extension
-
-### Migration Guides
-- [MongoDB to DocumentDB Migration](mongodb-migration.md) - Migrate from MongoDB to DocumentDB
+- [VS Code Extension Guide](https://documentdb.io/docs/getting-started/vscode-extension-guide) - Comprehensive guide to the VS Code extension
 
 ### Language-Specific Guides
-- [Python Setup Guide](python-setup.md) - Using DocumentDB with Python applications
-- [Node.js Setup Guide](nodejs-setup.md) - Using DocumentDB with Node.js applications
+- [Python Setup Guide](https://documentdb.io/docs/getting-started/python-setup) - Using DocumentDB with Python applications
+- [Node.js Setup Guide](https://documentdb.io/docs/getting-started/nodejs-setup) - Using DocumentDB with Node.js applications
 
 ### Deployment Options
-- [Pre-built Packages](prebuilt-packages.md) - Download and install ready-to-use packages
-- [Multi-cloud with Azure](azure-setup.md) - Deploy on Azure with Cosmos DB integration
-- [Multi-cloud with GCP](gcp-setup.md) - Deploy on Google Cloud Platform
-- [Multi-cloud with AWS DocumentDB](aws-setup.md) - Deploy alongside AWS services
-- [Using with YugabyteDB](yugabyte-setup.md) - Combine with distributed SQL capabilities
+- [Pre-built Packages](https://documentdb.io/docs/getting-started/prebuilt-packages) - Download and install ready-to-use packages
 
 ## Community and Support
 
@@ -88,6 +81,5 @@ Choose the getting started guide that best fits your needs:
 ## Next Steps
 
 After choosing your preferred getting started path:
-- Explore our [API Reference](../api-reference/index.md) for detailed documentation
-- Learn about the [Architecture](../architecture/index.md) for deep technical insights
+- Explore our [API Reference](https://documentdb.io/docs/reference) for detailed documentation
 - Join our community to contribute and get support 
