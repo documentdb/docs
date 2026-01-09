@@ -57,7 +57,6 @@ Choose the getting started guide that best fits your needs:
 
 ### Quick Start Guides
 - [VS Code Extension Quick Start](https://documentdb.io/docs/getting-started/vscode-quickstart) - Recommended for developers new to DocumentDB
-- [MongoDB Shell Quick Start](mongo-shell-quickstart.md) - Ideal for MongoDB users
 - [VS Code Extension Guide](https://documentdb.io/docs/getting-started/vscode-extension-guide) - Comprehensive guide to the VS Code extension
 
 ### Language-Specific Guides
