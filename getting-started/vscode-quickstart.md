@@ -95,6 +95,5 @@ Get started with DocumentDB using the Visual Studio Code extension for a seamles
 
 ## Next Steps
 
-- Explore advanced querying capabilities in the [API Reference](../api-reference/index.md)
-- Learn about indexing strategies in the [Architecture](../architecture/index.md) section
-- Connect your application using one of our [Language Guides](python-setup.md) 
+- Explore advanced querying capabilities in the [API Reference](https://documentdb.io/docs/reference)
+- Connect your application using the [Python Setup for DocumentDB]([python-setup.md](https://documentdb.io/docs/getting-started/python-setup)) 
