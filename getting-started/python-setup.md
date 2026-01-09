@@ -11,7 +11,7 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
 
 - Python 3.7+
 - pip package manager
-- DocumentDB installed and running (see [Pre-built Packages](prebuilt-packages.md))
+- DocumentDB installed and running (see [Pre-built Packages](https://documentdb.io/docs/getting-started/prebuilt-packages))
 - Docker (if DocumentDB is not set up yet)
 - Git installed (for cloning the repository)
 
@@ -280,6 +280,5 @@ if __name__ == '__main__':
 
 ## Next Steps
 
-- Explore advanced features in the [API Reference](../api-reference/index.md)
-- Learn about indexing strategies in the [Architecture](../architecture/index.md)
+- Explore advanced features in the [API Reference](https://documentdb.io/docs/reference)
 - Check out the [MongoDB Shell Guide](mongo-shell-quickstart.md) for additional query examples 
