@@ -10,13 +10,3 @@
   link: python-setup.md
 - title: Pre-built Packages
   link: prebuilt-packages.md
-- title: AWS Setup
-  link: aws-setup.md
-- title: Azure Setup
-  link: azure-setup.md
-- title: GCP Setup
-  link: gcp-setup.md
-- title: YugabyteDB Setup
-  link: yugabyte-setup.md
-- title: MongoDB Migration Guide
-  link: mongodb-migration.md
