@@ -8,5 +8,7 @@
   link: nodejs-setup.md
 - title: Python Setup Guide
   link: python-setup.md
+- title: Mongo Shell Quick Start
+  link: mongo-shell-quickstart.md
 - title: Pre-built Packages
   link: prebuilt-packages.md
