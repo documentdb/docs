@@ -75,13 +75,13 @@ Use the command palette:
    > **Note:** We're using port `10260` to avoid conflicts with other local database services. You can use port `27017` (the standard MongoDB port) if you prefer.
 
 2. **Connect to DocumentDB using the VS Code extension:**
-   - Open VS Code and click the DocumentDB icon in the sidebar
-   - Click "Add New Connection"
-   - Select "Connection String" and paste:
-     ```
-     mongodb://admin:password123@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true&authMechanism=SCRAM-SHA-256
-     ```
-   - Click "Enter" when prompted for your username and password
+   - Locate and select the DocumentDB icon in the primary VS Code sidebar on the left-hand side.
+   - Add a new connection to your DocumentDB:
+     - In the DocumentDB Connections area, locate and expand the **DocumentDB Local** node.
+     - Select the **New Local Connection** option.
+     - Confirm the port (default value `10260`), username, password, and choose the **Disable TLS/SSL** option.
+     - **Note:** TLS/SSL can be enabled, but this walkthrough skips those steps for simplicity.
+     - A new DocumentDB Local entry will be added and listed in your DocumentDB Connections area.
 
 ## Core Features
 
