@@ -74,6 +74,7 @@ The following table summarizes the available Docker commands for configuring the
 | Override default key with key in key file. | `--key-file [value]` | Overrides `KEY_FILE` environment variable. | STRING | NA | You need to mount this file into the container. For example, to set `/mykey.key`, add this option to `docker run` command: `--mount type=bind,source=./mykey.key,target=/mykey.key` |
 | Enable telemetry data. | `--enable-telemetry` | Overrides `ENABLE_TELEMETRY` environment variable | `true`, `false` | `false` | Enable telemetry data sent to the usage collector (Azure Application Insights). |
 | Specify log verbosity. | `--log-level [value]` | Overrides `LOG_LEVEL` environment variable. | `quiet`, `error`, `warn`, `info`, `debug`, `trace` | `info` | The verbosity of logs that will be emitted. |
+| Disable Extended RUM for indexes. | `--disable-extended-rum` | Overrides `DISABLE_EXTENDED_RUM` environment variable | `true`, `false` | `false` | By default, Extended RUM is enabled. Set this flag to use the standard RUM index access method instead. See [Extended RUM](../api-reference/commands/indexing/extended-rum.md) for details. |
 
 
 ## Feature support
@@ -81,14 +82,14 @@ The following table summarizes the available Docker commands for configuring the
 Please refer to the [documentdb](https://documentdb.io/docs/) documentation for currently supported features.
 
 
-## Installing certificates 
+## Installing certificates
 
 By default, DocumentDB Local generates new self-signed certificates each time the container starts. To prevent certificate errors, install them on your local machine. The example below shows how to use this setup with `mongosh`.
 
 ### Get certificate
 
 In a `bash` window, run the following to copy the certificate from the container to the local
-host: 
+host:
 
 ```bash
 docker cp docdb:/home/documentdb/gateway/pg_documentdb_gw/cert.pem ~/documentdb-cert.pem
