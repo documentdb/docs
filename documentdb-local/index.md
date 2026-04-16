@@ -27,6 +27,8 @@ To run the container, use `docker run`. Afterwards, use `docker ps` to validate 
 ```bash
 docker run -dt -p 10260:10260 --name docdb ghcr.io/documentdb/documentdb/documentdb-local:latest --username demo --password test
 
+# Optional: require TLS for all client connections
+# docker run -dt -p 10260:10260 --name docdb ghcr.io/documentdb/documentdb/documentdb-local:latest --username demo --password test --enable-tls-enforcement
 
 docker ps
 ```
@@ -36,15 +38,15 @@ CONTAINER ID   IMAGE                                                            
 5aff734a3591   ghcr.io/documentdb/documentdb/documentdb-local:latest                             "/bin/bash -c '/home…"   5 seconds ago   Up 4 seconds   0.0.0.0:10260->10260/tcp, :::10260->10260/tcp                                                              optimistic_blackwell
 ```
 
-> The DocumentDB gateway endpoint is available on port `10260` by default. To access this with `mongosh`, run:
+> The DocumentDB gateway endpoint is available on port `10260` by default. By default, `documentdb-local` accepts both plain and TLS connections. To access it with `mongosh`, run:
 
 ```bash
-mongosh "mongodb://demo:test@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true"
+mongosh "mongodb://demo:test@localhost:10260/"
 ```
 
 ```output
 Current Mongosh Log ID:	690cdcb84e2e610f0f48e609
-Connecting to:		mongodb://<credentials>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.5.1
+Connecting to:		mongodb://<credentials>@localhost:10260/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.5.1
 Using MongoDB:		7.0.0
 Using Mongosh:		2.5.1
 mongosh 2.5.9 is available for download: https://www.mongodb.com/try/download/shell
@@ -52,6 +54,12 @@ mongosh 2.5.9 is available for download: https://www.mongodb.com/try/download/sh
 For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
 
 [direct: mongos] test>
+```
+
+If you start the container with `--enable-tls-enforcement`, use:
+
+```bash
+mongosh "mongodb://demo:test@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true"
 ```
 
 ## Docker commands
@@ -74,6 +82,7 @@ The following table summarizes the available Docker commands for configuring the
 | Override default key with key in key file. | `--key-file [value]` | Overrides `KEY_FILE` environment variable. | STRING | NA | You need to mount this file into the container. For example, to set `/mykey.key`, add this option to `docker run` command: `--mount type=bind,source=./mykey.key,target=/mykey.key` |
 | Enable telemetry data. | `--enable-telemetry` | Overrides `ENABLE_TELEMETRY` environment variable | `true`, `false` | `false` | Enable telemetry data sent to the usage collector (Azure Application Insights). |
 | Specify log verbosity. | `--log-level [value]` | Overrides `LOG_LEVEL` environment variable. | `quiet`, `error`, `warn`, `info`, `debug`, `trace` | `info` | The verbosity of logs that will be emitted. |
+| Require TLS for all client connections. | `--enable-tls-enforcement` | Overrides `ENABLE_TLS_ENFORCEMENT` environment variable. | `true`, `false` | `false` | By default, DocumentDB Local accepts both plain and TLS connections. Set this option to reject plain connections and require TLS for every client connection. |
 
 
 ## Feature support
@@ -83,7 +92,7 @@ Please refer to the [documentdb](https://documentdb.io/docs/) documentation for 
 
 ## Installing certificates 
 
-By default, DocumentDB Local generates new self-signed certificates each time the container starts. To prevent certificate errors, install them on your local machine. The example below shows how to use this setup with `mongosh`.
+DocumentDB Local generates new self-signed certificates each time the container starts. If you want to validate the TLS certificate instead of using `tlsAllowInvalidCertificates=true`, install it on your local machine. The example below shows how to use this setup with `mongosh`.
 
 ### Get certificate
 
