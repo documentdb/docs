@@ -1,55 +1,63 @@
 ---
 title: Pre-built Packages
-description: Download and install DocumentDB using our pre-built packages for various platforms.
+description: Download and install DocumentDB using the pre-built Linux packages and container image published with each release.
 ---
 
 # Pre-built Packages
 
-Download and install DocumentDB using our pre-built packages for various platforms.
+Download and install DocumentDB using the pre-built packages and container image published with each release.
 
-> **Note:** During the transition to the Linux Foundation, some packages and Docker images may still be hosted on Microsoft infrastructure. These will be migrated to the new DocumentDB organization as the transition completes.
+## Latest Release
 
-## Available Versions
+The current release is [`v0.110-0`](https://github.com/documentdb/documentdb/releases/tag/v0.110-0), published on 2026-04-22.
 
-### Latest Stable Release (v1.0.0)
+Compared to `v0.109-0`, this release is primarily a packaging release. It advances the extension version to `0.110-0`, includes the generated upgrade scripts for supported extensions, and adds a workflow-only fix for gateway image signing verification during release builds.
 
-| Platform | Package | SHA256 | Size |
-|----------|---------|--------|------|
-| Linux (x86_64) | [.deb](https://github.com/documentdb/documentdb/releases/download/v1.0.0/documentdb-1.0.0-linux-x86_64.deb) [.rpm](https://github.com/documentdb/documentdb/releases/download/v1.0.0/documentdb-1.0.0-linux-x86_64.rpm) | `3a2d5fe7d1bba8c9e4f2a1b6c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9` | 45.2 MB |
-| macOS (Intel) | [.dmg](https://github.com/documentdb/documentdb/releases/download/v1.0.0/documentdb-1.0.0-darwin-x86_64.dmg) | `8b4c2e3f9acd1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9` | 42.8 MB |
-| macOS (Apple Silicon) | [.dmg](https://github.com/documentdb/documentdb/releases/download/v1.0.0/documentdb-1.0.0-darwin-arm64.dmg) | `1f9e4d2c7b3a8c9e4f2a1b6c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9` | 41.9 MB |
-| Windows | [.msi](https://github.com/documentdb/documentdb/releases/download/v1.0.0/documentdb-1.0.0-windows-x86_64.msi) [.zip](https://github.com/documentdb/documentdb/releases/download/v1.0.0/documentdb-1.0.0-windows-x86_64.zip) | `5c7b9f8e2d4a1b3c5d7e9f2a4b6c8d0e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c4d6e8` | 48.6 MB |
+> `v0.110-0` publishes Linux packages only. macOS and Windows installers are not part of this release.
 
-### Development Release (v1.1.0-beta)
+## Package Matrix
 
-| Version | Release Date | Linux (x86_64) | macOS (Intel) | macOS (ARM) | Windows | Docker |
-|---------|-------------|----------------|---------------|-------------|---------|---------|
-| v1.1.0-beta.3 | 2024-04-01 | [deb](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.3/documentdb-1.1.0-beta.3-linux-x86_64.deb) [rpm](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.3/documentdb-1.1.0-beta.3-linux-x86_64.rpm) | [dmg](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.3/documentdb-1.1.0-beta.3-darwin-x86_64.dmg) | [dmg](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.3/documentdb-1.1.0-beta.3-darwin-arm64.dmg) | [msi](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.3/documentdb-1.1.0-beta.3-windows-x86_64.msi) | `v1.1.0-beta.3` |
-| v1.1.0-beta.2 | 2024-03-15 | [deb](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.2/documentdb-1.1.0-beta.2-linux-x86_64.deb) [rpm](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.2/documentdb-1.1.0-beta.2-linux-x86_64.rpm) | [dmg](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.2/documentdb-1.1.0-beta.2-darwin-x86_64.dmg) | [dmg](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.2/documentdb-1.1.0-beta.2-darwin-arm64.dmg) | [msi](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.2/documentdb-1.1.0-beta.2-windows-x86_64.msi) | `v1.1.0-beta.2` |
-| v1.1.0-beta.1 | 2024-02-28 | [deb](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.1/documentdb-1.1.0-beta.1-linux-x86_64.deb) [rpm](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.1/documentdb-1.1.0-beta.1-linux-x86_64.rpm) | [dmg](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.1/documentdb-1.1.0-beta.1-darwin-x86_64.dmg) | [dmg](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.1/documentdb-1.1.0-beta.1-darwin-arm64.dmg) | [msi](https://github.com/documentdb/documentdb/releases/download/v1.1.0-beta.1/documentdb-1.1.0-beta.1-windows-x86_64.msi) | `v1.1.0-beta.1` |
+| Package family | Supported distributions | PostgreSQL versions | Architectures | Downloads |
+| --- | --- | --- | --- | --- |
+| DEB | Debian 11, Debian 12, Debian 13, Ubuntu 22.04, Ubuntu 24.04 | 16, 17, 18 | amd64, arm64 | [v0.110-0 release assets](https://github.com/documentdb/documentdb/releases/tag/v0.110-0) |
+| RPM | RHEL 8, RHEL 9 | 16, 17, 18 | x86_64, aarch64 | [v0.110-0 release assets](https://github.com/documentdb/documentdb/releases/tag/v0.110-0) |
+
+Choose the asset whose filename matches your Linux distribution, PostgreSQL major version, and CPU architecture. For example:
+
+- `ubuntu24.04-postgresql-17-documentdb_0.110-0_amd64.deb`
+- `rhel9-postgresql17-documentdb-0.110.0-1.el9.x86_64.rpm`
+
+## Install a DEB Package
+
+```bash
+curl -LO https://github.com/documentdb/documentdb/releases/download/v0.110-0/ubuntu24.04-postgresql-17-documentdb_0.110-0_amd64.deb
+sudo apt install ./ubuntu24.04-postgresql-17-documentdb_0.110-0_amd64.deb
+```
+
+## Install an RPM Package
+
+```bash
+curl -LO https://github.com/documentdb/documentdb/releases/download/v0.110-0/rhel9-postgresql17-documentdb-0.110.0-1.el9.x86_64.rpm
+sudo dnf install ./rhel9-postgresql17-documentdb-0.110.0-1.el9.x86_64.rpm
+```
 
 ## Docker Images
 
-1. Official images
-   ```bash
-   # Pull latest stable version
-   docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
+Use the official `documentdb-local` image from GHCR:
 
-   # Tag the image for convenience
-   docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
+```bash
+# Pull the published image
+docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
 
-   # Run the container with your chosen username and password
-   docker run -dt -p 10260:10260 --name documentdb-container ghcr.io/documentdb/documentdb/documentdb-local:latest --username <YOUR_USERNAME> --password <YOUR_PASSWORD>
-   ```
-   > **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. You must set these when creating the container for authentication to work.
-   > 
-   > **Port Note:** Port `10260` is used by default in these instructions to avoid conflicts with other local database services. You can use port `27017` (the standard MongoDB port) or any other available port if you prefer. If you do, be sure to update the port number in both your `docker run` command and your connection string accordingly.
+# Tag the image for convenience
+docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
 
-2. Version-specific tags
-   ```bash
-   # Pull specific version
-   docker pull ghcr.io/microsoft/documentdb/documentdb-local:1.0.0
-   
-   # Run development version
-   docker pull ghcr.io/microsoft/documentdb/documentdb-local:1.1.0-beta.3
-   ```
+# Run the container with your chosen username and password
+docker run -dt -p 10260:10260 --name documentdb-container ghcr.io/documentdb/documentdb/documentdb-local:latest --username <YOUR_USERNAME> --password <YOUR_PASSWORD>
+```
+
+> **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. You must set these when creating the container for authentication to work.
+>
+> **Port Note:** Port `10260` is used by default in these instructions to avoid conflicts with other local database services. You can use port `27017` (the standard MongoDB port) or any other available port if you prefer. If you do, be sure to update the port number in both your `docker run` command and your connection string accordingly.
+
+> For `v0.110-0`, the GHCR repository resolves the `latest` tag for `documentdb-local`. Use a versioned image tag only if that tag is published in the registry for the release you want to run.
