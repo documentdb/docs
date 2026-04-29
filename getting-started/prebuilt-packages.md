@@ -11,7 +11,7 @@ Download and install DocumentDB using the pre-built packages and container image
 
 The current release is [`v0.110-0`](https://github.com/documentdb/documentdb/releases/tag/v0.110-0), published on 2026-04-22.
 
-Compared to `v0.109-0`, this release is primarily a packaging release. It advances the extension version to `0.110-0`, includes the generated upgrade scripts for supported extensions, and adds a workflow-only fix for gateway image signing verification during release builds.
+This release publishes pre-built Linux packages for PostgreSQL 16, 17, and 18, plus the `documentdb-local` container image. See the [v0.110-0 release notes](../release-notes/v0.110-0.md) for the full list of features, performance improvements, and bug fixes.
 
 > `v0.110-0` publishes Linux packages only. macOS and Windows installers are not part of this release.
 
@@ -56,8 +56,23 @@ docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
 docker run -dt -p 10260:10260 --name documentdb-container ghcr.io/documentdb/documentdb/documentdb-local:latest --username <YOUR_USERNAME> --password <YOUR_PASSWORD>
 ```
 
-> **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. You must set these when creating the container for authentication to work.
+> **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. If you omit them, `documentdb-local` uses its built-in defaults.
 >
 > **Port Note:** Port `10260` is used by default in these instructions to avoid conflicts with other local database services. You can use port `27017` (the standard MongoDB port) or any other available port if you prefer. If you do, be sure to update the port number in both your `docker run` command and your connection string accordingly.
 
-> For `v0.110-0`, the GHCR repository resolves the `latest` tag for `documentdb-local`. Use a versioned image tag only if that tag is published in the registry for the release you want to run.
+### Available image tags for v0.110-0
+
+In addition to the rolling `:latest` tag, `v0.110-0` publishes one image per
+PostgreSQL major version. Each tag is a multi-arch manifest covering
+`linux/amd64` and `linux/arm64`:
+
+| Tag | PostgreSQL version |
+| --- | --- |
+| `ghcr.io/documentdb/documentdb/documentdb-local:pg15-0.110.0` | 15 |
+| `ghcr.io/documentdb/documentdb/documentdb-local:pg16-0.110.0` | 16 |
+| `ghcr.io/documentdb/documentdb/documentdb-local:pg17-0.110.0` | 17 |
+| `ghcr.io/documentdb/documentdb/documentdb-local:latest` | Same manifest as `pg17-0.110.0` |
+
+Pin to a `pgNN-0.110.0` tag when you need a deterministic image for
+reproducible builds, CI, or production. Use `:latest` for the easiest
+local-development experience.
