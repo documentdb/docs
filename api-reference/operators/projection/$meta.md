@@ -30,7 +30,7 @@ db.collection.find({
 | Parameter | Description |
 | --- | --- |
 | **`field`** | The name of the field in the output documents where the metadata gets included. |
-| **`metaDataKeyword`** | The type of metadata to include common keywords like `textScore` for text search scores. |
+| **`metaDataKeyword`** | The type of metadata to include. DocumentDB `v0.110-0` supports `textScore`, `searchScore`, and `vectorSearchScore`. |
 
 ## Examples
 
@@ -153,6 +153,6 @@ The first two results returned by this query are:
 ]
 ```
 
-## Limitation
+## Limitations
 
-- If no index is used, the { $meta: "indexKey" } doesn't return anything.
+- `{ $meta: "indexKey" }` is not supported.

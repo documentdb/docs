@@ -257,6 +257,7 @@ The first three results returned by this query are:
 
 ## Limitations
 
-* Can't use with sharded collections
-* Only one $geoNear stage per pipeline
-* Must be the first stage in the pipeline
+* Cannot use with sharded collections.
+* Only one `$geoNear` stage is allowed per pipeline.
+* Must be the first stage in the pipeline.
+* Does not support collation in DocumentDB `v0.110-0`.

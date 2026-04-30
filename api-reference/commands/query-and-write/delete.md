@@ -172,5 +172,5 @@ db.stores.deleteMany({"promotionEvents.discounts.discountPercentage": 21}, {"lim
 
 ## Related content
 
-- [insert with DocumentDB](insert)
-- [update with DocumentDB](update)
+- [insert with DocumentDB](insert.md)
+- [update with DocumentDB](update.md)

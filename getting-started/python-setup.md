@@ -41,8 +41,7 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
    docker run -dt -p 10260:10260 --name documentdb-container documentdb --username <YOUR_USERNAME> --password <YOUR_PASSWORD>
    docker image rm -f ghcr.io/documentdb/documentdb/documentdb-local:latest
    ```
-   > **Note:** During the transition to the Linux Foundation, Docker images may still be hosted on Microsoft's container registry. These will be migrated to the new DocumentDB organization as the transition completes.
-   > **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. You must set these when creating the container for authentication to work.
+   > **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. If you omit them, `documentdb-local` uses its built-in defaults.
    > 
    > **Port Note:** Port `10260` is used by default in these instructions to avoid conflicts with other local database services. You can use port `27017` (the standard MongoDB port) or any other available port if you prefer. If you do, be sure to update the port number in both your `docker run` command and your connection string accordingly.
 
@@ -55,7 +54,7 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
 
    # Create a MongoDB client and open a connection to DocumentDB
    client = pymongo.MongoClient(
-       'mongodb://localhost:10260'
+       'mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true'
    )
 
    # Specify the database to be used
@@ -69,7 +68,7 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
    ```python
    # With username and password
    client = pymongo.MongoClient(
-       'mongodb://username:password@localhost:10260'
+       'mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true'
    )
    ```
 
@@ -77,7 +76,7 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
    ```python
    # With additional options
    client = pymongo.MongoClient(
-       'mongodb://localhost:10260',
+       'mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true',
        maxPoolSize=50,
        retryWrites=False,
        w='majority'
@@ -181,28 +180,16 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
 3. Vector search
    ```python
    # Vector similarity search
-   results = collection.find({
-       '$vectorSearch': {
-           'queryVector': [0.1, 0.2, 0.3],
-           'path': 'embeddings',
-           'numCandidates': 100,
-           'limit': 10
+   results = collection.aggregate([
+       {
+           '$vectorSearch': {
+               'queryVector': [0.1, 0.2, 0.3],
+               'path': 'embeddings',
+               'numCandidates': 100,
+               'limit': 10
+           }
        }
-   })
-   ```
-
-4. PostgreSQL Integration
-   ```python
-   # Access PostgreSQL features directly
-   from documentdb_api import DocumentDB
-   
-   # Initialize DocumentDB with PostgreSQL support
-   db = DocumentDB(client)
-   
-   # Execute SQL queries on BSON documents
-   result = db.sql_query(
-       "SELECT jsonb_path_query(data, '$.name') FROM collection WHERE data @? '$.age > 21'"
-   )
+   ])
    ```
 
 ## Error Handling
@@ -261,7 +248,7 @@ from pymongo import MongoClient
 from datetime import datetime
 
 app = Flask(__name__)
-client = MongoClient('mongodb://localhost:27017/')
+client = MongoClient('mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true')
 db = client.sample_database
 
 @app.route('/users', methods=['GET'])

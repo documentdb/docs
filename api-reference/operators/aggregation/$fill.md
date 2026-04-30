@@ -7,7 +7,7 @@ category: aggregation
 
 # $fill
 
-The `$fill` stage is used to fill missing or null values in documents within the aggregation pipeline. It provides various methods to populate missing data, including using static values, linear interpolation, or values from previous/next documents.
+The `$fill` stage is used to fill missing or null values in documents within the aggregation pipeline. It provides methods to populate missing data, including static values, linear interpolation, or the last observed value.
 
 ## Syntax
 
@@ -39,9 +39,12 @@ The `$fill` stage is used to fill missing or null values in documents within the
 | Method | Description |
 | --- | --- |
 | **`value`** | Fill with a specified static value or expression result. |
-| **`linear`** | Fill using linear interpolation between known values (numeric fields only). |
 | **`locf`** | Last Observation Carried Forward - use the last known value. |
 | **`linear`** | Linear interpolation between surrounding values. |
+
+## Limitations
+
+- `$fill` does not support collation in DocumentDB `v0.110-0`.
 
 ## Examples
 

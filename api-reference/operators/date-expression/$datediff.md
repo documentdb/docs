@@ -147,7 +147,7 @@ Consider this sample document from the stores collection.
 
 ## Example 1: Calculate duration in days between two dates
 
-This query uses `$dateDiff` to compute the number of units (e.g., days, months) between two date fields. It helps measure durations like event length or time since a given date. This query returns the durationInDays along with other fields for the specified `stores` document.
+This query uses `$dateDiff` to compute the number of units, such as days or months, between two date fields. It helps measure durations like event length or time since a given date. This query returns the durationInDays along with other fields for the specified `stores` document.
 
 ```javascript
 db.stores.aggregate([

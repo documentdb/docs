@@ -352,5 +352,5 @@ The ordered insert command returns a response confirming the order in which docu
 
 ## Related content
 
-- [update with DocumentDB](update)
-- [find with DocumentDB](find)
+- [update with DocumentDB](update.md)
+- [find with DocumentDB](find.md)

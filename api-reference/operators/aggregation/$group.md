@@ -28,6 +28,10 @@ The `$group` aggregation stage groups documents by specified identifier expressi
 | **`_id`** | Required. The expression to group by. Use null to calculate accumulated values for all input documents. |
 | **`field`** | Optional. Computed using accumulator operators like $sum, $avg, $max, $min, $count, etc. |
 
+## Limitations
+
+- `$group` does not support collation in DocumentDB `v0.110-0`.
+
 ## Examples
 
 Consider this sample document from the stores collection.

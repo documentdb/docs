@@ -1,11 +1,11 @@
 ---
 title: Components
-description: Learn about pg_documentdb_core and pg_documentdb_api PostgreSQL extensions that enable BSON support and document operations in Postgres.
+description: Learn about the pg_documentdb_core, pg_documentdb, and pg_documentdb_gw components that enable BSON support, document operations, and MongoDB wire protocol access.
 ---
 
 # Components
 
-The DocumentDB implementation consists of two key PostgreSQL extensions that work together to provide MongoDB-compatible document database functionality within PostgreSQL.
+The DocumentDB implementation consists of PostgreSQL extensions plus a Rust gateway that work together to provide MongoDB-compatible document database functionality on PostgreSQL.
 
 ## pg_documentdb_core
 
@@ -19,9 +19,9 @@ pg_documentdb_core is a PostgreSQL extension that introduces BSON datatype suppo
 
 - **Extensibility:** Serves as the core building block for additional functionalities and extensions within the DocumentDB ecosystem.
 
-## pg_documentdb_api
+## pg_documentdb
 
-pg_documentdb_api is the public API surface for DocumentDB, providing CRUD functionality on documents stored in the database. This component leverages the capabilities of pg_documentdb_core to offer a comprehensive set of APIs for managing document data within PostgreSQL.
+pg_documentdb is the public API extension for DocumentDB, providing CRUD functionality on documents stored in the database. This component leverages pg_documentdb_core and exposes functions through schemas such as `documentdb_api`, `documentdb_api_catalog`, and `documentdb_api_internal`.
 
 ### Key Features
 
@@ -29,8 +29,12 @@ pg_documentdb_api is the public API surface for DocumentDB, providing CRUD funct
 
 - **Advanced Queries:** Supports complex queries, including full-text searches, geospatial queries, and vector embeddings.
 
-- **Integration:** Works seamlessly with pg_documentdb_core to deliver robust document management capabilities.
+- **Integration:** Works with pg_documentdb_core to deliver document management capabilities.
+
+## pg_documentdb_gw
+
+pg_documentdb_gw is the Rust gateway that accepts MongoDB wire protocol connections and dispatches commands to the PostgreSQL extension functions.
 
 ### Usage
 
-To use pg_documentdb_api, you need to have pg_documentdb_core installed and configured in your PostgreSQL environment. Once set up, you can leverage the APIs provided by pg_documentdb_api to perform various document operations.
+To use DocumentDB through PostgreSQL, install the `documentdb_core` and `documentdb` extensions. To connect with MongoDB drivers, run the `pg_documentdb_gw` gateway in front of those extensions.

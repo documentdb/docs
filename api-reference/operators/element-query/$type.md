@@ -22,8 +22,8 @@ The `$type` operator retrieves documents if a chosen field is of the specified t
 | Parameter | Description |
 | --- | --- |
 | **`field`** | The field to check the type of. |
-| **`BSON type number`** | A number corresponding to the BSON type (e.g., 1 for double, 2 for string). |
-| **`string alias`** | A string alias for the BSON type (e.g., "double", "string", "object", "array"). |
+| **`BSON type number`** | A number corresponding to the BSON type, such as `1` for double or `2` for string. |
+| **`string alias`** | A string alias for the BSON type, such as `"double"`, `"string"`, `"object"`, or `"array"`. |
 
 ## Common BSON Types
 

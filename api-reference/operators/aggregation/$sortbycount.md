@@ -7,7 +7,7 @@ category: aggregation
 
 # $sortByCount
 
-The $sortByCount stage in the aggregation pipeline is used to group documents by a specified expression and then sort the count of documents in each group in descending order. The `$sortByCount` stage is useful for quickly identifying the most common values within a dataset.
+The `$sortByCount` stage in the aggregation pipeline is used to group documents by a specified expression and then sort the count of documents in each group in descending order. The `$sortByCount` stage is useful for quickly identifying the most common values within a dataset.
 
 ## Syntax
 
@@ -22,6 +22,10 @@ The $sortByCount stage in the aggregation pipeline is used to group documents by
 | Parameter | Description |
 | --- | --- |
 | **`expression`** | This is the field or computed expression on which to group and count the documents. |
+
+## Limitations
+
+- `$sortByCount` does not support collation in DocumentDB `v0.110-0`.
 
 ## Examples
 

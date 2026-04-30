@@ -44,6 +44,20 @@ As a field update operator:
 | **`field`** | The name of the field to update with the minimum value. |
 | **`value`** | The value to compare with the current field value. The field will be updated only if this value is smaller. |
 
+## Performance flag
+
+> **Added in v0.110-0.** A new GUC, `documentdb.enableNewMinMaxAccumulators`,
+> turns on optimized implementations of the `$min` and `$max` accumulators in the
+> `$group` and `$setWindowFields` aggregation stages. The flag is `off` by default.
+> Enable it per session to opt in to the new code path:
+>
+> ```sql
+> SET documentdb.enableNewMinMaxAccumulators TO on;
+> ```
+>
+> The flag does not change `$min` / `$max` semantics or output — only execution
+> performance for large groups.
+
 ## Examples
 
 Consider this sample document from the stores collection.

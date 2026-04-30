@@ -7,7 +7,7 @@ category: geospatial
 
 # $geoWithin
 
-The `$geoWithin` operator selects documents whose location field falls completely within a specified geometry. This operator supports various shape operators including `$box`, `$polygon`, `$center`, and `$geometry`.
+The `$geoWithin` operator selects documents whose location field falls completely within a specified geometry. DocumentDB supports legacy shape operators such as `$box`, `$polygon`, `$center`, and `$centerSphere`, plus `$geometry` with supported GeoJSON polygon types.
 
 ## Syntax
 
@@ -30,12 +30,21 @@ The `$geoWithin` operator selects documents whose location field falls completel
   }
 }
 
+// Using $polygon
+{
+  <location field>: {
+    $geoWithin: {
+      $polygon: [ [ <x1>, <y1> ], [ <x2>, <y2> ], [ <x3>, <y3> ], ... ]
+    }
+  }
+}
+
 // Using $geometry
 {
   <location field>: {
     $geoWithin: {
       $geometry: {
-        type: <GeoJSON type>,
+        type: "Polygon" | "MultiPolygon",
         coordinates: <coordinates>
       }
     }
@@ -50,7 +59,14 @@ The `$geoWithin` operator selects documents whose location field falls completel
 | `location field` | The field containing the location coordinates |
 | `$box` | Two sets of coordinates defining opposite corners of a box |
 | `$center` | Center point coordinates and radius in degrees |
-| `$geometry` | GeoJSON object defining the boundary |
+| `$centerSphere` | Center point coordinates and radius in radians |
+| `$polygon` | Legacy coordinate pairs defining a polygon |
+| `$geometry` | GeoJSON `Polygon` or `MultiPolygon` object defining the boundary |
+
+## Limitations
+
+- With `$geoWithin`, `$geometry` supports `Polygon` and `MultiPolygon` inputs only.
+- Polygons with holes and custom CRS big polygons are not supported in DocumentDB `v0.110-0`.
 
 ## Examples
 

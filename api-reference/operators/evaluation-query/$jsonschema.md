@@ -39,6 +39,11 @@ db.createCollection("collectionName", {
 
 ## Parameters
 
+> **Collection validators:** In DocumentDB `v0.110-0`, collection-level schema
+> validation is controlled by the `documentdb.enableSchemaValidation` GUC, which
+> defaults to `false`. Enable it before creating collections with a
+> `$jsonSchema` validator.
+
 | Parameter | Description |
 | --- | --- |
 | **`bsonType`** | Specifies the Binary JSON (BSON) types that the field must match. Accepts string aliases used by the $type operator. |
@@ -58,6 +63,7 @@ DocumentDB supports the following JSON Schema keywords:
 |---------|------|-------------|--------|
 | `additionalItems` | arrays | Schema for extra array items | Extended array validation |
 | `bsonType` | all types | MongoDB extension - accepts BSON type aliases | `"string"`, `"int"`, `"double"`, `"object"`, `"array"`, `"bool"`, `"date"` |
+| `description` | all types | Free-form annotation describing the schema element | Documentation for fields and schemas |
 | `exclusiveMinimum` | numbers | Exclusive minimum boundary | Advanced numeric validation |
 | `exclusiveMaximum` | numbers | Exclusive maximum boundary | Advanced numeric validation |
 | `items` | arrays | Schema for array elements | Array element validation |
@@ -74,24 +80,28 @@ DocumentDB supports the following JSON Schema keywords:
 | `type` | all types | Standard JSON Schema types | `"object"`, `"array"`, `"number"`, `"boolean"`, `"string"`, `"null"` |
 | `uniqueItems` | arrays | Enforce unique array elements | Data integrity |
 
+> **Added in v0.110-0:** Support for the `description` keyword. The keyword is
+> parsed and validated as a string, and is treated as documentation only — it does
+> not affect document validation results.
+
 ### Unsupported Keywords
 
-These JSON Schema keywords are yet to be supported in DocumentDB:
+These JSON Schema keywords are rejected by DocumentDB `v0.110-0`:
 
 | Keyword | Type | Reason for Non-Support | Workaround |
 |---------|------|----------------------|------------|
-| `additionalProperties` | objects | Not implemented | Use explicit `properties` definitions |
-| `allOf` | all types | Logical operator not supported | Use nested validation |
-| `anyOf` | all types | Logical operator not supported | Use separate queries |
-| `dependencies` | objects | Complex dependency validation not supported | Handle in application logic |
-| `description` | N/A | Might not appear in error messages | Informational only |
-| `enum` | all types | Enumeration validation not supported | Use `$in` operator instead |
-| `maxProperties` | objects | Property count validation not supported | Handle in application logic |
-| `minProperties` | objects | Property count validation not supported | Handle in application logic |
-| `not` | all types | Negation operator not supported | Use positive validation rules |
-| `oneOf` | all types | Logical operator not supported | Use application-level validation |
-| `patternProperties` | objects | Pattern-based property validation not supported | Use explicit property names |
-| `title` | N/A | Metadata field not processed | Use `description` instead |
+| `additionalProperties` | objects | Unknown keyword | Use explicit `properties` definitions |
+| `allOf` | all types | Unknown keyword | Use nested validation |
+| `anyOf` | all types | Unknown keyword | Use separate queries |
+| `dependencies` | objects | Unknown keyword | Handle in application logic |
+| `enum` | all types | Unknown keyword | Use `$in` operator instead |
+| `maxProperties` | objects | Unknown keyword | Handle in application logic |
+| `minProperties` | objects | Unknown keyword | Handle in application logic |
+| `not` | all types | Unknown keyword | Use positive validation rules |
+| `oneOf` | all types | Unknown keyword | Use application-level validation |
+| `patternProperties` | objects | Unknown keyword | Use explicit property names |
+| `title` | metadata | Unknown keyword | Use `description` for documentation purposes. |
+| `$ref`, `$schema`, `default`, `definitions`, `format`, `id` | all types | Explicitly unsupported | Avoid these keywords in DocumentDB validators. |
 
 ## Examples
 

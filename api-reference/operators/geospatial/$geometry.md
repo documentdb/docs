@@ -24,8 +24,14 @@ The `$geometry` operator specifies a GeoJSON geometry object for geospatial quer
 
 | Parameter | Description |
 |-----------|-------------|
-| `type` | GeoJSON object type (Point, Polygon, MultiPolygon, etc.) |
+| `type` | GeoJSON object type. Supported types depend on the parent geospatial operator. |
 | `coordinates` | Coordinates defining the GeoJSON object as an array |
+
+## Limitations
+
+- When `$geometry` is used with `$geoWithin`, DocumentDB `v0.110-0` supports only `Polygon` and `MultiPolygon` inputs.
+- `$geoWithin` does not support polygons with holes or custom CRS big polygons.
+- `$near` and `$nearSphere` require `$geometry` to be a GeoJSON `Point`.
 
 ## Examples
 
@@ -184,7 +190,7 @@ The first two results returned by this query are:
 ]
 ```
 
-### Example 2: Find nearest stores to polygon geometry
+### Example 2: Find stores intersecting a polygon geometry
 
 This query finds up to two stores whose locations intersect with a defined rectangular polygon bounded by coordinates from [-80.0, -75.0] to [-55.0, -70.0].
 

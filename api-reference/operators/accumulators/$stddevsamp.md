@@ -1,19 +1,19 @@
 ---
-title: $stddevsamp
-description: The $stddevsamp operator calculates the standard deviation of a specified sample of values and not the entire population
+title: $stdDevSamp
+description: The $stdDevSamp operator calculates the sample standard deviation of the specified numeric values.
 type: operators
 category: accumulators
 ---
 
-# $stddevsamp
+# $stdDevSamp
 
-The `$stddevsamp` operator calculates the standard deviation by taking a specified sample of the values of a field. The standard deviation is calculated by taking a random sample of the specified size. If a precise standard deviation is needed, $stdDevPop must be used instead.
+The `$stdDevSamp` operator calculates the sample standard deviation of the specified numeric values. It doesn't select a random sample by itself; it computes the sample standard deviation over the values that reach the accumulator. Use `$stdDevPop` when the input values represent the entire population.
 
 ## Syntax
 
 ```javascript
 {
-  $stddevsamp: {fieldName}
+  $stdDevSamp: <expression>
 }
 ```
 
@@ -21,7 +21,7 @@ The `$stddevsamp` operator calculates the standard deviation by taking a specifi
 
 | Parameter | Description |
 | --- | --- |
-| **`fieldName`** | The field whose values are used to calculate the standard deviation of the specified sample size|
+| **`<expression>`** | The numeric expression whose values are used to calculate the sample standard deviation. |
 
 ## Examples
 
@@ -139,16 +139,12 @@ Consider this sample document from the stores collection.
 
 ### Example 1 - Calculate the standard deviation of total sales
 
-This query calculates the standard deviation of total sales across stores in the "Fourth Coffee" company by taking a random sample of 10 documents matching the filtering criteria.
+This query calculates the sample standard deviation of total sales across stores in the "Fourth Coffee" company.
 
 ```javascript
 db.stores.aggregate([{
     $match: {
         "company": "Fourth Coffee"
-    }
-}, {
-    $sample: {
-        size: 10
     }
 }, {
     $group: {

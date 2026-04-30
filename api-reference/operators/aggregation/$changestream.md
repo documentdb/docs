@@ -1,191 +1,38 @@
 ---
 title: $changeStream
-description: The $changeStream stage opens a change stream cursor to track data changes in real-time.
+description: The $changeStream stage is registered in DocumentDB but is not available in the open-source v0.110-0 runtime unless a downstream extension enables the change-stream hook.
 type: operators
 category: aggregation
 ---
 
 # $changeStream
 
-The `$changeStream` aggregation stage opens a change stream cursor that tracks data changes in real-time. This stage enables applications to react to insert, update, delete, and other operations as they occur in the collection.
+The `$changeStream` aggregation stage is registered in the `v0.110-0` source, but the open-source runtime does not enable change streams by default. In the open-source path, `IsChangeStreamFeatureAvailableAndCompatible()` returns `false` unless a downstream extension installs the change-stream compatibility hook, so attempts to run `$changeStream` return a command-not-supported error.
+
+## Availability
+
+| Runtime | Status |
+| --- | --- |
+| Open-source DocumentDB `v0.110-0` | Not available by default. |
+| Downstream builds that provide a change-stream hook | Availability and behavior depend on that downstream implementation. |
+
+## Source-backed validation rules
+
+When a runtime enables the change-stream hook, the core pipeline parser applies these rules before dispatching to the change-stream aggregation function:
+
+| Rule | Behavior |
+| --- | --- |
+| Stage position | `$changeStream` must be the first stage in the aggregation pipeline. |
+| Views | `$changeStream` cannot run on views. |
+| Nested pipelines | `$changeStream` is prohibited inside a `$unionWith` subpipeline. |
+| Following stages | Only `$match`, `$project`, `$addFields`, `$replaceRoot`, `$replaceWith`, `$set`, `$unset`, and `$redact` are permitted after `$changeStream`. |
 
 ## Syntax
 
 ```javascript
-{
-  $changeStream: {
-    allChangesForCluster: <boolean>,
-    fullDocument: <string>,
-    fullDocumentBeforeChange: <string>,
-    resumeAfter: <ResumeToken>,
-    startAfter: <ResumeToken>,
-    startAtOperationTime: <Timestamp>,
-    showExpandedEvents: <boolean>
-  }
-}
-```
-
-## Parameters
-
-| Parameter | Description |
-| --- | --- |
-| **`allChangesForCluster`** | Optional. Boolean. If true, returns changes for the entire cluster. Default is false. |
-| **`fullDocument`** | Optional. String. Determines what to return for update operations. Options: 'default', 'updateLookup', 'whenAvailable', 'required'. |
-| **`fullDocumentBeforeChange`** | Optional. String. Returns the preimage of the document. Options: "off", "whenAvailable", "required". |
-| **`resumeAfter`** | Optional. Resume token to resume change stream after a specific event. |
-| **`startAfter`** | Optional. Resume token to start change stream after a specific event. |
-| **`startAtOperationTime`** | Optional. timestamp for starting change stream from a specific time. |
-| **`showExpandedEvents`** | Optional. Boolean. Include another change stream events. Default is false. |
-
-## Examples
-
-Consider this sample document from the stores collection.
-
-```json
-{
-    "_id": "0fcc0bf0-ed18-4ab8-b558-9848e18058f4",
-    "name": "First Up Consultants | Beverage Shop - Satterfieldmouth",
-    "location": {
-        "lat": -89.2384,
-        "lon": -46.4012
-    },
-    "staff": {
-        "totalStaff": {
-            "fullTime": 8,
-            "partTime": 20
-        }
-    },
-    "sales": {
-        "totalSales": 75670,
-        "salesByCategory": [
-            {
-                "categoryName": "Wine Accessories",
-                "totalSales": 34440
-            },
-            {
-                "categoryName": "Bitters",
-                "totalSales": 39496
-            },
-            {
-                "categoryName": "Rum",
-                "totalSales": 1734
-            }
-        ]
-    },
-    "promotionEvents": [
-        {
-            "eventName": "Unbeatable Bargain Bash",
-            "promotionalDates": {
-                "startDate": {
-                    "Year": 2024,
-                    "Month": 6,
-                    "Day": 23
-                },
-                "endDate": {
-                    "Year": 2024,
-                    "Month": 7,
-                    "Day": 2
-                }
-            },
-            "discounts": [
-                {
-                    "categoryName": "Whiskey",
-                    "discountPercentage": 7
-                },
-                {
-                    "categoryName": "Bitters",
-                    "discountPercentage": 15
-                },
-                {
-                    "categoryName": "Brandy",
-                    "discountPercentage": 8
-                },
-                {
-                    "categoryName": "Sports Drinks",
-                    "discountPercentage": 22
-                },
-                {
-                    "categoryName": "Vodka",
-                    "discountPercentage": 19
-                }
-            ]
-        },
-        {
-            "eventName": "Steal of a Deal Days",
-            "promotionalDates": {
-                "startDate": {
-                    "Year": 2024,
-                    "Month": 9,
-                    "Day": 21
-                },
-                "endDate": {
-                    "Year": 2024,
-                    "Month": 9,
-                    "Day": 29
-                }
-            },
-            "discounts": [
-                {
-                    "categoryName": "Organic Wine",
-                    "discountPercentage": 19
-                },
-                {
-                    "categoryName": "White Wine",
-                    "discountPercentage": 20
-                },
-                {
-                    "categoryName": "Sparkling Wine",
-                    "discountPercentage": 19
-                },
-                {
-                    "categoryName": "Whiskey",
-                    "discountPercentage": 17
-                },
-                {
-                    "categoryName": "Vodka",
-                    "discountPercentage": 23
-                }
-            ]
-        }
-    ]
-}
-```
-
-### Example 1: Monitor all changes in stores collection
-
-This operation sets up a change stream to monitor all changes in the stores collection.
-
-```javascript
-db.stores.aggregate([
-  {
-    $changeStream: {
-      fullDocument: "updateLookup"
-    }
-  }
+db.collection.aggregate([
+  { $changeStream: { } }
 ])
 ```
 
-When a store document is updated, the change stream returns the change event with the full document.
-
-```json
-{
-  "_id": { "_data": "AeARBpQ/AAAA" },
-  "operationType": "update",
-  "fullDocument": {
-    "_id": "905d1939-e03a-413e-a9c4-221f74055aac",
-    "name": "Trey Research | Home Office Depot - Lake Freeda",
-    "sales": {
-      "revenue": 42500
-    },
-    "company": "Trey Research",
-    "lastUpdated": "ISODate('2024-06-16T10:30:00.000Z')"
-  },
-  "ns": {
-    "db": "StoreData",
-    "coll": "stores"
-  },
-  "documentKey": {
-    "_id": "905d1939-e03a-413e-a9c4-221f74055aac"
-  }
-}
-```
+Do not rely on this stage in open-source DocumentDB `v0.110-0` unless your runtime explicitly documents change-stream support.

@@ -17,7 +17,7 @@ The `$densify` stage in an aggregation pipeline is used to fill in missing data 
     field: <field>,
     range: {
       step: <number>,
-      unit: <string>, // Optional, e.g., "hour", "day", "month", etc.
+      unit: <string>, // Optional, for example, "hour", "day", or "month".
       bounds: [<lowerBound>, <upperBound>] // Optional
     },
     partitionByFields: [<field1>, <field2>, ...] // Optional
@@ -31,7 +31,7 @@ The `$densify` stage in an aggregation pipeline is used to fill in missing data 
 | --- | --- |
 | **`field`** | The field on which densification is performed. |
 | **`range.step`** | The step size for generating missing values. |
-| **`range.unit`** | (Optional) The unit of the step size, such as time units (e.g., "hour", "day"). |
+| **`range.unit`** | (Optional) The unit of the step size, such as `"hour"` or `"day"`. |
 | **`range.bounds`** | (Optional) Specifies the range (lower and upper bounds) for densification. |
 | **`partitionByFields`** | (Optional) Fields used to group data for densification. |
 

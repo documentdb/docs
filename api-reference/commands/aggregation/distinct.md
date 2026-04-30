@@ -1,5 +1,5 @@
 ---
-title: Distinct
+title: distinct
 description: The distinct command is used to find the unique values for a specified field across a single collection.
 type: commands
 category: aggregation

@@ -1,12 +1,14 @@
 ---
-title: YugabyteDB Setup
-description: Learn how to use DocumentDB alongside YugabyteDB for a comprehensive database solution.
+title: YugabyteDB compatibility
+description: Understand the current compatibility guidance for using DocumentDB with YugabyteDB.
 ---
 
-# DocumentDB Usage with YugabyteDB
+# YugabyteDB compatibility
 
-Learn how to use DocumentDB alongside YugabyteDB for a comprehensive database solution.
+DocumentDB is implemented as PostgreSQL extensions and is tested with supported PostgreSQL versions. YugabyteDB is PostgreSQL-compatible, but it isn't currently documented as a supported runtime for DocumentDB.
 
-## Overview
+## Guidance
 
-YugabyteDB is a distributed SQL database that is PostgreSQL-compatible. Since DocumentDB is built on PostgreSQL, it can be integrated with YugabyteDB to combine the benefits of both systems.
+Use a supported PostgreSQL environment when you deploy DocumentDB. For local development, use [`documentdb-local`](../documentdb-local/index.md). For self-managed Linux deployments, use the [pre-built packages](prebuilt-packages.md) that match your operating system, PostgreSQL major version, and CPU architecture.
+
+If you want to experiment with YugabyteDB, treat it as unsupported until the DocumentDB project publishes compatibility guidance and test coverage for that runtime.

@@ -176,6 +176,6 @@ This table delineates the expected behavior of the $toDouble operator based on t
 |--------------------------------------------------------------|---------------------|
 | Boolean value true                                           | Output -> 1         |
 | Boolean value false                                          | Output -> 0         |
-| Double value. E.g., 72.0                                     | Output -> 72        |
+| Double value. For example, 72.0                              | Output -> 72        |
 | String representation of a number value. For example, "72"  | Output -> 72        |
 | Null value                                                   | Output -> null      |

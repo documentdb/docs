@@ -11,10 +11,10 @@ DocumentDB is an open-source document database platform built on PostgreSQL. It 
 
 DocumentDB provides a NoSQL datastore implemented using PostgreSQL, giving developers complete visibility into the architecture and implementation of the engine. It's designed to offer:
 
-- Full compatibility with MongoDB wire protocol through the `pg_documentdb_api` layer
+- MongoDB wire protocol compatibility through the `pg_documentdb_gw` gateway
 - Native BSON document support via the `pg_documentdb_core` PostgreSQL extension
 - Advanced indexing capabilities including single field, multi-key, compound, text, and geospatial indexes
-- Vector search functionality powered by the `pg_vector` PostgreSQL extension
+- Vector search functionality powered by pgvector integration
 - Enterprise-grade security with SCRAM authentication
 - Full PostgreSQL compatibility for advanced SQL operations
 
@@ -23,7 +23,7 @@ DocumentDB provides a NoSQL datastore implemented using PostgreSQL, giving devel
 - **PostgreSQL Foundation**: Built on the powerful PostgreSQL engine, allowing you to leverage both document and relational capabilities
 - **Open Source**: Released under the MIT license with no restrictions on usage, modification, or distribution
 - **Document Database Standard**: First implementation towards creating an open standard for document databases, similar to ANSI SQL for relational databases
-- **Cloud Ready**: Supports multi-cloud deployments across major cloud providers with native integration in Azure Cosmos DB
+- **Cloud Ready**: Can be deployed on major cloud providers using the open-source packages and container image
 - **Developer Friendly**: Rich ecosystem of tools and extensions, including VS Code integration and MongoDB compatibility
 
 ## Architecture Components
@@ -37,18 +37,18 @@ DocumentDB consists of two primary components:
    - Vector search capabilities for AI/ML applications
    - SCRAM authentication mechanism
 
-2. **pg_documentdb_api**: The data plane implementing:
+2. **pg_documentdb** and **pg_documentdb_gw**: The API and gateway layers implementing:
    - CRUD operations with MongoDB compatibility
    - Advanced query functionality
    - Index management and optimization
-   - Protocol translation layer for MongoDB wire protocol
+   - MongoDB wire protocol handling through the Rust gateway
 
 ## Common Use Cases
 
 - **Modern Web Applications**: Store and query JSON documents with MongoDB compatibility
 - **AI/ML Applications**: Leverage vector search for similarity matching and embeddings
 - **Hybrid Data Models**: Combine document and relational data in the same database
-- **Migration Path**: Easy transition from existing MongoDB workloads
+- **Migration Path**: Compatibility-focused path for MongoDB workloads after assessment and testing
 - **Local Development**: Full-featured local instance for development and testing
 
 ## Getting Started Options

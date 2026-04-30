@@ -79,8 +79,8 @@ Use the command palette:
    - Add a new connection to your DocumentDB:
      - In the DocumentDB Connections area, locate and expand the **DocumentDB Local** node.
      - Select the **New Local Connection** option.
-     - Confirm the port (default value `10260`), username, password, and choose the **Disable TLS/SSL** option.
-     - **Note:** TLS/SSL can be enabled, but this walkthrough skips those steps for simplicity.
+     - Confirm the port (default value `10260`), username, and password.
+     - Keep TLS/SSL enabled. The local container generates a self-signed certificate, so allow the self-signed certificate if the extension prompts for certificate validation.
      - A new DocumentDB Local entry will be added and listed in your DocumentDB Connections area.
 
 ## Core Features
@@ -355,6 +355,6 @@ The VS Code extension is particularly useful for migrating from MongoDB to Docum
 
 ## Next Steps
 
-- Learn about [DocumentDB Features]([../postgres-api/index.md](https://documentdb.io/docs/reference)) for advanced capabilities
+- Learn about [DocumentDB features](../postgres-api/index.md) for advanced capabilities
 - Join our [Discord community](https://discord.gg/vH7bYu524D) for support and discussions
 - Report issues and contribute on [GitHub](https://github.com/documentdb/documentdb)

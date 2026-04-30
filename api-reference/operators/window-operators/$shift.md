@@ -1,6 +1,6 @@
 ---
-title: $shift usage on DocumentDB
-description: A window operator that shifts values within a partition and returns the shifted value.
+title: $shift
+description: The $shift window operator shifts values within a partition and returns the shifted value.
 type: operators
 category: window-operators
 ---

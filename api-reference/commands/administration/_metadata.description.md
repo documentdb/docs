@@ -1,0 +1,1 @@
+Administration commands let you observe and control the DocumentDB server: list and terminate in-flight operations, end client sessions, and inspect server diagnostics. Most of these commands are administrative and should be run against the `admin` database.

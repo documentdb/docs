@@ -207,7 +207,7 @@ This table delineates the expected behavior of the $toLong operator based on the
 |--------------------------------------------------------------|---------------------|
 | Boolean value true                                           | Output -> Long("1") |
 | Boolean value false                                          | Output -> Long("1") |
-| Double value. E.g., 72.0                                     | Output -> Long("72")|
+| Double value. For example, 72.0                              | Output -> Long("72")|
 | String representation of a long value. For example, "72"     | Output -> Long("72")|
 | String representation of a double value. For example, "72.0" | Output -> Error     |
 | Null value                                                   | Output -> null      |

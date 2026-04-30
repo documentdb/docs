@@ -23,6 +23,10 @@ The `$out` stage in an aggregation pipeline allows you to write the resulting do
 | --- | --- |
 | **`<outputCollection>`** | The name of the collection where the aggregation result will be stored. |
 
+## Limitations
+
+- `$out` and `$merge` cannot be used with `$graphLookup` in the same pipeline.
+
 ## Examples
 
 Consider this sample document from the stores collection.

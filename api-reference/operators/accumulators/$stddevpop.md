@@ -1,19 +1,19 @@
 ---
-title: $stddevpop
-description: The $stddevpop operator calculates the standard deviation of the specified values
+title: $stdDevPop
+description: The $stdDevPop operator calculates the population standard deviation of the specified numeric values.
 type: operators
 category: accumulators
 ---
 
-# $stddevpop
+# $stdDevPop
 
-The `$stddevpop` operator calculates the standard deviation of the specified values. The operator can only calculate the standard deviation of numeric values.
+The `$stdDevPop` operator calculates the population standard deviation of the specified numeric values.
 
 ## Syntax
 
 ```javascript
 {
-  $stddevpop: {fieldName}
+  $stdDevPop: <expression>
 }
 ```
 
@@ -21,7 +21,7 @@ The `$stddevpop` operator calculates the standard deviation of the specified val
 
 | Parameter | Description |
 | --- | --- |
-| **`fieldName`** | The field whose values are used to calculate the standard deviation|
+| **`<expression>`** | The numeric expression whose values are used to calculate the population standard deviation. |
 
 ## Examples
 
@@ -139,7 +139,7 @@ Consider this sample document from the stores collection.
 
 ### Example 1 - Calculate the standard deviation of total sales
 
-To calculate the standard deviation of the total sales across all sales categories for stores belonging to "Fourth Coffee", first filter on the company field, then calculate the total sales across all resulting stores using stddevpop and return the aggregated result.
+To calculate the population standard deviation of total sales across stores belonging to "Fourth Coffee", first filter on the company field, then calculate the total sales across all resulting stores using `$stdDevPop` and return the aggregated result.
 
 ```javascript
 db.stores.aggregate([{

@@ -1,22 +1,20 @@
 ---
-title: Azure Setup
-description: Deploy and manage DocumentDB on Micrtosoft Azure for a fully managed experience.
+title: Azure setup
+description: Learn deployment options for running open-source DocumentDB on Azure.
 ---
 
-# Multi-cloud with Azure
+# Run DocumentDB on Azure
 
-Deploy and manage DocumentDB on Micrtosoft Azure for a fully managed experience.
+You can run open-source DocumentDB on Azure infrastructure for development, testing, or self-managed deployments.
 
-## Azure Integration Options
+## Choose a deployment option
 
-1. Azure DocumentDB (recommended)
-   - Native DocumentDB integration
-   - Full MongoDB compatibility
-   - Azure-managed infrastructure
+| Option | Use when |
+| --- | --- |
+| [`documentdb-local`](../documentdb-local/index.md) on an Azure virtual machine | You want the fastest way to test DocumentDB on Azure infrastructure. |
+| [Pre-built Linux packages](prebuilt-packages.md) on an Azure virtual machine | You want a self-managed DocumentDB deployment with explicit control over PostgreSQL and extension installation. |
+| Azure Cosmos DB for MongoDB | You want an Azure managed MongoDB-compatible database service. This service is separate from the open-source DocumentDB project. |
 
-2. Self-managed on Azure VMs
-   - Complete control over configuration
-   - Custom deployment options
-   - Manual management required
+## Avoid product confusion
 
-## Setup
+Open-source DocumentDB isn't the same product as Azure Cosmos DB for MongoDB. If you need to deploy open-source DocumentDB, use the `documentdb-local` image or the Linux packages. If you need a fully managed Azure database service, evaluate [Azure Cosmos DB for MongoDB](https://learn.microsoft.com/azure/cosmos-db/mongodb/introduction).

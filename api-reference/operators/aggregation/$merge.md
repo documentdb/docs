@@ -28,8 +28,15 @@ The `$merge` stage in an aggregation pipeline is used to write the results of th
 | --- | --- |
 | **`into`** | Specifies the target collection where the aggregation results will be written. |
 | **`on`** | Specifies the field(s) to identify matching documents in the target collection. |
-| **`whenMatched`** | Specifies the action to take when a matching document is found. Options include `merge`, `replace`, `keepExisting`, `fail`, or a custom pipeline. |
-| **`whenNotMatched`** | Specifies the action to take when no matching document is found. Options include `insert` or `discard`. |
+| **`whenMatched`** | Specifies the action to take when a matching document is found. DocumentDB `v0.110-0` supports `merge`, `replace`, `keepExisting`, and `fail`. Custom pipeline syntax is not supported. |
+| **`whenNotMatched`** | Specifies the action to take when no matching document is found. DocumentDB `v0.110-0` supports `insert`, `discard`, and `fail`. |
+
+## Limitations
+
+- `$merge` is not permitted inside an active transaction.
+- `$merge` does not support collation.
+- `$merge` does not support sharded output collections.
+- `$merge` and `$out` cannot be used with `$graphLookup` in the same pipeline.
 
 ## Examples
 

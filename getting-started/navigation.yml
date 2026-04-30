@@ -12,3 +12,13 @@
   link: mongo-shell-quickstart.md
 - title: Pre-built Packages
   link: prebuilt-packages.md
+- title: MongoDB Migration Guide
+  link: mongodb-migration.md
+- title: AWS Setup
+  link: aws-setup.md
+- title: Azure Setup
+  link: azure-setup.md
+- title: GCP Setup
+  link: gcp-setup.md
+- title: YugabyteDB Compatibility
+  link: yugabyte-setup.md

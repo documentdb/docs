@@ -1,5 +1,5 @@
 ---
-title: Aggregate
+title: aggregate
 description: The aggregate command is used to process data records and return computed results.
 type: commands
 category: aggregation

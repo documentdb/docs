@@ -28,8 +28,8 @@ The `$text` operator performs text search on the content of indexed string field
 | --- | --- |
 | **`$search`** | Required. The search string containing the terms to search for. Multiple terms are treated as an OR operation unless enclosed in quotes for phrase matching. |
 | **`$language`** | Optional. Language for the text search, which determines the stemming rules and stop words, though the system uses the index's default language if you don't specify one |
-| **`$caseSensitive`** | Optional. Boolean flag to enable case-sensitive search. Default is false (case-insensitive). |
-| **`$diacriticSensitive`** | Optional. Boolean flag to enable diacritic-sensitive search. Default is false (diacritic-insensitive). |
+| **`$caseSensitive`** | Optional. Boolean flag. DocumentDB `v0.110-0` supports the default `false` behavior; `true` is rejected. |
+| **`$diacriticSensitive`** | Optional. Boolean flag. DocumentDB `v0.110-0` does not support explicitly requesting diacritic-insensitive searches with `false`. |
 
 ## Prerequisite
 
@@ -339,44 +339,10 @@ The first two results returned by this query are:
 ]
 ```
 
-### Example 5: Case-sensitive search
+### Limitation: case-sensitive search
 
-> [!NOTE]
-> Support for case-sensitive is in pipeline and should be released soon.
-
-The example allows performing a case-sensitive search for "BAZAAR".
-
-```javascript
-db.stores.find(
-  { $text: { $search: "BAZAAR", $caseSensitive: true } },
-  { _id: 1, name: 1, "sales.salesByCategory.categoryName": 1 }
-).limit(2)
-```
-
-The query will match documents where "BAZAAR" appears in exactly that case.
-
-```json
-[
- {
-    "_id": "future-electronics-001",
-    "name": "Future Electronics Hub",
-    "sales": { "totalSales": 25000 }
-  },
-  {
-    "_id": "40d6f4d7-50cd-4929-9a07-0a7a133c2e74",
-    "name": "Proseware, Inc. | Home Entertainment Hub - East Linwoodbury",
-    "sales": {
-      "salesByCategory": [
-        { "categoryName": "Sound Bars" },
-        { "categoryName": "Game Controllers" },
-        { "categoryName": "Remote Controls" },
-        { "categoryName": "VR Games" }
-      ],
-      "totalSales": 160000
-    }
-  }
-]
-```
+DocumentDB `v0.110-0` validates the `$caseSensitive` option, but `$caseSensitive: true`
+is not supported. Use the default case-insensitive behavior.
 
 ### Example 6: Get text search scores
 

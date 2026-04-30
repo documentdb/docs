@@ -62,23 +62,25 @@ The following table summarizes the available Docker commands for configuring the
 |---|---|---|---|---|---|
 | Print the settings to stdout from the container | `--help`, `-h` | N/A | N/A | N/A | Display information on available configuration |
 | Specify the username for DocumentDB. | `--username [value]` | Overrides `USERNAME` environment variable | STRING | `default_user` | Username for DocumentDB. |
-| Specify the password for DocumentDB. | `--password [value]` | Overrides `PASSWORD` environment variable | STRING | NA | Password for DocumentDB. This is required. |
-| The port of the DocumentDB endpoint. | `--documentdb-port [value]` | Overrides `PORT` environment variable | INT | `10260` | The port needs to published - for example, using `-p 10260:10260`. |
+| Specify the password for DocumentDB. | `--password [value]` | Overrides `PASSWORD` environment variable | STRING | `Admin100` | Password for DocumentDB. Set your own value when you start the container. |
+| The port of the DocumentDB endpoint. | `--documentdb-port [value]` | Overrides `DOCUMENTDB_PORT` environment variable | INT | `10260` | The port needs to be published, for example, using `-p 10260:10260`. |
 | Specify a directory for data. | `--data-path [value]` | Overrides `DATA_PATH` environment variable. | STRING | `/data` | For example, to set `/usr/documentdb/data` as data directory, add this option to `docker run` command: `--mount type=bind,source=./.local/data,target=/usr/documentdb/data` |
-| Specify the owner. | `--owner [value]` | Overrides `OWNER` environment variable. | STRING | `documentdb` | Specify the owner for DocumentDB. |
-| Specify whether to start the PostgreSQL server. | `--start-pg` | NA | `true`, `false` | `true` | Specify whether to start the PostgreSQL server. |
-| Specify whether to create a user. | `--create-user` | NA | `true`, `false` | `true` | Specify whether to create a user. |
-| Specify the port for the PostgreSQL server. | `--pg-port [value]` | Overrides `PG_PORT` environment variable | INT | `9712` | Specify the port for the PostgreSQL server. |
-| Specify whether to allow external connections to PostgreSQL. | `--allow-external-connections` | Overrides `ALLOW_EXTERNAL_CONNECTIONS` environment variable | `true`, `false` | `false` | Specify whether to allow external connections to PostgreSQL. |
-| Specify the path to a certificate for securing traffic. | `--cert-path [value]` | Overrides `CERT_PATH` environment variable. | STRING | NA | You need to mount this file into the container. For example, to set `/mycert.pfx`, add this option to `docker run` command: `--mount type=bind,source=./mycert.pfx,target=/mycert.pfx`. Can set `CERT_SECRET` to the password for the certificate. |
-| Override default key with key in key file. | `--key-file [value]` | Overrides `KEY_FILE` environment variable. | STRING | NA | You need to mount this file into the container. For example, to set `/mykey.key`, add this option to `docker run` command: `--mount type=bind,source=./mykey.key,target=/mykey.key` |
-| Enable telemetry data. | `--enable-telemetry` | Overrides `ENABLE_TELEMETRY` environment variable | `true`, `false` | `false` | Enable telemetry data sent to the usage collector (Azure Application Insights). |
+| Specify the owner. | `--owner [value]` | Overrides `OWNER` environment variable. | STRING | Current container user | Specify the owner for DocumentDB. |
+| Specify whether to start the PostgreSQL server. | `--start-pg [value]` | Overrides `START_POSTGRESQL` environment variable | `true`, `false` | `true` | Specify whether to start the PostgreSQL server. |
+| Specify whether to create a user. | `--create-user [value]` | Overrides `CREATE_USER` environment variable | `true`, `false` | `true` | Specify whether to create a user. |
+| Specify the port for the PostgreSQL server. | `--pg-port [value]` | Overrides `POSTGRESQL_PORT` environment variable | INT | `9712` | Specify the port for the PostgreSQL server. |
+| Specify whether to allow external connections to PostgreSQL. | `--allow-external-connections [value]` | Overrides `ALLOW_EXTERNAL_CONNECTIONS` environment variable | `true`, `false` | `false` | Specify whether to allow external connections to PostgreSQL. |
+| Specify the path to a PEM certificate for securing traffic. | `--cert-path [value]` | Overrides `CERT_PATH` environment variable. | STRING | N/A | Mount this file into the container. For example, to set `/mycert.pem`, add this option to `docker run`: `--mount type=bind,source=./mycert.pem,target=/mycert.pem`. Must be used with `--key-file`. |
+| Override the default private key with a PEM key file. | `--key-file [value]` | Overrides `KEY_FILE` environment variable. | STRING | N/A | Mount this file into the container. For example, to set `/mykey.key`, add this option to `docker run`: `--mount type=bind,source=./mykey.key,target=/mykey.key`. Must be used with `--cert-path`. |
+| Specify a directory containing JavaScript initialization files. | `--init-data-path [value]` | Overrides `INIT_DATA_PATH` environment variable | STRING | `/init_doc_db.d` | Files are executed in alphabetical order with `mongosh`. Using this option also skips the built-in sample data. |
+| Skip initialization with built-in sample data. | `--skip-init-data` | Overrides `SKIP_INIT_DATA` environment variable | `true`, `false` | `false` | Skip creation of the built-in `sampledb` data. |
+| Enable telemetry data. | `--enable-telemetry [value]` | Overrides `ENABLE_TELEMETRY` environment variable | `true`, `false` | `false` | Enable telemetry data sent to the usage collector (Azure Application Insights). |
 | Specify log verbosity. | `--log-level [value]` | Overrides `LOG_LEVEL` environment variable. | `quiet`, `error`, `warn`, `info`, `debug`, `trace` | `info` | The verbosity of logs that will be emitted. |
 
 
 ## Feature support
 
-Please refer to the [documentdb](https://documentdb.io/docs/) documentation for currently supported features.
+See the [DocumentDB API reference](https://documentdb.io/docs/reference) for currently supported features.
 
 
 ## Installing certificates 
@@ -115,4 +117,4 @@ For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
 
 ## Reporting issues
 
-If you encounter issues with using this version of DoucmenttDB, open an issue in the GitHub repository (<https://github.com/documentdb/documentdb/issues>) and tag it with the label `documentdb-local`.
+If you encounter issues with using this version of DocumentDB, open an issue in the GitHub repository (<https://github.com/documentdb/documentdb/issues>) and tag it with the label `documentdb-local`.

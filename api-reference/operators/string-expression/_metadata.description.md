@@ -1,0 +1,1 @@
+String expression operators manipulate and evaluate string values within aggregation expressions. These operators enable string concatenation, case conversion, substring extraction, pattern matching, and other string transformations.

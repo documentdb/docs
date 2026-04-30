@@ -1,13 +1,13 @@
 ---
 title: $polygon
-description: The $polygon operator defines a polygon for geospatial queries, allowing you to find locations within an irregular shape.
+description: The $polygon operator defines a legacy coordinate polygon for $geoWithin queries.
 type: operators
 category: geospatial
 ---
 
 # $polygon
 
-The `$polygon` operator defines a polygon for geospatial queries, allowing you to find locations within an irregular shape. The operator is useful for querying locations within complex geographical boundaries.
+The `$polygon` operator defines a legacy coordinate polygon for `$geoWithin` queries. Use `$geometry` with GeoJSON `Polygon` when you need GeoJSON syntax.
 
 ## Syntax
 
@@ -15,12 +15,12 @@ The `$polygon` operator defines a polygon for geospatial queries, allowing you t
 {
   <location field>: {
     $geoWithin: {
-      $geometry: {
-        type: "Polygon",
-        coordinates: [
-          [[<longitude1>, <latitude1>], ..., [<longitudeN>, <latitudeN>], [<longitude1>, <latitude1>]]
-        ]
-      }
+      $polygon: [
+        [<x1>, <y1>],
+        [<x2>, <y2>],
+        [<x3>, <y3>],
+        ...
+      ]
     }
   }
 }
@@ -31,7 +31,7 @@ The `$polygon` operator defines a polygon for geospatial queries, allowing you t
 | Parameter | Description |
 |-----------|-------------|
 | `location field` | The field containing the geospatial data |
-| `coordinates` | An array of coordinate pairs forming the polygon. The first and last points must be identical to close the polygon |
+| `coordinates` | An array of legacy coordinate pairs forming the polygon. |
 
 ## Examples
 
@@ -131,15 +131,11 @@ The query retrieves stores that fall inside a custom polygon region based on the
 db.stores.find({
   location: {
     $geoWithin: {
-      $geometry: {
-        type: "Polygon",
-        coordinates: [[
-          [-141.9922, 16.8331],  // VanArsdel Picture Frame Store
-          [-112.7858, -29.1866], // First Up Consultants Microphone Bazaar
-          [-38.4071, -47.2548],  // Fabrikam Car Accessory Outlet
-          [-141.9922, 16.8331]   // Close the polygon by repeating first point
-        ]]
-      }
+      $polygon: [
+        [-141.9922, 16.8331],
+        [-112.7858, -29.1866],
+        [-38.4071, -47.2548]
+      ]
     }
   }
 },
