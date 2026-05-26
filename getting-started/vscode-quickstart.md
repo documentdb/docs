@@ -103,7 +103,7 @@ Get started with DocumentDB using the Visual Studio Code extension for a seamles
 
 3. Getting support
    - Visit our [GitHub repository](https://github.com/microsoft/vscode-documentdb)
-   - Join the community discussions on [Discord]()
+   - Join the community on [Discord](https://discord.gg/vH7bYu524D)
    - Check documentation
 
 ## Next Steps

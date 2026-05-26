@@ -115,4 +115,4 @@ For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
 
 ## Reporting issues
 
-If you encounter issues with using this version of DoucmenttDB, open an issue in the GitHub repository (<https://github.com/documentdb/documentdb/issues>) and tag it with the label `documentdb-local`.
+If you encounter issues with using this version of DocumentDB, open an issue in the GitHub repository (<https://github.com/documentdb/documentdb/issues>) and tag it with the label `documentdb-local`.

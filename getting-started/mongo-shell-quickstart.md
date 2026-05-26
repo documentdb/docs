@@ -1,348 +1,266 @@
 ---
 title: MongoDB Shell Quick Start
-description: Learn how to set up and use DocumentDB with Node.js using the official MongoDB Node.js driver.
+description: Get started with DocumentDB using the MongoDB shell (mongosh) for a familiar MongoDB-compatible experience.
 ---
 
-# Node.js Setup Guide
+# MongoDB Shell Quick Start
 
-Learn how to set up and use DocumentDB with Node.js using the official MongoDB Node.js driver.
+Get started with DocumentDB using the MongoDB shell (`mongosh`) for a familiar MongoDB-compatible experience.
 
 ## Prerequisites
 
-- Node.js 14.x or later
-- npm or yarn package manager
-- DocumentDB installed and running
-- Docker installed (if set up is not completed yet)
-- Basic Node.js knowledge
+- [MongoDB Shell (`mongosh`)](https://www.mongodb.com/try/download/shell) installed
+- [Docker Desktop](https://www.docker.com/) installed and running
+- Basic MongoDB knowledge
 
-## Project Setup (skip if already done)
+## Setting up DocumentDB locally
 
-Before connecting from Node.js, make sure you have a running DocumentDB instance using Docker:
+Pull the latest `documentdb-local` image and start the container. DocumentDB Local listens on port `10260` by default and requires the username and password to be set on first run.
 
-   ```bash
-   # Pull the latest DocumentDB Docker image
-   docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
+```bash
+# Pull the latest DocumentDB Docker image
+docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
 
-   # Tag the image for convenience
-   docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
+# Tag the image for convenience
+docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
 
-   # Run the container with your chosen username and password
-   docker run -dt -p 10260:10260 --name documentdb-container documentdb --username <YOUR_USERNAME> --password <YOUR_PASSWORD>
+# Run the container with your chosen username and password
+docker run -dt -p 10260:10260 --name documentdb-container documentdb --username <YOUR_USERNAME> --password <YOUR_PASSWORD>
+```
 
-   docker image rm -f ghcr.io/documentdb/documentdb/documentdb-local:latest
-  ```
-> **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. You must set these when creating the container for authentication to work.
+> **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. These must be set when creating the container for authentication to work.
 >
-> **Port Note:** Port `10260` is used by default in these instructions to avoid conflicts with other local database services. You can use port `27017` (the standard MongoDB port) or any other available port if you prefer. If you do, be sure to update the port number in both your `docker run` command and your connection string accordingly.
+> **Port note:** Port `10260` is used by default to avoid conflicts with other local database services. You can use port `27017` (the standard MongoDB port) or any other available port — update the port in the `docker run` command and your connection string accordingly.
 
-## Installation
+Confirm the container is running:
 
-1. Creating a new Node.js project
-   ```bash
-   mkdir my-documentdb-app
-   cd my-documentdb-app
-   npm init -y
-   ```
-
-2. Installing the MongoDB driver
-   ```bash
-   npm install mongodb
-   ```
+```bash
+docker ps
+```
 
 ## Connecting to DocumentDB
 
-```javascript
-const { MongoClient } = require('mongodb');
+DocumentDB Local terminates TLS on the gateway port. The container generates a new self-signed certificate on each start, so the simplest local connection skips certificate validation with `tlsAllowInvalidCertificates=true`.
 
-const uri = 'mongodb://localhost:27017';
-const client = new MongoClient(uri);
-
-async function connect() {
-  try {
-    await client.connect();
-    const db = client.db('your_database');
-    return db;
-  } catch (error) {
-    console.error('Connection error:', error);
-    throw error;
-  }
-}
+```bash
+mongosh "mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true"
 ```
+
+For instructions on installing the generated certificate so you can validate it normally, see [DocumentDB Local](https://documentdb.io/docs/documentdb-local).
 
 ## Basic Operations
 
-1. Creating collections
-   ```javascript
-   const collection = db.collection('your_collection');
-   ```
+### Create a database and collection
 
-2. Document operations
+```javascript
+// Switch to (or create) a database
+use mydb
 
-   **Insert operations**
-   ```javascript
-   // Insert a single document
-   const result = await collection.insertOne({ 
-     name: "John Doe", 
-     email: "john@example.com", 
-     created_at: new Date() 
-   });
-   console.log('Inserted document ID:', result.insertedId);
+// Create a collection
+db.createCollection("users")
+```
 
-   // Insert multiple documents
-   const documents = [
-     { name: "Jane Smith", email: "jane@example.com" },
-     { name: "Bob Johnson", email: "bob@example.com" }
-   ];
-   const result = await collection.insertMany(documents);
-   console.log('Inserted document IDs:', result.insertedIds);
-   ```
+### Insert documents
 
-   **Find operations**
-   ```javascript
-   // Find all documents
-   const allUsers = await collection.find({}).toArray();
-   console.log('All users:', allUsers);
+```javascript
+// Insert a single document
+db.users.insertOne({
+  name: "John Doe",
+  email: "john@example.com",
+  created_at: new Date()
+})
 
-   // Find with criteria
-   const user = await collection.findOne({ name: "John Doe" });
-   console.log('Found user:', user);
+// Insert multiple documents
+db.users.insertMany([
+  { name: "Jane Smith", email: "jane@example.com" },
+  { name: "Bob Johnson", email: "bob@example.com" }
+])
+```
 
-   // Find with projection
-   const users = await collection.find({}, { 
-     projection: { name: 1, email: 1, _id: 0 } 
-   }).toArray();
-   console.log('Users with projection:', users);
+### Query documents
 
-   // Complex queries
-   const recentUsers = await collection.find({
-     $and: [
-       { created_at: { $gte: new Date("2025-01-01") } },
-       { email: { $regex: "@example.com$" } }
-     ]
-   }).toArray();
-   console.log('Recent users:', recentUsers);
-   ```
+```javascript
+// Find all documents
+db.users.find()
 
-   **Update operations**
-   ```javascript
-   // Update a single document
-   const result = await collection.updateOne(
-     { name: "John Doe" },
-     { $set: { status: "active" } }
-   );
-   console.log('Modified count:', result.modifiedCount);
+// Find with a filter
+db.users.find({ name: "John Doe" })
 
-   // Update multiple documents
-   const result = await collection.updateMany(
-     { email: { $regex: "@example.com$" } },
-     { $set: { domain: "example.com" } }
-   );
-   console.log('Modified count:', result.modifiedCount);
-   ```
+// Find with a projection
+db.users.find({}, { name: 1, email: 1, _id: 0 })
 
-   **Delete operations**
-   ```javascript
-   // Delete a single document
-   const result = await collection.deleteOne({ name: "John Doe" });
-   console.log('Deleted count:', result.deletedCount);
+// Combine multiple operators
+db.users.find({
+  $and: [
+    { created_at: { $gte: new Date("2026-01-01") } },
+    { email: { $regex: "@example.com$" } }
+  ]
+})
+```
 
-   // Delete multiple documents
-   const result = await collection.deleteMany({ status: "inactive" });
-   console.log('Deleted count:', result.deletedCount);
-   ```
+### Update documents
 
-3. Working with indexes
-   ```javascript
-   // Create a single field index
-   await collection.createIndex({ email: 1 });
-   console.log('Created index on email field');
+```javascript
+// Update a single document
+db.users.updateOne(
+  { name: "John Doe" },
+  { $set: { status: "active" } }
+)
 
-   // Create a compound index
-   await collection.createIndex({ name: 1, email: 1 });
-   console.log('Created compound index on name and email');
+// Update many documents
+db.users.updateMany(
+  { email: { $regex: "@example.com$" } },
+  { $set: { domain: "example.com" } }
+)
+```
 
-   // Create a unique index
-   await collection.createIndex({ email: 1 }, { unique: true });
-   console.log('Created unique index on email');
+### Delete documents
 
-   // Create a text index
-   await collection.createIndex({ content: "text" });
-   console.log('Created text index on content field');
+```javascript
+// Delete a single document
+db.users.deleteOne({ name: "John Doe" })
 
-   // Create a geospatial index
-   await collection.createIndex({ location: "2dsphere" });
-   console.log('Created geospatial index on location field');
+// Delete many documents
+db.users.deleteMany({ status: "inactive" })
+```
 
-   // Create a vector index
-   await collection.createIndex({ 
-     embedding: "vector" 
-   }, { 
-     vectorOptions: { dimensions: 384 } 
-   });
-   console.log('Created vector index on embedding field');
+## Working with Indexes
 
-   // List all indexes
-   const indexes = await collection.indexes();
-   console.log('Collection indexes:', indexes);
-   ```
+DocumentDB supports many MongoDB-compatible index types, including single-field, compound, multi-key, partial, unique, text, geospatial, and vector indexes.
 
-4. Advanced operations
-   ```javascript
-   // Aggregation pipeline
-   const pipeline = [
-     { $match: { status: "completed" } },
-     { $group: {
-         _id: "$customer",
-         total: { $sum: "$amount" },
-         count: { $sum: 1 }
-     }},
-     { $sort: { total: -1 } }
-   ];
-   const results = await collection.aggregate(pipeline).toArray();
-   console.log('Aggregation results:', results);
+```javascript
+// Single field index
+db.users.createIndex({ email: 1 })
 
-   // Vector search operations
-   const vectorQuery = {
-     $vectorSearch: {
-       queryVector: [0.1, 0.2, 0.3],
-       path: "embedding",
-       numCandidates: 100,
-       limit: 10
-     }
-   };
-   const vectorResults = await collection.find(vectorQuery).toArray();
-   console.log('Vector search results:', vectorResults);
+// Compound index
+db.users.createIndex({ name: 1, email: 1 })
 
-   // Geospatial queries
-   const geoQuery = {
-     location: {
-       $near: {
-         $geometry: {
-           type: "Point",
-           coordinates: [-73.9667, 40.78]
-         },
-         $maxDistance: 1000
-       }
-     }
-   };
-   const geoResults = await collection.find(geoQuery).toArray();
-   console.log('Geospatial results:', geoResults);
+// Unique index
+db.users.createIndex({ email: 1 }, { unique: true })
 
-   // Text search
-   const textResults = await collection.find({
-     $text: { $search: "search term" }
-   }).toArray();
-   console.log('Text search results:', textResults);
-   ```
+// Text index
+db.articles.createIndex({ content: "text" })
 
-5. Complete example
-   ```javascript
-   const { MongoClient } = require('mongodb');
+// Geospatial (2dsphere) index
+db.places.createIndex({ location: "2dsphere" })
 
-   async function main() {
-     const uri = 'mongodb://localhost:10260';
-     const client = new MongoClient(uri);
+// Partial index
+db.orders.createIndex(
+  { orderDate: 1 },
+  { partialFilterExpression: { status: "active" } }
+)
+```
 
-     try {
-       await client.connect();
-       console.log('Connected to DocumentDB');
+To create a vector index on an embedding field, use the `cosmosSearchOptions` index spec accepted by the DocumentDB gateway:
 
-       const db = client.db('myapp');
-       const collection = db.collection('users');
+```javascript
+db.products.createIndex(
+  { embedding: "cosmosSearch" },
+  {
+    name: "vectorIndex",
+    cosmosSearchOptions: {
+      kind: "vector-ivf",
+      numLists: 100,
+      similarity: "COS",
+      dimensions: 384
+    }
+  }
+)
+```
 
-       // Create an index
-       await collection.createIndex({ email: 1 }, { unique: true });
+## Aggregation Pipelines
 
-       // Insert documents
-       const insertResult = await collection.insertMany([
-         { name: "John Doe", email: "john@example.com", age: 30 },
-         { name: "Jane Smith", email: "jane@example.com", age: 25 },
-         { name: "Bob Johnson", email: "bob@example.com", age: 35 }
-       ]);
-       console.log('Inserted documents:', insertResult.insertedIds);
+```javascript
+db.orders.aggregate([
+  { $match: { status: "completed" } },
+  { $group: {
+      _id: "$customer",
+      total: { $sum: "$amount" },
+      count: { $sum: 1 }
+  }},
+  { $sort: { total: -1 } }
+])
+```
 
-       // Find documents
-       const users = await collection.find({ age: { $gte: 30 } }).toArray();
-       console.log('Users 30 and older:', users);
+DocumentDB also supports stages such as `$lookup`, `$unwind`, `$facet`, `$bucket`, `$bucketAuto`, and many others. See the [API Reference](https://documentdb.io/docs/api-reference) for the full list.
 
-       // Update a document
-       const updateResult = await collection.updateOne(
-         { email: "john@example.com" },
-         { $set: { status: "active" } }
-       );
-       console.log('Updated document:', updateResult.modifiedCount);
+## Vector Search
 
-       // Aggregate data
-       const stats = await collection.aggregate([
-         { $group: { _id: null, avgAge: { $avg: "$age" }, count: { $sum: 1 } } }
-       ]).toArray();
-       console.log('User statistics:', stats[0]);
+```javascript
+db.products.aggregate([
+  {
+    $search: {
+      cosmosSearch: {
+        vector: [0.1, 0.2, 0.3],
+        path: "embedding",
+        k: 10
+      }
+    }
+  }
+])
+```
 
-     } catch (error) {
-       console.error('Error:', error);
-     } finally {
-       await client.close();
-       console.log('Disconnected from DocumentDB');
-     }
-   }
+## Geospatial Queries
 
-   main().catch(console.error);
-   ```
+```javascript
+db.places.find({
+  location: {
+    $near: {
+      $geometry: { type: "Point", coordinates: [-73.9667, 40.78] },
+      $maxDistance: 1000
+    }
+  }
+})
+```
 
-## Working with Promises and Async/Await
+## Diagnostics and Administration
 
-1. Promise-based operations
-2. Async/await patterns
-3. Error handling
-4. Connection management
+DocumentDB ships with a number of MongoDB-compatible administrative commands:
 
-## Advanced Features
+```javascript
+// Build info and server info
+db.runCommand({ buildInfo: 1 })
+db.runCommand({ hello: 1 })
 
-1. Bulk operations
-2. Aggregation framework
-3. Vector search
-4. Geospatial queries
-5. Change streams
-6. Transactions
+// Database and collection statistics
+db.stats()
+db.users.stats()
 
-## Error Handling
+// List databases (admin DB)
+db.adminCommand({ listDatabases: 1 })
 
-1. Connection errors
-2. Operation errors
-3. Timeout handling
-4. Retry strategies
+// Inspect or kill currently running operations
+db.currentOp()
+db.killOp(<opid>)
+
+// Validate a collection
+db.users.validate()
+
+// Compact a collection
+db.runCommand({ compact: "users" })
+```
+
+User and role management commands are also supported:
+
+```javascript
+// Users
+db.runCommand({ createUser: "alice", pwd: "secret", roles: [ { role: "readWrite", db: "mydb" } ] })
+db.runCommand({ usersInfo: 1 })
+
+// Roles
+db.runCommand({ createRole: "appWriter", privileges: [], roles: [ "readWrite" ] })
+db.runCommand({ rolesInfo: 1 })
+```
 
 ## Best Practices
 
-1. Connection pooling
-2. Query optimization
-3. Bulk operations
-4. Error handling
-5. Security considerations
-
-## Sample Applications
-
-1. Basic CRUD application
-2. REST API with Express
-3. Vector search example
-4. Real-time applications with change streams
-
-## Testing
-
-1. Setting up test environment
-2. Unit testing with Jest/Mocha
-3. Integration testing
-4. Mock testing
-
-## Deployment
-
-1. Development setup
-2. Production considerations
-3. Monitoring and logging
-4. Performance optimization
+- **Connection pooling:** reuse a single `mongosh` connection per session.
+- **Indexes:** create indexes that match your most frequent query and sort patterns. Use `db.collection.getIndexes()` to inspect existing indexes.
+- **Explain plans:** prefix queries with `.explain("executionStats")` to inspect how DocumentDB plans and executes them.
+- **TLS:** in production, always provide the gateway certificate via `--tlsCAFile` rather than disabling validation.
 
 ## Next Steps
 
-- Explore advanced features
-- Learn about indexing strategies
-- Build your first application 
+- Browse the [API Reference](https://documentdb.io/docs/api-reference) for the full list of supported commands, operators, and aggregation stages.
+- Connect from your application using the [Python](https://documentdb.io/docs/getting-started/python-setup) or [Node.js](https://documentdb.io/docs/getting-started/nodejs-setup) setup guides.
+- Use the [Visual Studio Code extension](https://documentdb.io/docs/getting-started/vscode-extension-guide) for a GUI experience over the same gateway.

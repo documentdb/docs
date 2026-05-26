@@ -11,10 +11,11 @@ DocumentDB is an open-source document database platform built on PostgreSQL. It 
 
 DocumentDB provides a NoSQL datastore implemented using PostgreSQL, giving developers complete visibility into the architecture and implementation of the engine. It's designed to offer:
 
-- Full compatibility with MongoDB wire protocol through the `pg_documentdb_api` layer
+- Full compatibility with the MongoDB wire protocol through the `pg_documentdb_gw` gateway
+- Public document CRUD and management APIs through the `pg_documentdb` extension
 - Native BSON document support via the `pg_documentdb_core` PostgreSQL extension
-- Advanced indexing capabilities including single field, multi-key, compound, text, and geospatial indexes
-- Vector search functionality powered by the `pg_vector` PostgreSQL extension
+- Advanced indexing capabilities including single field, multi-key, compound, text, geospatial, and vector indexes
+- Vector search functionality powered by the `pgvector` PostgreSQL extension
 - Enterprise-grade security with SCRAM authentication
 - Full PostgreSQL compatibility for advanced SQL operations
 
@@ -28,20 +29,25 @@ DocumentDB provides a NoSQL datastore implemented using PostgreSQL, giving devel
 
 ## Architecture Components
 
-DocumentDB consists of two primary components:
+DocumentDB consists of three primary components:
 
-1. **pg_documentdb_core**: A custom PostgreSQL extension that provides:
+1. **pg_documentdb_core**: A PostgreSQL extension that provides:
    - Native BSON data type support in PostgreSQL
    - Field-level indexing at any nesting depth
-   - Multi-key, compound, text, and geospatial indexing
-   - Vector search capabilities for AI/ML applications
-   - SCRAM authentication mechanism
+   - Multi-key, compound, text, and geospatial indexing primitives
+   - Foundational operators and helpers used by the higher layers
 
-2. **pg_documentdb_api**: The data plane implementing:
+2. **pg_documentdb**: The data plane implementing:
    - CRUD operations with MongoDB compatibility
-   - Advanced query functionality
+   - Advanced query and aggregation functionality
    - Index management and optimization
-   - Protocol translation layer for MongoDB wire protocol
+   - User and role management commands
+
+3. **pg_documentdb_gw**: The gateway that:
+   - Implements the MongoDB wire protocol
+   - Terminates TLS and authenticates clients (SCRAM-SHA-256 and Plain)
+   - Translates MongoDB commands into calls against `pg_documentdb`
+   - Manages cursors, sessions, and connection state for MongoDB drivers
 
 ## Common Use Cases
 
