@@ -48,6 +48,8 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
 
 ## Connecting to DocumentDB
 
+DocumentDB Local requires TLS and authentication on the gateway port. Connect with the username and password you set when starting the container, and because the container generates a new self-signed certificate on each start, the simplest local setup skips certificate validation with `tlsAllowInvalidCertificates=true` (in production, provide the gateway certificate instead).
+
 1. Basic Connection
    ```python
    import pymongo
@@ -55,7 +57,7 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
 
    # Create a MongoDB client and open a connection to DocumentDB
    client = pymongo.MongoClient(
-       'mongodb://localhost:10260'
+       'mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true'
    )
 
    # Specify the database to be used
@@ -69,7 +71,7 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
    ```python
    # With username and password
    client = pymongo.MongoClient(
-       'mongodb://username:password@localhost:10260'
+       'mongodb://username:password@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true'
    )
    ```
 
@@ -77,7 +79,7 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
    ```python
    # With additional options
    client = pymongo.MongoClient(
-       'mongodb://localhost:10260',
+       'mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true',
        maxPoolSize=50,
        retryWrites=False,
        w='majority'
@@ -261,7 +263,7 @@ from pymongo import MongoClient
 from datetime import datetime
 
 app = Flask(__name__)
-client = MongoClient('mongodb://localhost:27017/')
+client = MongoClient('mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true')
 db = client.sample_database
 
 @app.route('/users', methods=['GET'])

@@ -52,10 +52,12 @@ Before connecting from Node.js, make sure you have a running DocumentDB instance
 
 ## Connecting to DocumentDB
 
+DocumentDB Local requires TLS and authentication on the gateway port. Connect with the username and password you set when starting the container, and because the container generates a new self-signed certificate on each start, the simplest local setup skips certificate validation with `tlsAllowInvalidCertificates=true` (in production, provide the gateway certificate instead).
+
 ```javascript
 const { MongoClient } = require('mongodb');
 
-const uri = 'mongodb://localhost:27017';
+const uri = 'mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true';
 const client = new MongoClient(uri);
 
 async function connect() {
