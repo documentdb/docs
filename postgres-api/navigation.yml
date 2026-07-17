@@ -2,3 +2,5 @@
   link: index.md
 - title: Functions
   link: functions.md
+- title: Configuration
+  link: configuration.md
