@@ -1,0 +1,1 @@
+Diagnostic commands report the status, configuration, and version information of a DocumentDB server. Use them to inspect the topology, confirm connectivity, and determine which version of the DocumentDB engine you are connected to.
