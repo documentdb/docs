@@ -17,7 +17,7 @@ DocumentDB is configured at two layers: the PostgreSQL extension (via GUCs in `p
 | --- | --- | --- |
 | `documentdb.enableSchemaValidation` | `on` (since v0.114-0) | Enforces collection `$jsonSchema` validators on write operations. When `off`, a collection's validator is stored but not enforced. |
 
-Collections created with a `validator` (and a `validationLevel` other than `off`) have their JSON Schema enforced on `insert`, `update`, and `findAndModify`. Prior to v0.114-0 enforcement was opt-in; it is now enabled by default.
+Collections with a `validator` are enforced on `insert`, `update`, `findAndModify`, and aggregation output stages (`$merge`, `$out`) when the collection's `validationLevel` is not `off` and its `validationAction` is `error`. (A `validationAction` of `warn` is not rejected on the write path, and a write that sets `bypassDocumentValidation` skips enforcement — see `documentdb.enableBypassDocumentValidation`.) Prior to v0.114-0 enforcement was opt-in; it is now enabled by default.
 
 ### Non-blocking unique index builds
 
@@ -25,15 +25,17 @@ Collections created with a `validator` (and a `validationLevel` other than `off`
 | --- | --- | --- |
 | `documentdb.enableNonBlockingUniqueIndexBuild` | `on` (since v0.114-0) | Builds unique ordered indexes without holding a long write lock, using `CREATE INDEX CONCURRENTLY` with post-processing to register the exclusion constraint and validate existing rows. |
 
-When enabled, creating a unique index on an existing collection no longer blocks concurrent writes for the duration of the build.
+When enabled, creating a unique ordered index on an existing collection no longer blocks concurrent writes for the duration of the build.
 
 ## Gateway configuration
 
 The gateway (`pg_documentdb_gw`) reads its settings from a JSON configuration file and/or `DOCUMENTDB_*` environment variables. Environment variables override the JSON file, which makes them convenient for systemd-managed and container deployments. *(Environment-variable configuration added in v0.114-0.)*
 
+> **Note:** The packaged gateway service (its systemd unit and `gateway.env` file) is not yet published as a release asset — the v0.114-0 GitHub release ships the PostgreSQL extension packages only. The `DOCUMENTDB_*` settings below apply to the `documentdb-gateway` binary (which the `documentdb-local` container image configures internally) and to downstream packaging that installs the systemd unit.
+
 | Environment variable | Purpose |
 | --- | --- |
-| `DOCUMENTDB_PG_URL_FILE` | Path to a file containing the PostgreSQL connection URL, read at startup. For package-managed installs the URL must not contain a password — the gateway connects over a local Unix socket using peer authentication. |
+| `DOCUMENTDB_PG_URL_FILE` | Path to a file containing the PostgreSQL connection URL, read at startup. For package-managed installs the URL must not contain a password — the gateway connects over a local Unix socket using peer/trust authentication. |
 | `DOCUMENTDB_LISTEN_ADDR` | Address the gateway listens on, in `host:port` or `:port` form (for example `:10260`). |
 | `DOCUMENTDB_TLS_CERT_FILE` | Path to the TLS certificate file. |
 | `DOCUMENTDB_TLS_KEY_FILE` | Path to the TLS private key file. |
