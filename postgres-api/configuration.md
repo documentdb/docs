@@ -40,7 +40,7 @@ The gateway (`pg_documentdb_gw`) reads its settings from a JSON configuration fi
 | `DOCUMENTDB_TLS_CERT_FILE` | Path to the TLS certificate file. |
 | `DOCUMENTDB_TLS_KEY_FILE` | Path to the TLS private key file. |
 | `DOCUMENTDB_TLS_AUTO_GENERATE` | When `true`, auto-generate a self-signed certificate if no cert/key files are provided. |
-| `DOCUMENTDB_TLS_STATE_DIR` | Directory where an auto-generated certificate/key is written and re-read on restart (defaults to `/var/lib/documentdb-gateway/tls`). |
+| `DOCUMENTDB_TLS_STATE_DIR` | Directory where an auto-generated certificate/key is written and re-read on restart (defaults to `/var/lib/documentdb-gateway/tls`). When that directory is not writable — as in the `documentdb-local` container image — the gateway falls back to a per-user state directory under `$HOME/.local/state` and logs the path it chose. |
 | `DOCUMENTDB_LOG_LEVEL` | Log level for the gateway's tracing subscriber (for example `info`, `debug`). |
 
 For systemd-managed installs these are typically set through the unit's `EnvironmentFile` (for example `gateway.env`).

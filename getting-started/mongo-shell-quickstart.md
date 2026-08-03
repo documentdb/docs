@@ -15,7 +15,7 @@ Get started with DocumentDB using the MongoDB shell (`mongosh`) for a familiar M
 
 ## Setting up DocumentDB locally
 
-Pull the latest `documentdb-local` image and start the container. DocumentDB Local listens on port `10260` by default and requires the username and password to be set on first run.
+Pull the latest `documentdb-local` image and start the container. DocumentDB Local listens on port `10260` by default. Always set the username and password on first run - the container falls back to well-known built-in defaults otherwise.
 
 ```bash
 # Pull the latest DocumentDB Docker image
@@ -28,7 +28,7 @@ docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
 docker run -dt -p 10260:10260 --name documentdb-container documentdb --username <YOUR_USERNAME> --password <YOUR_PASSWORD>
 ```
 
-> **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. These must be set when creating the container for authentication to work.
+> **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. Always set them explicitly: if you omit them the container starts with the built-in `default_user` / `Admin100`, which are public and let anyone who can reach the published port authenticate as the admin user.
 >
 > **Port note:** Port `10260` is used by default to avoid conflicts with other local database services. You can use port `27017` (the standard MongoDB port) or any other available port — update the port in the `docker run` command and your connection string accordingly.
 
@@ -38,9 +38,15 @@ Confirm the container is running:
 docker ps
 ```
 
+`docker ps` reports the container as `Up` before DocumentDB can accept connections, so wait for the ready banner before connecting:
+
+```bash
+timeout 180 bash -c 'until docker logs documentdb-container 2>&1 | grep -q "=== DocumentDB is ready ==="; do sleep 2; done'
+```
+
 ## Connecting to DocumentDB
 
-DocumentDB Local terminates TLS on the gateway port. The container generates a self-signed certificate on first start and reuses it thereafter, so the simplest local connection skips certificate validation with `tlsAllowInvalidCertificates=true`.
+DocumentDB Local accepts TLS connections on the gateway port and requires authentication. The container generates a self-signed certificate on first start and reuses it thereafter, so the simplest local connection skips certificate validation with `tlsAllowInvalidCertificates=true`.
 
 ```bash
 mongosh "mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true"
