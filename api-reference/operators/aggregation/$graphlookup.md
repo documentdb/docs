@@ -216,5 +216,5 @@ The `maxDepth` message contains a non-breaking hyphen (U+2011) rather than an AS
 
 ## Related
 
-- [`$lookup`](./%24lookup.md) — joins a single level instead of recursing.
-- [`$unwind`](./%24unwind.md) — flattens the array produced in the `as` field.
+- [`$lookup`](https://documentdb.io/docs/reference/operators/aggregation/%24lookup/) — joins a single level instead of recursing.
+- [`$unwind`](https://documentdb.io/docs/reference/operators/aggregation/%24unwind/) — flattens the array produced in the `as` field.

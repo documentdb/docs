@@ -11,7 +11,7 @@ The `$search` stage in the aggregation pipeline runs a vector similarity search 
 
 `$search` must be the first stage in the pipeline, and the field named by `path` must be covered by a vector index.
 
-> `$search` in DocumentDB is a vector search stage. It does not accept text-search operators: a spec such as `{ $search: { text: { ... } } }` is rejected with `Unrecognized $search option: text`. For full-text queries, use the `$text` query operator against a text index. For new work, prefer [`$vectorSearch`](./%24vectorsearch.md), which is the current stage for vector search and takes a clearer spec; `$search` remains for compatibility with existing `cosmosSearch` and `knnBeta` queries.
+> `$search` in DocumentDB is a vector search stage. It does not accept text-search operators: a spec such as `{ $search: { text: { ... } } }` is rejected with `Unrecognized $search option: text`. For full-text queries, use the `$text` query operator against a text index. For new work, prefer [`$vectorSearch`](https://documentdb.io/docs/reference/operators/aggregation/%24vectorsearch/), which is the current stage for vector search and takes a clearer spec; `$search` remains for compatibility with existing `cosmosSearch` and `knnBeta` queries.
 
 ## Syntax
 
@@ -121,10 +121,10 @@ db.products.aggregate([
 
 - **`$search` must come first.** Placing it anywhere else fails with `$search must appear as the initial stage in the pipeline sequence.` The same applies when the pipeline already carries a limit ahead of it.
 - **One operator per spec.** The stage rejects a spec carrying more than one search operator, and a spec carrying none.
-- **`path` must be indexed.** The field named by `path` must be covered by a vector index; see [`$vectorSearch`](./%24vectorsearch.md) for creating one.
+- **`path` must be indexed.** The field named by `path` must be covered by a vector index; see [`$vectorSearch`](https://documentdb.io/docs/reference/operators/aggregation/%24vectorsearch/) for creating one.
 
 ## Related content
 
-- [`$vectorSearch`](./%24vectorsearch.md) — the current vector search stage, and the one to prefer for new queries.
-- [`$project`](./%24project.md) — shape the documents returned by the search.
-- [`$limit`](./%24limit.md) — narrow the result set further; `k` already bounds it.
+- [`$vectorSearch`](https://documentdb.io/docs/reference/operators/aggregation/%24vectorsearch/) — the current vector search stage, and the one to prefer for new queries.
+- [`$project`](https://documentdb.io/docs/reference/operators/aggregation/%24project/) — shape the documents returned by the search.
+- [`$limit`](https://documentdb.io/docs/reference/operators/aggregation/%24limit/) — narrow the result set further; `k` already bounds it.

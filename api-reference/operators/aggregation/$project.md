@@ -183,7 +183,7 @@ The DBRef field names `$id`, `$ref`, and `$db` are exempt, so `{ $project: { "$i
 
 ## Related
 
-- [`$addFields`](./%24addfields.md) — adds fields while keeping all existing ones.
-- [`$set`](./%24set.md) — alias for `$addFields`.
-- [`$unset`](./%24unset.md) — removes fields without switching the whole stage to exclusion semantics.
-- [`$meta`](../projection/%24meta.md) — surface search metadata, such as a `$vectorSearch` similarity score, as a projected field.
+- [`$addFields`](https://documentdb.io/docs/reference/operators/aggregation/%24addfields/) — adds fields while keeping all existing ones.
+- [`$set`](https://documentdb.io/docs/reference/operators/aggregation/%24set/) — alias for `$addFields`.
+- [`$unset`](https://documentdb.io/docs/reference/operators/aggregation/%24unset/) — removes fields without switching the whole stage to exclusion semantics.
+- [`$meta`](https://documentdb.io/docs/reference/operators/projection/%24meta/) — surface search metadata, such as a `$vectorSearch` similarity score, as a projected field.
