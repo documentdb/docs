@@ -40,7 +40,7 @@ docker ps
 
 ## Connecting to DocumentDB
 
-DocumentDB Local terminates TLS on the gateway port. The container generates a new self-signed certificate on each start, so the simplest local connection skips certificate validation with `tlsAllowInvalidCertificates=true`.
+DocumentDB Local terminates TLS on the gateway port. The container generates a self-signed certificate on first start and reuses it thereafter, so the simplest local connection skips certificate validation with `tlsAllowInvalidCertificates=true`.
 
 ```bash
 mongosh "mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true"

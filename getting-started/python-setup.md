@@ -48,7 +48,7 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
 
 ## Connecting to DocumentDB
 
-DocumentDB Local requires TLS and authentication on the gateway port. Connect with the username and password you set when starting the container, and because the container generates a new self-signed certificate on each start, the simplest local setup skips certificate validation with `tlsAllowInvalidCertificates=true` (in production, provide the gateway certificate instead).
+DocumentDB Local requires TLS and authentication on the gateway port. Connect with the username and password you set when starting the container, and because the container uses a self-signed certificate, the simplest local setup skips certificate validation with `tlsAllowInvalidCertificates=true` (in production, provide the gateway certificate instead).
 
 1. Basic Connection
    ```python
