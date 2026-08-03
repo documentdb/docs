@@ -27,6 +27,16 @@ Collections with a `validator` are enforced on `insert`, `update`, `findAndModif
 
 When enabled, creating a unique ordered index on an existing collection no longer blocks concurrent writes for the duration of the build.
 
+### Off-by-default feature flags
+
+These flags gate functionality that is otherwise silently unavailable — in each case the command still succeeds, so the symptom is a missing effect rather than an error.
+
+| GUC | Default | Description |
+| --- | --- | --- |
+| `documentdb.enableCompactVacuumFull` | `off` | Allows `compact` to run the blocking `VACUUM FULL` that actually reclaims space. While `off`, `compact` returns `{ "ok": 1, "bytesFreed": 0 }` without doing any work. |
+| `documentdb.enablePreImages` | `off` | Allows the `changeStreamPreAndPostImages` collection option. While `off`, `create` and `collMod` reject that option. |
+| `documentdb.indexBuildsScheduledOnBgWorker` | `off` | Drains the background index build queue from a PostgreSQL background worker instead of a pg_cron job. Leave `off` where pg_cron is configured and working; turn it on where pg_cron cannot run the job, otherwise queued index builds never start. |
+
 ## Gateway configuration
 
 The gateway (`pg_documentdb_gw`) reads its settings from a JSON configuration file and/or `DOCUMENTDB_*` environment variables. Environment variables override the JSON file, which makes them convenient for systemd-managed and container deployments. *(Environment-variable configuration added in v0.114-0.)*
