@@ -59,7 +59,7 @@ Promote the `staff.totalStaff` subdocument to the top level:
 ```javascript
 db.stores.aggregate([
   { $replaceRoot: { newRoot: "$staff.totalStaff" } },
-  { $limit: 2 }
+  { $limit: 1 }
 ])
 ```
 
@@ -87,7 +87,7 @@ db.stores.aggregate([
       }
     }
   },
-  { $limit: 2 }
+  { $limit: 1 }
 ])
 ```
 
