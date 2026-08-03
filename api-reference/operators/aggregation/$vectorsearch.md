@@ -280,7 +280,7 @@ This query returns the following result:
 
 Raise `numCandidates` when a search misses documents you expect it to find; the search explores a larger neighborhood before selecting the top `limit` results. The five-document collection used here is small enough that the search is exhaustive at any setting, so the value above changes nothing — `numCandidates` only begins to matter once the index is large enough that the HNSW graph is traversed rather than scanned.
 
-### Choosing numCandidates
+## Choosing numCandidates
 
 When `numCandidates` is omitted on an HNSW index, the default depends on the size of the collection, with a hard threshold at 10,000 rows:
 

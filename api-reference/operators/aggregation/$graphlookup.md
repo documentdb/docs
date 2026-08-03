@@ -185,6 +185,16 @@ This query returns the following result:
 
 Ana is reachable but her title is `VP, Retail`, so she is filtered out — and because the traversal cannot pass through an excluded document, anyone above her would be unreachable as well.
 
+## Limitations
+
+**`from` cannot be a sharded collection.** The traversal is refused before it begins:
+
+```
+$graphLookup using 'from' on a sharded collection is currently unsupported
+```
+
+The collection the pipeline runs *against* may be sharded; the restriction applies only to the collection named by `from`. Every example on this page uses `employees` in both roles, so sharding `employees` would stop all of them.
+
 ## Error cases
 
 | Problem | Error |
@@ -203,16 +213,6 @@ Ana is reachable but her title is `VP, Retail`, so she is filtered out — and b
 | `restrictSearchWithMatch` uses a proximity operator | `$near, $nearSphere and $geoNear cannot be used here. Use $geoWithin instead.` |
 
 The `maxDepth` message contains a non-breaking hyphen (U+2011) rather than an ASCII hyphen, so a literal string match against `non-negative` will not find it.
-
-## Limitations
-
-**`from` cannot be a sharded collection.** The traversal is refused before it begins:
-
-```
-$graphLookup using 'from' on a sharded collection is currently unsupported
-```
-
-The collection the pipeline runs *against* may be sharded; the restriction applies only to the collection named by `from`. Every example on this page uses `employees` in both roles, so sharding `employees` would stop all of them.
 
 ## Related
 
