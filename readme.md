@@ -31,6 +31,7 @@ Documentation articles are stored in the following folders:
 - `/architecture`
 - `/documentdb-local`
 - `/getting-started`
+- `/kubernetes-operator`
 - `/postgres-api`
 
 Each folder contains Markdown files (*\*.md*) and a *navigation.yml* file. Markdown files require the following YAML front matter metadata:
