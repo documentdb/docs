@@ -45,11 +45,10 @@ CONTAINER ID   IMAGE                                                            
 The entrypoint prints a ready banner once the gateway is accepting connections. Wait for it before connecting:
 
 ```bash
-timeout 180 bash -c 'until docker logs docdb 2>&1 | grep -q "=== DocumentDB is ready ==="; do sleep 2; done' \
-  && echo "DocumentDB is ready"
+until docker logs docdb 2>&1 | grep -q "=== DocumentDB is ready ==="; do sleep 2; done
 ```
 
-First start typically takes a few tens of seconds. If the wait times out, the container most likely exited during startup - check `docker ps -a` and `docker logs docdb` for the error.
+First start typically takes a few tens of seconds. If the command has not returned after a couple of minutes, the container most likely exited during startup - interrupt it and check `docker ps -a` and `docker logs docdb` for the error.
 
 > Use `docker logs docdb` rather than `docker logs -f docdb` to check readiness. The container streams the PostgreSQL, gateway, and entrypoint logs to stdout for its whole lifetime, so `-f` never returns.
 
@@ -84,7 +83,7 @@ The following table summarizes the available Docker commands for configuring the
 | Specify the password for DocumentDB. | `--password [value]` | Overrides `PASSWORD` environment variable | STRING | `Admin100` | Password for DocumentDB. Always set this explicitly. The built-in default is well known, and anyone who can reach the published port can authenticate with it. |
 | The port of the DocumentDB endpoint. | `--documentdb-port [value]` | Overrides `DOCUMENTDB_PORT` environment variable | INT | `10260` | The port needs to be published - for example, using `-p 10260:10260`. |
 | Specify a directory for data. | `--data-path [value]` | Overrides `DATA_PATH` environment variable. | STRING | `/data` | Data is not persisted unless you mount a volume at this path - for example, `-v documentdb-data:/data`. To use a different directory, set the mount and the flag together, keeping in mind that they go on opposite sides of the image name: `-v` / `--mount` is a `docker run` option and comes before it, `--data-path` is a container argument and comes after it. See the example below the table. |
-| Specify the owner. | `--owner [value]` | Overrides `OWNER` environment variable. | STRING | `documentdb` | The PostgreSQL role used to create the admin user. This image ships only the `documentdb` superuser, so leave it at the default: any other value fails with `role "<value>" does not exist` after PostgreSQL has already initialized, and the container exits. |
+| Specify the owner. | `--owner [value]` | Overrides `OWNER` environment variable. | STRING | `documentdb` | The PostgreSQL role used to create the admin user. The cluster this image initializes has a single superuser role, `documentdb`, so leave this at the default: any other value fails with `role "<value>" does not exist` after PostgreSQL has already initialized, and the container exits. |
 | Specify whether to start the PostgreSQL server. | `--start-pg [value]` | Overrides `START_POSTGRESQL` environment variable | `true`, `false` | `true` | Specify whether to start the PostgreSQL server. |
 | Specify whether to create a user. | `--create-user [value]` | Overrides `CREATE_USER` environment variable | `true`, `false` | `true` | Specify whether to create a user. |
 | Specify the port for the PostgreSQL server. | `--pg-port [value]` | Overrides `POSTGRESQL_PORT` environment variable | INT | `9712` | Specify the port for the PostgreSQL server. |
@@ -120,13 +119,13 @@ Please refer to the [documentdb](https://documentdb.io/docs/) documentation for 
 
 ## Installing certificates 
 
-If you do not supply your own certificate with `--cert-path` and `--key-file`, DocumentDB Local generates a self-signed certificate on first start and reuses it on subsequent starts of the same container, so `docker stop` / `docker start` keeps it stable. Removing and re-creating the container generates a new certificate unless you persist the directory it is stored in. The generated certificate is valid for 365 days and is not renewed automatically - re-create the container, or delete the files below, to generate a fresh one.
+If you do not supply your own certificate with `--cert-path` and `--key-file`, DocumentDB Local generates a self-signed certificate on first start and reuses it on subsequent starts of the same container, so `docker stop` / `docker start` keeps it stable. Removing and re-creating the container generates a new certificate unless you persist the directory it is stored in. The generated certificate is valid for 365 days and is not renewed automatically - re-create the container, or delete `cert.pem` from the state directory shown below, to generate a fresh one.
 
 To validate the certificate instead of skipping validation with `tlsAllowInvalidCertificates=true`, copy it out of the container and point `mongosh` at it.
 
 ### Get certificate
 
-The gateway picks its TLS state directory from the first writable candidate. In this image that resolves to a path under the container user's home directory, so no extra options are needed on the `docker run` above. In a `bash` window, copy the certificate from the container to the local host:
+The gateway picks its TLS state directory from the first writable candidate. In this image that resolves to a path under the container user's home directory, so no extra options are needed when starting the container. In a `bash` window, copy the certificate from the container to the local host:
 
 ```bash
 docker cp docdb:/home/documentdb/.local/state/documentdb-gateway/tls/cert.pem ~/documentdb-cert.pem
@@ -138,7 +137,19 @@ The gateway logs the path it actually chose on startup. Check there first if the
 docker logs docdb | grep "TLS auto-gen"
 ```
 
-To pin the location yourself - for example on a mounted volume, so the certificate survives re-creating the container - set `DOCUMENTDB_TLS_STATE_DIR` when you first start the container, and point it somewhere outside `--data-path`. The entrypoint runs `chmod -R 750` over the data directory on every start, which would loosen the private key's permissions on each restart.
+To keep the same certificate across re-creating the container, pin the location with `DOCUMENTDB_TLS_STATE_DIR` and put it inside the data volume:
+
+```bash
+docker run -dt \
+  -p 10260:10260 \
+  -v documentdb-data:/data \
+  -e DOCUMENTDB_TLS_STATE_DIR=/data/tls \
+  --name docdb \
+  ghcr.io/documentdb/documentdb/documentdb-local:latest \
+  --username demo --password test
+```
+
+Point it inside the data directory rather than at a volume of its own: the entrypoint takes ownership of the data directory on every start, whereas a separate volume is created root-owned and the gateway - which runs as an unprivileged user - cannot write its key there. The trade-off is that the same step runs `chmod -R 750` over that directory, so from the second start onwards the private key is group-readable rather than owner-only, and it is included in any backup of the data volume.
 
 ### Use the certificate with mongosh
 

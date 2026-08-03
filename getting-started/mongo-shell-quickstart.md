@@ -41,8 +41,10 @@ docker ps
 `docker ps` reports the container as `Up` before DocumentDB can accept connections, so wait for the ready banner before connecting:
 
 ```bash
-timeout 180 bash -c 'until docker logs documentdb-container 2>&1 | grep -q "=== DocumentDB is ready ==="; do sleep 2; done'
+until docker logs documentdb-container 2>&1 | grep -q "=== DocumentDB is ready ==="; do sleep 2; done
 ```
+
+If this has not returned after a couple of minutes, the container probably exited during startup - interrupt it and check `docker logs documentdb-container`.
 
 ## Connecting to DocumentDB
 
