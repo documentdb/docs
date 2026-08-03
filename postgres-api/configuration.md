@@ -37,6 +37,15 @@ These flags gate functionality that is otherwise silently unavailable — in eac
 | `documentdb.enablePreImages` | `off` | Allows the `changeStreamPreAndPostImages` collection option. While `off`, `create` and `collMod` reject that option. |
 | `documentdb.indexBuildsScheduledOnBgWorker` | `off` | Drains the background index build queue from a PostgreSQL background worker instead of a pg_cron job. Leave `off` where pg_cron is configured and working; turn it on where pg_cron cannot run the job, otherwise queued index builds never start. |
 
+### Role management flags
+
+Unlike the flags above, these two produce an error rather than a missing effect, so a caller sees the failure immediately.
+
+| GUC | Default | Description |
+| --- | --- | --- |
+| `documentdb.enableRoleCrud` | `off` (since v0.108-0) | Enables role CRUD through the data plane. While `off`, `create_role`, `drop_role`, and `roles_info` each raise before doing any work, for example "The CreateRole command is currently unsupported." Note that `update_role` is not implemented in any case. |
+| `documentdb.enableRolesAdminDBCheck` | `on` (since v0.109-0) | Requires the wire-protocol role commands to be issued against the `admin` database, raising "CreateRole must be called from 'admin' database." otherwise. The user management commands are governed separately by `documentdb.enableUsersAdminDBCheck`, which is `off` by default. |
+
 ## Gateway configuration
 
 The gateway (`pg_documentdb_gw`) reads its settings from a JSON configuration file and/or `DOCUMENTDB_*` environment variables. Environment variables override the JSON file, which makes them convenient for systemd-managed and container deployments. *(Environment-variable configuration added in v0.114-0.)*
