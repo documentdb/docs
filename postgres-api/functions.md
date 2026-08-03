@@ -53,7 +53,7 @@ Functions for managing collections, views, databases, and sharding.
 | Function | Description |
 | --- | --- |
 | `documentdb_api_internal.create_indexes_non_concurrently(database text, spec bson, skip_check_collection_create bool DEFAULT false)` | Creates one or more indexes in the foreground. Lives in the internal schema. |
-| `documentdb_api_internal.create_index_background(database text, spec bson)` | Schedules background index builds via the index queue (the default since v0.104-0). |
+| `documentdb_api.create_indexes_background(database text, spec bson)` | Submits background index build requests for a collection and waits for them to finish. |
 | `CALL documentdb_api.drop_indexes(database text, spec bson, INOUT retval bson DEFAULT NULL)` | Drops indexes via the wire-protocol `dropIndexes` command. Implemented as a `PROCEDURE`. |
 
 ## Diagnostic and Administration Commands
