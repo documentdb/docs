@@ -136,7 +136,7 @@ db.users.createIndex({ email: 1 })
 db.users.createIndex({ name: 1, email: 1 })
 
 // Unique index
-db.users.createIndex({ email: 1 }, { unique: true })
+db.users.createIndex({ username: 1 }, { unique: true })
 
 // Text index
 db.articles.createIndex({ content: "text" })
@@ -150,6 +150,8 @@ db.orders.createIndex(
   { partialFilterExpression: { status: "active" } }
 )
 ```
+
+When you don't pass a `name`, the index name is generated from its keys — `{ email: 1 }` becomes `email_1`. Creating two indexes on the same keys with different options therefore collides on that generated name and fails with `An existing index has the same name as the requested index`. Give one of them an explicit `name` if you need both.
 
 To create a vector index on an embedding field, use the `cosmosSearchOptions` index spec accepted by the DocumentDB gateway:
 
@@ -182,7 +184,7 @@ db.orders.aggregate([
 ])
 ```
 
-DocumentDB also supports stages such as `$lookup`, `$unwind`, `$facet`, `$bucket`, `$bucketAuto`, and many others. See the [API Reference](https://documentdb.io/docs/reference) for the full list.
+DocumentDB also supports stages such as `$lookup`, `$unwind`, `$facet`, `$bucket`, `$bucketAuto`, and many others. See the [API Reference](https://documentdb.io/docs/reference/) for the full list.
 
 ## Vector Search
 
@@ -244,13 +246,17 @@ User and role management commands are also supported:
 
 ```javascript
 // Users
-db.runCommand({ createUser: "alice", pwd: "secret", roles: [ { role: "readWrite", db: "mydb" } ] })
+db.runCommand({ createUser: "alice", pwd: "secret", roles: [ { role: "readAnyDatabase", db: "admin" } ] })
 db.runCommand({ usersInfo: 1 })
 
 // Roles
-db.runCommand({ createRole: "appWriter", privileges: [], roles: [ "readWrite" ] })
+db.runCommand({ createRole: "appReader", privileges: [], roles: [ "readAnyDatabase" ] })
 db.runCommand({ rolesInfo: 1 })
 ```
+
+DocumentDB does not implement per-database roles. `createUser` accepts exactly two role sets, both scoped to the `admin` database — `[{ role: "readAnyDatabase", db: "admin" }]` for read-only access, or `[{ role: "clusterAdmin", db: "admin" }, { role: "readWriteAnyDatabase", db: "admin" }]` for read-write access. Anything else, including `readWrite` or a `db` other than `admin`, is rejected. `createRole` inherits from the same set, and `readWriteAnyDatabase` and `clusterAdmin` must be named together.
+
+The role commands (`createRole`, `dropRole`, `rolesInfo`) are additionally gated behind the `documentdb.enableRoleCrud` GUC, which is `off` by default; `updateRole` is not implemented at all. Turn the GUC on before running the role examples above.
 
 ## Best Practices
 
@@ -261,6 +267,6 @@ db.runCommand({ rolesInfo: 1 })
 
 ## Next Steps
 
-- Browse the [API Reference](https://documentdb.io/docs/reference) for the full list of supported commands, operators, and aggregation stages.
+- Browse the [API Reference](https://documentdb.io/docs/reference/) for the full list of supported commands, operators, and aggregation stages.
 - Connect from your application using the [Python](https://documentdb.io/docs/getting-started/python-setup) or [Node.js](https://documentdb.io/docs/getting-started/nodejs-setup) setup guides.
 - Use the [Visual Studio Code extension](https://documentdb.io/docs/getting-started/vscode-extension-guide) for a GUI experience over the same gateway.

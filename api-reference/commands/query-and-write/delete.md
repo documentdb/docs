@@ -161,16 +161,33 @@ db.stores.deleteOne({"_id": "68471088-4d45-4164-ae58-a9428d12f310"})
 ### Example 3 - Delete all documents that match a specified query filter
 
 ```javascript
-db.stores.deleteMany({"promotionEvents.discounts.discountPercentage": 21}, {"limit": 0})
+db.stores.deleteMany({"promotionEvents.discounts.discountPercentage": 21})
 ```
 
-### Example 3 - Delete only one of many documents that match a specified query filter
+### Example 4 - Delete only one of many documents that match a specified query filter
+
+Use `deleteOne` rather than `deleteMany`. There is no shell option that limits `deleteMany` to a single document — `limit` is a field of the wire-protocol `deletes` array element (see below), not a `deleteMany` option, and passing it here has no effect.
 
 ```javascript
-db.stores.deleteMany({"promotionEvents.discounts.discountPercentage": 21}, {"limit": 1})
+db.stores.deleteOne({"promotionEvents.discounts.discountPercentage": 21})
 ```
+
+## Wire protocol form
+
+The shell helpers above are wrappers over the `delete` command. Each element of the `deletes` array carries its own `limit`, which must be `0` (delete every match) or `1` (delete at most one match); any other value is rejected with `The limit field in delete objects must be 0 or 1`.
+
+```javascript
+db.runCommand({
+   delete: "stores",
+   deletes: [
+      { q: {"promotionEvents.discounts.discountPercentage": 21}, limit: 1 }
+   ]
+})
+```
+
+`deleteOne` sends `limit: 1`; `deleteMany` sends `limit: 0`.
 
 ## Related content
 
-- [insert with DocumentDB](../insert/)
-- [update with DocumentDB](../update/)
+- [insert with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/insert/)
+- [update with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/update/)

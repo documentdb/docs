@@ -37,7 +37,7 @@ The DocumentDB implementation consists of three PostgreSQL extensions that work 
 
 ### Usage
 
-To use `pg_documentdb`, you need to have `pg_documentdb_core` installed and configured in your PostgreSQL environment. Once set up, you can leverage the APIs provided by `pg_documentdb` to perform document operations from any PostgreSQL client. For the full list of callable functions, see [Functions](functions/).
+To use `pg_documentdb`, you need to have `pg_documentdb_core` installed and configured in your PostgreSQL environment. Once set up, you can leverage the APIs provided by `pg_documentdb` to perform document operations from any PostgreSQL client. For the full list of callable functions, see [Functions](https://documentdb.io/docs/postgres-api/functions/).
 
 ## pg_documentdb_gw
 
@@ -47,7 +47,7 @@ To use `pg_documentdb`, you need to have `pg_documentdb_core` installed and conf
 
 - **MongoDB Wire Protocol:** Parses MongoDB wire protocol messages (`OP_MSG`, `OP_QUERY`, `OP_INSERT`, etc.) and dispatches them to the corresponding `pg_documentdb` SQL functions.
 
-- **Authentication:** Supports SCRAM-SHA-256 and Plain authentication (including EntraId token-based Plain Auth introduced in v0.106-0).
+- **Authentication:** SCRAM-SHA-256. It is the only mechanism advertised in the `hello`/`isMaster` handshake, and the only one usable against a stock build. The gateway also accepts `MONGODB-OIDC` at SASL start for token-based authentication, but that path delegates to a `documentdb_api_internal.authenticate_token` function the extensions do not define, so it requires a deployment-supplied token provider. `PLAIN` is rejected.
 
 - **TLS Termination:** Terminates TLS on the gateway port (default `10260`), allowing drivers to connect over the standard MongoDB-style `mongodb://` connection string with `tls=true`.
 

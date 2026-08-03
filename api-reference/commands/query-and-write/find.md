@@ -345,5 +345,5 @@ One of the documents returned shows the specified array elements projected in th
 
 ## Related content
 
-- [insert with DocumentDB](../insert/)
-- [update with DocumentDB](../update/)
+- [insert with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/insert/)
+- [update with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/update/)

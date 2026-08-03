@@ -7,7 +7,7 @@ category: aggregation
 
 # $bucketAuto
 
-The `$bucketAuto` stage categorizes documents into a specified number of buckets, attempting to evenly distribute the documents based on the values of a `groupBy` expression. Unlike [`$bucket`](../%24bucket/), you do not have to provide boundaries — DocumentDB computes them for you.
+The `$bucketAuto` stage categorizes documents into a specified number of buckets, attempting to evenly distribute the documents based on the values of a `groupBy` expression. Unlike [`$bucket`](https://documentdb.io/docs/reference/operators/aggregation/%24bucket/), you do not have to provide boundaries — DocumentDB computes them for you.
 
 Supported since `v0.105-0`.
 
@@ -39,8 +39,11 @@ Supported since `v0.105-0`.
 ## Behavior
 
 - `$bucketAuto` outputs documents with an `_id` of the form `{ "min": <lower>, "max": <upper> }`, representing the bucket's lower and upper boundary. The upper boundary is exclusive for all buckets except the last, which includes its upper boundary.
-- When the number of distinct `groupBy` values is less than `buckets`, the stage produces fewer buckets than requested.
-- When `granularity` is specified, the computed boundaries are rounded outward to the nearest preferred number.
+- Without `granularity`, a non-last bucket's `max` is the first `groupBy` value of the *next* bucket, so adjacent buckets share a boundary. The last bucket's `max` is its own largest value.
+- Documents are distributed as evenly as the input allows: with `n` documents and `b` buckets each bucket takes `floor(n / b)` documents, and the first `n mod b` buckets take one extra. A bucket is then extended to absorb any following documents that tie with its largest value, so that equal values never straddle a boundary.
+- The stage can produce fewer buckets than requested — when the number of distinct `groupBy` values is less than `buckets`, and also whenever `granularity` rounding absorbs documents (see below).
+- When `granularity` is specified, the first bucket's `min` is rounded down to the nearest series value strictly below it, and every bucket's `max` is rounded up to the nearest series value strictly above it; each later bucket's `min` is simply the previous bucket's `max`. Because a rounded-up `max` can exceed values that were assigned to later buckets, those documents are pulled into the current bucket, which is why the result often has fewer buckets than requested. Boundaries produced this way are doubles.
+- With `granularity`, every `groupBy` value must be numeric and non-negative; a non-numeric value fails with `$bucketAuto only allows specifying a 'granularity' with numeric boundaries`.
 
 ## Examples
 
@@ -82,15 +85,17 @@ Sample output:
 
 ```json
 [
-  { "_id": { "min": 3,  "max": 18  }, "count": 3, "avgPrice": 9.67 },
-  { "_id": { "min": 18, "max": 45  }, "count": 3, "avgPrice": 28.33 },
-  { "_id": { "min": 45, "max": 230 }, "count": 2, "avgPrice": 145 }
+  { "_id": { "min": 3,  "max": 18  }, "count": 3, "avgPrice": 7.666666666666667 },
+  { "_id": { "min": 18, "max": 60  }, "count": 3, "avgPrice": 32.666666666666664 },
+  { "_id": { "min": 60, "max": 230 }, "count": 2, "avgPrice": 145 }
 ]
 ```
 
+Eight documents into three buckets gives sizes 3, 3, 2. The buckets hold prices `3, 8, 12`, then `18, 35, 45`, then `60, 230`. Each non-last bucket reports the next bucket's first price as its `max`, so the first bucket ends at `18` and the second at `60`.
+
 ### Example 2: Buckets with rounded boundaries via `granularity`
 
-Group prices into four buckets rounded to a power-of-two series:
+Request four buckets rounded to a power-of-two series:
 
 ```javascript
 db.sales.aggregate([
@@ -108,14 +113,15 @@ Sample output:
 
 ```json
 [
-  { "_id": { "min": 2,   "max": 16  }, "count": 3 },
-  { "_id": { "min": 16,  "max": 32  }, "count": 1 },
-  { "_id": { "min": 32,  "max": 64  }, "count": 2 },
-  { "_id": { "min": 64,  "max": 256 }, "count": 2 }
+  { "_id": { "min": 2,  "max": 16  }, "count": 3 },
+  { "_id": { "min": 16, "max": 64  }, "count": 4 },
+  { "_id": { "min": 64, "max": 256 }, "count": 1 }
 ]
 ```
 
+Four buckets were requested but three are returned. The even split would have put `3, 8` in the first bucket, but rounding its `max` up from `8` to `16` pulls in `12` as well. The second bucket starts at `18`, and rounding its `max` up from `35` to `64` absorbs `45` and `60`, leaving only `230` for the third bucket.
+
 ## See Also
 
-- [`$bucket`](../%24bucket/) — fixed-boundary bucketing.
-- [`$group`](../%24group/) — generic grouping by an expression.
+- [`$bucket`](https://documentdb.io/docs/reference/operators/aggregation/%24bucket/) — fixed-boundary bucketing.
+- [`$group`](https://documentdb.io/docs/reference/operators/aggregation/%24group/) — generic grouping by an expression.

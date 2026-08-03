@@ -197,5 +197,5 @@ db.stores.updateOne({"_id": "NonExistentDocId"}, {"$set": {"name": "Lakeshore Re
 
 ## Related content
 
-- [insert with DocumentDB](../insert/)
-- [delete with DocumentDB](../delete/)
+- [insert with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/insert/)
+- [delete with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/delete/)

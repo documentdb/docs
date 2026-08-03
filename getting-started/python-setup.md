@@ -282,5 +282,5 @@ if __name__ == '__main__':
 
 ## Next Steps
 
-- Explore advanced features in the [API Reference](https://documentdb.io/docs/reference)
-- Check out the [MongoDB Shell Guide](mongo-shell-quickstart.md) for additional query examples 
+- Explore advanced features in the [API Reference](https://documentdb.io/docs/reference/)
+- Check out the [MongoDB Shell Guide](https://documentdb.io/docs/getting-started/mongo-shell-quickstart/) for additional query examples

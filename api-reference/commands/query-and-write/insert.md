@@ -29,11 +29,11 @@ db.collection.insert(
 | --- | --- |
 | **`<single document or array of documents>`** | The document or array of documents to insert into the collection|
 | **`writeConcern`** | (Optional) A document expressing the write concern. The write concern describes the level of acknowledgment requested from the server for the write operation|
-| **`ordered`** | (Optional) If `true`, the server inserts the documents in the order provided. If `false`, the server can insert the documents in any order and will attempt to insert all documents regardless of errors|
+| **`ordered`** | (Optional) Defaults to `true`. If `true`, the server inserts the documents in the order provided and stops at the first failure. If `false`, the server can insert the documents in any order and will attempt to insert all documents regardless of errors|
 
 - `<single document or array of documents>`: The document or array of documents to insert into the collection.
 - `writeConcern`: Optional. A document expressing the write concern. The write concern describes the level of acknowledgment requested from the server for the write operation.
-- `ordered`: Optional. If `true`, the server inserts the documents in the order provided. If `false`, the server can insert the documents in any order and will attempt to insert all documents regardless of errors.
+- `ordered`: Optional. Defaults to `true`. If `true`, the server inserts the documents in the order provided and stops at the first failure. If `false`, the server can insert the documents in any order and will attempt to insert all documents regardless of errors.
 
 ## Example(s)
 
@@ -237,7 +237,7 @@ If a duplicate value for the _id field is specified, a duplicate key violation e
 
 ### Inserting multiple documents in order
 
-Documents that are inserted in bulk can be inserted in order when specifying "ordered": true
+Documents inserted in bulk are inserted in the order provided, and the batch stops at the first failure. This is the default, so `ordered: true` below is explicit rather than required. Pass `ordered: false` instead when you want the server to attempt every document regardless of errors.
 
 ```javascript
 db.stores.insertMany([
@@ -335,7 +335,7 @@ db.stores.insertMany([
       }
     ]
   }
-], "ordered": true)
+], { ordered: true })
 ```
 
 The ordered insert command returns a response confirming the order in which documents were inserted:
@@ -352,5 +352,5 @@ The ordered insert command returns a response confirming the order in which docu
 
 ## Related content
 
-- [update with DocumentDB](../update/)
-- [find with DocumentDB](../find/)
+- [update with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/update/)
+- [find with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/find/)
