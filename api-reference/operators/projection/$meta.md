@@ -35,7 +35,7 @@ db.collection.find({
 | Keyword | Returns |
 | --- | --- |
 | **`textScore`** | The relevance score of a `$text` search. |
-| **`searchScore`** | The similarity score of a [`$vectorSearch`](../aggregation/%24vectorsearch.md). |
+| **`searchScore`** | The similarity score of a [`$vectorSearch`](https://documentdb.io/docs/reference/operators/aggregation/%24vectorsearch/). |
 | **`vectorSearchScore`** | Alias for `searchScore`; the keyword MongoDB Atlas uses with `$vectorSearch`. |
 | **`indexKey`** | Not supported — rejected with `Returning indexKey for $meta not supported`. |
 

@@ -326,6 +326,6 @@ Documents returned by `$vectorSearch` carry an internal `__cosmos_meta__` field 
 
 ## Related
 
-- [`$limit`](./%24limit.md) — `$vectorSearch` takes its own `limit`; a later `$limit` can narrow the result further.
-- [`$project`](./%24project.md) — shape the results, and surface the similarity score with `$meta`.
-- [`$meta`](../projection/%24meta.md) — the metadata operator used to project `searchScore`.
+- [`$limit`](https://documentdb.io/docs/reference/operators/aggregation/%24limit/) — `$vectorSearch` takes its own `limit`; a later `$limit` can narrow the result further.
+- [`$project`](https://documentdb.io/docs/reference/operators/aggregation/%24project/) — shape the results, and surface the similarity score with `$meta`.
+- [`$meta`](https://documentdb.io/docs/reference/operators/projection/%24meta/) — the metadata operator used to project `searchScore`.

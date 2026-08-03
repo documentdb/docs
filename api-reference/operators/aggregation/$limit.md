@@ -124,5 +124,5 @@ A value that cannot be represented as a 64-bit integer is also rejected.
 
 ## Related
 
-- [`$skip`](./%24skip.md) — skips documents instead of truncating the result.
-- [`$sort`](./%24sort.md) — order documents before limiting them.
+- [`$skip`](https://documentdb.io/docs/reference/operators/aggregation/%24skip/) — skips documents instead of truncating the result.
+- [`$sort`](https://documentdb.io/docs/reference/operators/aggregation/%24sort/) — order documents before limiting them.
