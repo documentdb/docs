@@ -23,3 +23,21 @@ To customize the documentation:
 
 - **Landing page descriptions**: Update the `_metadata.description.md` file in each folder to change the description shown on the landing page.
 - **Metadata**: Modify the YAML front matter in each article to update metadata (SEO, category, type, etc.) for individual pages.
+
+### Articles
+
+Documentation articles are stored in the following folders:
+
+- `/architecture`
+- `/documentdb-local`
+- `/getting-started`
+- `/postgres-api`
+
+Each folder contains Markdown files (*\*.md*) and a *navigation.yml* file. Markdown files require the following YAML front matter metadata:
+
+| | Description |
+| --- | --- |
+| **`title`** | The title of the page rendered at the top of the article and in the browser tab/window. |
+| **`description`** | The description of the page for SEO metadata and social media sharing. |
+
+Articles **must** also be included in the *navigation.yml* file in order to appear in the navigation bar for the documentation site.
