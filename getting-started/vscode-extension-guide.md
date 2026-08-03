@@ -238,7 +238,7 @@ db.collection.getIndexes()
 #### Creating Indexes
 ```javascript
 // Create a single field index
-db.collection.createIndex({ "email": 1 })
+db.collection.createIndex({ "createdAt": 1 })
 
 // Create a compound index
 db.collection.createIndex({ "lastName": 1, "firstName": 1 })

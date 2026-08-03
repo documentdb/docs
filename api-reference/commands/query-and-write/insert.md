@@ -338,7 +338,7 @@ db.stores.insertMany([
 ], { ordered: true })
 ```
 
-The ordered insert command returns a response confirming the order in which documents were inserted:
+A successful insert returns the ids of the inserted documents, keyed by their position in the input array. Note that `insertedIds` reports input positions, not execution order, so its shape is the same under `ordered: false` — it is not a way to confirm the order in which documents were applied:
 
 ```json
 {

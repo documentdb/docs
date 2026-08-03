@@ -45,7 +45,7 @@ DocumentDB consists of three primary components:
 
 3. **pg_documentdb_gw**: The gateway that:
    - Implements the MongoDB wire protocol
-   - Terminates TLS and authenticates clients (SCRAM-SHA-256 and Plain)
+   - Terminates TLS and authenticates clients (SCRAM-SHA-256)
    - Translates MongoDB commands into calls against `pg_documentdb`
    - Manages cursors, sessions, and connection state for MongoDB drivers
 
