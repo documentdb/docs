@@ -62,15 +62,15 @@ DocumentDB consists of three primary components:
 Choose the getting started guide that best fits your needs:
 
 ### Quick Start Guides
-- [VS Code Extension Quick Start](https://documentdb.io/docs/getting-started/vscode-quickstart) - Recommended for developers new to DocumentDB
-- [VS Code Extension Guide](https://documentdb.io/docs/getting-started/vscode-extension-guide) - Comprehensive guide to the VS Code extension
+- [VS Code Extension Quick Start](https://documentdb.io/docs/getting-started/vscode-quickstart/) - Recommended for developers new to DocumentDB
+- [VS Code Extension Guide](https://documentdb.io/docs/getting-started/vscode-extension-guide/) - Comprehensive guide to the VS Code extension
 
 ### Language-Specific Guides
-- [Python Setup Guide](https://documentdb.io/docs/getting-started/python-setup) - Using DocumentDB with Python applications
-- [Node.js Setup Guide](https://documentdb.io/docs/getting-started/nodejs-setup) - Using DocumentDB with Node.js applications
+- [Python Setup Guide](https://documentdb.io/docs/getting-started/python-setup/) - Using DocumentDB with Python applications
+- [Node.js Setup Guide](https://documentdb.io/docs/getting-started/nodejs-setup/) - Using DocumentDB with Node.js applications
 
 ### Deployment Options
-- [Pre-built Packages](https://documentdb.io/docs/getting-started/prebuilt-packages) - Download and install ready-to-use packages
+- [Pre-built Packages](https://documentdb.io/docs/getting-started/prebuilt-packages/) - Download and install ready-to-use packages
 
 ## Community and Support
 
@@ -86,5 +86,5 @@ Choose the getting started guide that best fits your needs:
 ## Next Steps
 
 After choosing your preferred getting started path:
-- Explore our [API Reference](https://documentdb.io/docs/reference) for detailed documentation
+- Explore our [API Reference](https://documentdb.io/docs/reference/) for detailed documentation
 - Join our community to contribute and get support 

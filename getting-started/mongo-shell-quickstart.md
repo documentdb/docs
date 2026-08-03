@@ -46,7 +46,7 @@ DocumentDB Local terminates TLS on the gateway port. The container generates a n
 mongosh "mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true"
 ```
 
-For instructions on installing the generated certificate so you can validate it normally, see [DocumentDB Local](https://documentdb.io/docs/documentdb-local).
+For instructions on installing the generated certificate so you can validate it normally, see [DocumentDB Local](https://documentdb.io/docs/documentdb-local/).
 
 ## Basic Operations
 
@@ -166,11 +166,13 @@ db.products.createIndex(
       kind: "vector-ivf",
       numLists: 100,
       similarity: "COS",
-      dimensions: 384
+      dimensions: 3
     }
   }
 )
 ```
+
+`dimensions` must match the length of the vectors you store and query — a query vector of a different length is rejected. Three is used here only to keep the example short; a real embedding field is typically 384, 768, or 1536 wide, depending on the model.
 
 ## Aggregation Pipelines
 
@@ -189,6 +191,8 @@ db.orders.aggregate([
 DocumentDB also supports stages such as `$lookup`, `$unwind`, `$facet`, `$bucket`, `$bucketAuto`, and many others. See the [API Reference](https://documentdb.io/docs/reference/) for the full list.
 
 ## Vector Search
+
+This queries the `vectorIndex` created above, so the query vector has the same three dimensions the index declares:
 
 ```javascript
 db.products.aggregate([
@@ -244,9 +248,7 @@ db.users.validate()
 db.runCommand({ compact: "users" })
 ```
 
-User and role management commands are also supported:
-
-The role commands must be run from the `admin` database, and they are gated behind a server setting that is off by default. Enable it once, as a Postgres superuser, before running the role examples:
+User and role management commands are also supported, with two caveats specific to roles: they must be run from the `admin` database, and they are gated behind a server setting that is off by default. Enable it once, as a Postgres superuser, before running the role examples:
 
 ```sql
 ALTER SYSTEM SET documentdb.enableRoleCrud = on;
@@ -280,5 +282,5 @@ DocumentDB does not implement per-database roles. `createUser` takes role **docu
 ## Next Steps
 
 - Browse the [API Reference](https://documentdb.io/docs/reference/) for the full list of supported commands, operators, and aggregation stages.
-- Connect from your application using the [Python](https://documentdb.io/docs/getting-started/python-setup) or [Node.js](https://documentdb.io/docs/getting-started/nodejs-setup) setup guides.
-- Use the [Visual Studio Code extension](https://documentdb.io/docs/getting-started/vscode-extension-guide) for a GUI experience over the same gateway.
+- Connect from your application using the [Python](https://documentdb.io/docs/getting-started/python-setup/) or [Node.js](https://documentdb.io/docs/getting-started/nodejs-setup/) setup guides.
+- Use the [Visual Studio Code extension](https://documentdb.io/docs/getting-started/vscode-extension-guide/) for a GUI experience over the same gateway.
