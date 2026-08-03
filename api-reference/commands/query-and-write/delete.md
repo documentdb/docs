@@ -146,7 +146,7 @@ Consider this sample document from the stores collection in the StoreData databa
 }
 ```
 
-The sample store above runs two promotion events, and three of its discounts are at 19%, so the filter `"promotionEvents.discounts.discountPercentage": 19` matches it. The examples are ordered so that the destructive one comes last.
+The sample store above runs two promotion events, and three of its discounts are at 19%, so the filter `"promotionEvents.discounts.discountPercentage": 19` matches it. Each example below is independent and assumes the collection is fully populated; they are ordered so that the destructive one comes last.
 
 ### Example 1 - Delete a document that matches a specified query filter
 
