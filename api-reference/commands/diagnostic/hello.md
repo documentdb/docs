@@ -105,4 +105,4 @@ The first value is the installed SQL extension version — the schema version, f
 
 ## Related content
 
-- [DocumentDB Local](https://documentdb.io/docs/documentdb-local)
+- [DocumentDB Local](https://documentdb.io/docs/documentdb-local/)

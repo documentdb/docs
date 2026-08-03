@@ -238,7 +238,7 @@ db.collection.getIndexes()
 #### Creating Indexes
 ```javascript
 // Create a single field index
-db.collection.createIndex({ "email": 1 })
+db.collection.createIndex({ "createdAt": 1 })
 
 // Create a compound index
 db.collection.createIndex({ "lastName": 1, "firstName": 1 })
@@ -355,6 +355,6 @@ The VS Code extension is particularly useful for migrating from MongoDB to Docum
 
 ## Next Steps
 
-- Learn about [DocumentDB Features](https://documentdb.io/docs/reference) for advanced capabilities
+- Learn about [DocumentDB Features](https://documentdb.io/docs/reference/) for advanced capabilities
 - Join our [Discord community](https://discord.gg/vH7bYu524D) for support and discussions
 - Report issues and contribute on [GitHub](https://github.com/documentdb/documentdb)

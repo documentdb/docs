@@ -160,11 +160,13 @@ Functions for creating, updating, and managing database users. Backed by the wir
 
 All four role functions were added in v0.106-0, together with wire-protocol support for `createRole`. Support for the `dropRole` and `rolesInfo` commands followed in v0.108-0. `updateRole` is routed by the gateway to `documentdb_api.update_role`.
 
+All of them are gated behind `documentdb.enableRoleCrud`, added in v0.108-0 and off by default, so on a stock build `create_role`, `drop_role`, and `roles_info` raise "The CreateRole command is currently unsupported." and its equivalents before doing any work. The wire-protocol commands are additionally required to run against the `admin` database (`documentdb.enableRolesAdminDBCheck`, on by default since v0.109-0); the user management functions above are not.
+
 | Function | Description |
 | --- | --- |
 | `documentdb_api.create_role(p_spec bson)` | Creates a new role. |
 | `documentdb_api.drop_role(p_spec bson)` | Drops an existing role. |
-| `documentdb_api.update_role(p_spec bson)` | Updates an existing role's privileges or inherited roles. |
+| `documentdb_api.update_role(p_spec bson)` | Not implemented. The function body is a bare `ereport(ERROR)`, so every call raises "UpdateRole command is not supported in preview." regardless of the spec or of `enableRoleCrud`. |
 | `documentdb_api.roles_info(p_spec bson)` | Returns information about one or more roles. |
 
 ## Utility Functions
@@ -187,4 +189,4 @@ SELECT * FROM documentdb_api.insert(
 
 Because `insert` declares two `OUT` parameters, `SELECT *` returns them as the named columns `p_result` and `p_success`. Dropping the `*` would collapse them into a single composite value.
 
-For more complete examples (cursors, aggregation, sharding) see the [API Reference](https://documentdb.io/docs/api-reference).
+For more complete examples (cursors, aggregation, sharding) see the [API Reference](https://documentdb.io/docs/reference/).

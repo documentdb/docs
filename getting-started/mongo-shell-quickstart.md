@@ -46,7 +46,7 @@ DocumentDB Local terminates TLS on the gateway port. The container generates a n
 mongosh "mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true"
 ```
 
-For instructions on installing the generated certificate so you can validate it normally, see [DocumentDB Local](https://documentdb.io/docs/documentdb-local).
+For instructions on installing the generated certificate so you can validate it normally, see [DocumentDB Local](https://documentdb.io/docs/documentdb-local/).
 
 ## Basic Operations
 
@@ -130,7 +130,7 @@ DocumentDB supports many MongoDB-compatible index types, including single-field,
 
 ```javascript
 // Single field index
-db.users.createIndex({ email: 1 })
+db.users.createIndex({ name: 1 })
 
 // Compound index
 db.users.createIndex({ name: 1, email: 1 })
@@ -151,6 +151,10 @@ db.orders.createIndex(
 )
 ```
 
+Each index above is on a distinct set of keys, which matters: when you don't pass a `name`, the index name is generated from the keys, so `{ email: 1 }` becomes `email_1` whatever options you give it. Creating both a plain and a unique index on `{ email: 1 }` therefore collides on that one generated name and fails with `An existing index has the same name as the requested index`. Pass an explicit `name` to at least one of them if you need both.
+
+Note also that a unique index is not sparse unless you say so. Documents that lack the indexed field are all treated as sharing a single "missing" value, so the second such document violates uniqueness. Add `sparse: true` when the field is optional.
+
 To create a vector index on an embedding field, use the `cosmosSearchOptions` index spec accepted by the DocumentDB gateway:
 
 ```javascript
@@ -162,11 +166,13 @@ db.products.createIndex(
       kind: "vector-ivf",
       numLists: 100,
       similarity: "COS",
-      dimensions: 384
+      dimensions: 3
     }
   }
 )
 ```
+
+`dimensions` must match the length of the vectors you store and query — a query vector of a different length is rejected. Three is used here only to keep the example short; a real embedding field is typically 384, 768, or 1536 wide, depending on the model.
 
 ## Aggregation Pipelines
 
@@ -182,9 +188,11 @@ db.orders.aggregate([
 ])
 ```
 
-DocumentDB also supports stages such as `$lookup`, `$unwind`, `$facet`, `$bucket`, `$bucketAuto`, and many others. See the [API Reference](https://documentdb.io/docs/api-reference) for the full list.
+DocumentDB also supports stages such as `$lookup`, `$unwind`, `$facet`, `$bucket`, `$bucketAuto`, and many others. See the [API Reference](https://documentdb.io/docs/reference/) for the full list.
 
 ## Vector Search
+
+This queries the `vectorIndex` created above, so the query vector has the same three dimensions the index declares:
 
 ```javascript
 db.products.aggregate([
@@ -240,17 +248,29 @@ db.users.validate()
 db.runCommand({ compact: "users" })
 ```
 
-User and role management commands are also supported:
+User and role management commands are also supported, with two caveats specific to roles: they must be run from the `admin` database, and they are gated behind a server setting that is off by default. Enable it once, as a Postgres superuser, before running the role examples:
+
+```sql
+ALTER SYSTEM SET documentdb.enableRoleCrud = on;
+SELECT pg_reload_conf();
+```
+
+This is a PostgreSQL GUC, so it cannot be set from `mongosh` — use `psql` or your provider's parameter settings. `updateRole` is not implemented regardless of this setting.
 
 ```javascript
-// Users
-db.runCommand({ createUser: "alice", pwd: "secret", roles: [ { role: "readWrite", db: "mydb" } ] })
+// Users — can be created from any database
+db.runCommand({ createUser: "alice", pwd: "secret", roles: [ { role: "readAnyDatabase", db: "admin" } ] })
 db.runCommand({ usersInfo: 1 })
 
-// Roles
-db.runCommand({ createRole: "appWriter", privileges: [], roles: [ "readWrite" ] })
+// Roles — must be run against admin
+use admin
+db.runCommand({ createRole: "appReader", privileges: [], roles: [ "readAnyDatabase" ] })
 db.runCommand({ rolesInfo: 1 })
 ```
+
+DocumentDB does not implement per-database roles. `createUser` takes role **documents** and accepts exactly two sets, both scoped to `admin` — `[{ role: "readAnyDatabase", db: "admin" }]` for read-only access, or `[{ role: "clusterAdmin", db: "admin" }, { role: "readWriteAnyDatabase", db: "admin" }]` for read-write access. Anything else, including `readWrite` or a `db` other than `admin`, is rejected.
+
+`createRole` draws on the same three built-in roles but takes their **names as bare strings**, not documents — `roles: [ "readAnyDatabase" ]`. Passing a document there fails with `Invalid inherited from role name provided.` As with `createUser`, `readWriteAnyDatabase` and `clusterAdmin` must be named together. `createRole` also requires a `privileges` field, even when empty.
 
 ## Best Practices
 
@@ -261,6 +281,6 @@ db.runCommand({ rolesInfo: 1 })
 
 ## Next Steps
 
-- Browse the [API Reference](https://documentdb.io/docs/api-reference) for the full list of supported commands, operators, and aggregation stages.
-- Connect from your application using the [Python](https://documentdb.io/docs/getting-started/python-setup) or [Node.js](https://documentdb.io/docs/getting-started/nodejs-setup) setup guides.
-- Use the [Visual Studio Code extension](https://documentdb.io/docs/getting-started/vscode-extension-guide) for a GUI experience over the same gateway.
+- Browse the [API Reference](https://documentdb.io/docs/reference/) for the full list of supported commands, operators, and aggregation stages.
+- Connect from your application using the [Python](https://documentdb.io/docs/getting-started/python-setup/) or [Node.js](https://documentdb.io/docs/getting-started/nodejs-setup/) setup guides.
+- Use the [Visual Studio Code extension](https://documentdb.io/docs/getting-started/vscode-extension-guide/) for a GUI experience over the same gateway.
