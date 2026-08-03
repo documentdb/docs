@@ -182,7 +182,7 @@ db.orders.aggregate([
 ])
 ```
 
-DocumentDB also supports stages such as `$lookup`, `$unwind`, `$facet`, `$bucket`, `$bucketAuto`, and many others. See the [API Reference](https://documentdb.io/docs/api-reference) for the full list.
+DocumentDB also supports stages such as `$lookup`, `$unwind`, `$facet`, `$bucket`, `$bucketAuto`, and many others. See the [API Reference](https://documentdb.io/docs/reference) for the full list.
 
 ## Vector Search
 
@@ -261,6 +261,6 @@ db.runCommand({ rolesInfo: 1 })
 
 ## Next Steps
 
-- Browse the [API Reference](https://documentdb.io/docs/api-reference) for the full list of supported commands, operators, and aggregation stages.
+- Browse the [API Reference](https://documentdb.io/docs/reference) for the full list of supported commands, operators, and aggregation stages.
 - Connect from your application using the [Python](https://documentdb.io/docs/getting-started/python-setup) or [Node.js](https://documentdb.io/docs/getting-started/nodejs-setup) setup guides.
 - Use the [Visual Studio Code extension](https://documentdb.io/docs/getting-started/vscode-extension-guide) for a GUI experience over the same gateway.

@@ -12,5 +12,5 @@ Arithmetic expression operators perform mathematical operations on numeric value
 
 ## Related Topics
 
-- [Comparison Operators](../comparison/)
+- [Comparison Operators](../comparison-query/)
 - [Bitwise Operators](../bitwise/)

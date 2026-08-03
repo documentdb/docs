@@ -37,7 +37,7 @@ The DocumentDB implementation consists of three PostgreSQL extensions that work 
 
 ### Usage
 
-To use `pg_documentdb`, you need to have `pg_documentdb_core` installed and configured in your PostgreSQL environment. Once set up, you can leverage the APIs provided by `pg_documentdb` to perform document operations from any PostgreSQL client. For the full list of callable functions, see [Functions](functions.md).
+To use `pg_documentdb`, you need to have `pg_documentdb_core` installed and configured in your PostgreSQL environment. Once set up, you can leverage the APIs provided by `pg_documentdb` to perform document operations from any PostgreSQL client. For the full list of callable functions, see [Functions](functions/).
 
 ## pg_documentdb_gw
 

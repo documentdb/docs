@@ -7,7 +7,7 @@ category: aggregation
 
 # $bucketAuto
 
-The `$bucketAuto` stage categorizes documents into a specified number of buckets, attempting to evenly distribute the documents based on the values of a `groupBy` expression. Unlike [`$bucket`](./%24bucket.md), you do not have to provide boundaries — DocumentDB computes them for you.
+The `$bucketAuto` stage categorizes documents into a specified number of buckets, attempting to evenly distribute the documents based on the values of a `groupBy` expression. Unlike [`$bucket`](../%24bucket/), you do not have to provide boundaries — DocumentDB computes them for you.
 
 Supported since `v0.105-0`.
 
@@ -117,5 +117,5 @@ Sample output:
 
 ## See Also
 
-- [`$bucket`](./%24bucket.md) — fixed-boundary bucketing.
-- [`$group`](./%24group.md) — generic grouping by an expression.
+- [`$bucket`](../%24bucket/) — fixed-boundary bucketing.
+- [`$group`](../%24group/) — generic grouping by an expression.
