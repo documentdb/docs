@@ -137,7 +137,7 @@ The gateway logs the path it actually chose on startup. Check there first if the
 docker logs docdb | grep "TLS auto-gen"
 ```
 
-To keep the same certificate across re-creating the container, pin the location with `DOCUMENTDB_TLS_STATE_DIR` and put it inside the data volume:
+To keep the same certificate across re-creating the container, pin the location with `DOCUMENTDB_TLS_STATE_DIR` and put it inside the data volume. This replaces the container you started earlier, so run `docker rm -f docdb` first:
 
 ```bash
 docker run -dt \
