@@ -173,4 +173,4 @@ The first two results returned by this query are:
 
 ## Limitation
 
-- If no index is used, the { $meta: "indexKey" } doesn't return anything.
+- `{ $meta: "indexKey" }` is not supported. It is rejected with `Returning indexKey for $meta not supported` whether or not the query uses an index.
