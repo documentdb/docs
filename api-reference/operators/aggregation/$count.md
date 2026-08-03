@@ -98,5 +98,5 @@ db.stores.aggregate([
 ## Key Takeaways
 
 - **Single output document** — `$count` always returns exactly one document with a single field
-- **Equivalent to `$group`** — `{ $count: "total" }` is equivalent to `{ $group: { _id: null, total: { $sum: 1 } } }` followed by `{ $project: { _id: 0 } }`
+- **Close to, but not the same as, `$group`** — `{ $count: "total" }` resembles `{ $group: { _id: null, total: { $sum: 1 } } }` followed by `{ $project: { _id: 0 } }`, and the two agree whenever any document reaches the stage. They diverge on empty input: `$count` builds an ungrouped aggregate, which always produces a row, so it returns `{ "total": 0 }`, while `$group` performs a real grouping and returns nothing at all. Use `$count` when a downstream stage depends on always receiving a document.
 - **Field name restrictions** — the output field name must be non-empty, cannot start with `$`, and cannot contain `.`

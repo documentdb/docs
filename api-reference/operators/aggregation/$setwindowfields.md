@@ -23,9 +23,12 @@ The `$setWindowFields` stage groups documents into partitions, applies window fu
       <outputField1>: {
         <windowOperator>: <specification>,
         window: {
-          documents: [<lower>, <upper>],
-          range: [<lower>, <upper>],
-          unit: <time unit>
+          // a document window:
+          documents: [<lower>, <upper>]
+
+          // -- or a range window, mutually exclusive with the above:
+          // range: [<lower>, <upper>],
+          // unit: <time unit>
         }
       },
       ...
@@ -39,7 +42,7 @@ The `$setWindowFields` stage groups documents into partitions, applies window fu
 | Parameter | Description |
 | --- | --- |
 | **`partitionBy`** | Optional. An expression to group documents into partitions. Similar to `$group`'s `_id`. If omitted, all documents belong to a single partition. |
-| **`sortBy`** | Optional. A document specifying the sort order within each partition. Each field value must be `1` (ascending) or `-1` (descending). |
+| **`sortBy`** | A document specifying the sort order within each partition, with each field value `1` (ascending) or `-1` (descending). Optional only in narrow cases: a `range` window requires exactly one ascending sort field, a bounded `documents` window requires a sort field, and several operators require one of their own. See [sortBy requirements](#sortby-requirements). |
 | **`output`** | Required. A document with one or more fields. Each field specifies a window operator and optionally a window frame. |
 
 ### Window Frame Options
@@ -49,6 +52,28 @@ The `$setWindowFields` stage groups documents into partitions, applies window fu
 | **`documents`** | Row-based window bounds. Array of `[lower, upper]` where values can be `"unbounded"`, `"current"`, or an integer offset. |
 | **`range`** | Range-based window bounds. Array of `[lower, upper]` using sort key values. |
 | **`unit`** | Time unit for range-based windows. Values: `"year"`, `"quarter"`, `"month"`, `"week"`, `"day"`, `"hour"`, `"minute"`, `"second"`, `"millisecond"`. |
+
+A `window` holds **either** `documents`, **or** `range` with an optional `unit` — never a mix. Combining them fails to parse:
+
+```
+Window bounds may only define either 'documents' or 'unit', but never both.
+```
+
+A `window` carrying neither is rejected as well:
+
+```
+'window' field can only contain 'documents' as the only argument or 'range' with an optional 'unit' field
+```
+
+### sortBy requirements
+
+`sortBy` is parsed as optional, but the window and the operator each impose their own requirement, so most real pipelines need it:
+
+| Situation | Requirement | Error when unmet |
+| --- | --- | --- |
+| `range` window | Exactly one sort field, sorted **ascending**. A descending or compound `sortBy` is rejected, so a `range` window cannot be paired with `-1`. | `Expected a single sort by field for range-based window` / `Expected ascending sortBy field definition` |
+| `documents` window with bounds | A sort field is required. It may be omitted only when the window is unbounded at both ends. | `Missing sortBy field for document-based window` |
+| Rank-style and positional operators | Require a sort field, and several require a non-compound one. `$shift` requires it unconditionally. | `<operator> requires a sortBy` / `<operator> needs a non-compound sortBy parameter` / `'sortBy' parameters must be specified for $shift` |
 
 ### Supported Window Operators
 
