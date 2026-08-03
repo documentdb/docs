@@ -98,7 +98,19 @@ Without a preceding `$sort`, which document survives is not guaranteed.
 
 ## Behavior
 
-When a pipeline contains more than one `$limit`, the smallest value wins — a `$limit: 10` followed later by `$limit: 3` yields at most three documents.
+Each `$limit` applies to the output of the stages before it. When two `$limit` stages are adjacent, the effect is the smaller of the two — `[{ $limit: 10 }, { $limit: 3 }]` yields at most three documents.
+
+That shortcut does not generalize across stages that can produce more documents than they consume. In the pipeline below, the first `$limit` caps the input at three documents, `$unwind` expands them, and the second `$limit` caps the expanded rows — so the result can be up to ten documents, not three:
+
+```javascript
+db.stores.aggregate([
+  { $limit: 3 },
+  { $unwind: "$promotionEvents" },
+  { $limit: 10 }
+])
+```
+
+`$lookup` followed by `$unwind`, and `$unionWith`, behave the same way.
 
 ## Error cases
 
@@ -112,5 +124,5 @@ A value that cannot be represented as a 64-bit integer is also rejected.
 
 ## Related
 
-- [`$skip`](../%24skip/) — skips documents instead of truncating the result.
-- [`$sort`](../%24sort/) — order documents before limiting them.
+- [`$skip`](./%24skip.md) — skips documents instead of truncating the result.
+- [`$sort`](./%24sort.md) — order documents before limiting them.

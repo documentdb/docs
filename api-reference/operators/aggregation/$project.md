@@ -48,9 +48,23 @@ The examples on this page use the following document from the `stores` collectio
       { "categoryName": "Rum", "totalSales": 1734 }
     ]
   },
-  "tags": ["Wine", "Bitters"]
+  "promotionEvents": [
+    {
+      "eventName": "Unbeatable Bargain Bash",
+      "promotionalDates": {
+        "startDate": { "Year": 2024, "Month": 6, "Day": 23 },
+        "endDate": { "Year": 2024, "Month": 7, "Day": 2 }
+      },
+      "discounts": [
+        { "categoryName": "Whiskey", "discountPercentage": 7 },
+        { "categoryName": "Bitters", "discountPercentage": 15 }
+      ]
+    }
+  ]
 }
 ```
+
+The `promotionEvents` array is shown abbreviated — the full document carries several events, each with its own list of discounts.
 
 ### Example 1: Including specific fields
 
@@ -110,7 +124,7 @@ When every field in the specification is set to `0`, the stage is an exclusion p
 
 ```javascript
 db.stores.aggregate([
-  { $project: { sales: 0, staff: 0, location: 0, tags: 0 } }
+  { $project: { sales: 0, staff: 0, location: 0, promotionEvents: 0 } }
 ])
 ```
 
@@ -127,16 +141,34 @@ This query returns the following result:
 
 ## Behavior
 
-**`_id` is included by default.** It is the only field you can exclude from an inclusion projection; suppress it with `_id: 0`. Using `{ $project: { _id: 0 } }` on its own is a pure exclusion and keeps every other field.
+**`_id` is included by default.** It is the only field you can suppress with `0` or `false` inside an inclusion projection. Using `{ $project: { _id: 0 } }` on its own is a pure exclusion and keeps every other field.
+
+The exemption applies to **top-level `_id` only**. A nested `_id` behaves like any other field, so this fails:
+
+```javascript
+db.stores.aggregate([{ $project: { name: 1, sales: { _id: 0 } } }])
+```
+
+```
+exclusion cannot be applied to field _id within the inclusion projection.
+```
+
+**`$$REMOVE` drops any field from an inclusion projection.** Assigning `$$REMOVE` to a field is an expression rather than an exclusion, so it does not trip the mixing rule and the field is absent from the output:
+
+```javascript
+db.stores.aggregate([{ $project: { name: 1, location: "$$REMOVE" } }])
+```
+
+This is what makes conditional suppression possible — `{ $cond: [<test>, "$field", "$$REMOVE"] }` keeps a field only when the test passes.
 
 **Inclusion and exclusion cannot be mixed.** Apart from top-level `_id`, a single `$project` is either an inclusion projection or an exclusion projection. Mixing them fails:
 
 ```javascript
-db.stores.aggregate([{ $project: { name: 1, tags: 0 } }])
+db.stores.aggregate([{ $project: { name: 1, location: 0 } }])
 ```
 
 ```
-exclusion cannot be applied to field tags within the inclusion projection.
+exclusion cannot be applied to field location within the inclusion projection.
 ```
 
 **Field names cannot begin with `$`.** A literal field name starting with `$` is rejected — use `$getField` or `$setField` for such fields:
@@ -145,10 +177,13 @@ exclusion cannot be applied to field tags within the inclusion projection.
 FieldPath field names cannot begin with the operators symbol '$'; you might want to use $getField or $setField instead.
 ```
 
+The DBRef field names `$id`, `$ref`, and `$db` are exempt, so `{ $project: { "$id": 1 } }` is accepted and projects DBRef-shaped documents directly.
+
 **An empty specification is accepted.** `{ $project: {} }` passes documents through unchanged rather than raising an error.
 
 ## Related
 
-- [`$addFields`](../%24addfields/) — adds fields while keeping all existing ones.
-- [`$set`](../%24set/) — alias for `$addFields`.
-- [`$unset`](../%24unset/) — removes fields without switching the whole stage to exclusion semantics.
+- [`$addFields`](./%24addfields.md) — adds fields while keeping all existing ones.
+- [`$set`](./%24set.md) — alias for `$addFields`.
+- [`$unset`](./%24unset.md) — removes fields without switching the whole stage to exclusion semantics.
+- [`$meta`](../projection/%24meta.md) — surface search metadata, such as a `$vectorSearch` similarity score, as a projected field.

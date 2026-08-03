@@ -30,7 +30,25 @@ db.collection.find({
 | Parameter | Description |
 | --- | --- |
 | **`field`** | The name of the field in the output documents where the metadata gets included. |
-| **`metaDataKeyword`** | The type of metadata to include common keywords like `textScore` for text search scores. |
+| **`metaDataKeyword`** | The type of metadata to include. See the keywords below. |
+
+| Keyword | Returns |
+| --- | --- |
+| **`textScore`** | The relevance score of a `$text` search. |
+| **`searchScore`** | The similarity score of a [`$vectorSearch`](../aggregation/%24vectorsearch.md). |
+| **`vectorSearchScore`** | Alias for `searchScore`; the keyword MongoDB Atlas uses with `$vectorSearch`. |
+| **`indexKey`** | Not supported — rejected with `Returning indexKey for $meta not supported`. |
+
+Any other keyword is rejected with `Argument provided to the $meta is not supported: <keyword>`.
+
+`$meta` is not limited to `find()` projections — `searchScore` and `vectorSearchScore` are read from an aggregation `$project` stage following `$vectorSearch`:
+
+```javascript
+db.products.aggregate([
+  { $vectorSearch: { queryVector: [0.9, 0.1, 0.05], path: "embedding", limit: 2 } },
+  { $project: { _id: 0, name: 1, score: { $meta: "searchScore" } } }
+])
+```
 
 ## Examples
 

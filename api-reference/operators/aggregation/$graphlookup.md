@@ -30,14 +30,16 @@ The `$graphLookup` stage in the aggregation pipeline performs a recursive search
 
 | Parameter | Description |
 | --- | --- |
-| **`from`** | Required. The collection to search recursively. |
+| **`from`** | Required. The collection to search recursively. **Cannot be a sharded collection** — see [Limitations](#limitations). |
 | **`startWith`** | Required. An expression giving the value (or array of values) that begins the traversal. |
-| **`connectFromField`** | Required. The field whose value is carried into the next round of the search. |
-| **`connectToField`** | Required. The field in the `from` collection matched against the incoming value. |
+| **`connectFromField`** | Required. The field whose value is carried into the next round of the search. Cannot begin with `$`. |
+| **`connectToField`** | Required. The field in the `from` collection matched against the incoming value. Cannot begin with `$`. |
 | **`as`** | Required. Name of the array field added to each input document to hold the matched documents. Cannot begin with `$`. |
 | **`maxDepth`** | Optional. A non-negative integer bounding how many recursive rounds run. Omit for an unbounded search. `0` visits only the documents matched by `startWith`. |
 | **`depthField`** | Optional. Name of a field added to each matched document recording the recursion depth at which it was found, starting at `0`. Cannot begin with `$`. |
-| **`restrictSearchWithMatch`** | Optional. A query document that matched documents must also satisfy. Documents that fail it are excluded, and the traversal does not continue through them. |
+| **`restrictSearchWithMatch`** | Optional. A query document that matched documents must also satisfy. Documents that fail it are excluded, and the traversal does not continue through them. `$near`, `$nearSphere`, and `$geoNear` are not accepted here — use `$geoWithin` instead. |
+
+All four string-valued field names — `connectFromField`, `connectToField`, `as`, and `depthField` — reject names beginning with `$`. Note that `startWith` is an *expression*, so `startWith: "$reportsTo"` is correct while `connectFromField: "$reportsTo"` is a parse error.
 
 Any other parameter is rejected with `Unrecognized parameter supplied to stage $graphlookup`.
 
@@ -91,7 +93,7 @@ This query returns the following result:
 ]
 ```
 
-One pipeline reaches every ancestor. The order of the `as` array is not defined — use `depthField` when you need to know how far away each match was.
+One pipeline reaches every ancestor. Each matched document appears in the `as` array exactly once, at the lowest depth it was reached from — a document reachable by two paths is not duplicated. DocumentDB currently emits the array in `_id` order, which is what the outputs on this page show; that ordering is not part of the operator's contract, so add an explicit `$sort` if your application depends on it, and use `depthField` when you need to know how far away each match was.
 
 ### Example 2: Bounding the search and recording depth
 
@@ -192,9 +194,27 @@ Ana is reachable but her title is `VP, Retail`, so she is filtered out — and b
 | `as` missing | `$graphLookup requires 'as' field to be specified` |
 | `startWith` missing | `You must provide a 'startWith' parameter when performing a $graphLookup operation` |
 | Unknown parameter | `Unrecognized parameter supplied to stage $graphlookup: <name>` |
-| Negative `maxDepth` | `The value of graphlookup.maxDepth must always be a non-negative integer number.` |
+| Negative `maxDepth` | `The value of graphlookup.maxDepth must always be a non‑negative integer number.` |
+| `as` begins with `$` | `'as' field name cannot begin with '$'` |
+| `connectFromField` begins with `$` | `FieldPath field names cannot begin with symbol such as '$'` |
+| `connectToField` begins with `$` | `connectToField: FieldPath field names cannot begin with the symbol '$'` |
+| `depthField` begins with `$` | `depthField:FieldPath field names cannot begin with the symbol '$'` |
+| `from` is a sharded collection | `$graphLookup using 'from' on a sharded collection is currently unsupported` |
+| `restrictSearchWithMatch` uses a proximity operator | `$near, $nearSphere and $geoNear cannot be used here. Use $geoWithin instead.` |
+
+The `maxDepth` message contains a non-breaking hyphen (U+2011) rather than an ASCII hyphen, so a literal string match against `non-negative` will not find it.
+
+## Limitations
+
+**`from` cannot be a sharded collection.** The traversal is refused before it begins:
+
+```
+$graphLookup using 'from' on a sharded collection is currently unsupported
+```
+
+The collection the pipeline runs *against* may be sharded; the restriction applies only to the collection named by `from`. Every example on this page uses `employees` in both roles, so sharding `employees` would stop all of them.
 
 ## Related
 
-- [`$lookup`](../%24lookup/) — joins a single level instead of recursing.
-- [`$unwind`](../%24unwind/) — flattens the array produced in the `as` field.
+- [`$lookup`](./%24lookup.md) — joins a single level instead of recursing.
+- [`$unwind`](./%24unwind.md) — flattens the array produced in the `as` field.
