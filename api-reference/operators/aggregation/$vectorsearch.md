@@ -207,6 +207,7 @@ Raise `numCandidates` when a search misses documents you expect it to find; the 
 | `limit` is zero or negative | `$vectorSearch.limit must be provided as a positive integer value.` |
 | `queryVector` is empty | `$vectorSearch.queryVector cannot be an empty array.` |
 | `queryVector` is not an array of numbers | `$vectorSearch.queryVector must be an array of numbers.` |
+| `queryVector` length does not match the index | `expected <n> dimensions, not <m>` |
 | `numCandidates` above 1000 | `$vectorSearch.numCandidates must be less than or equal to 1000.` |
 | No vector index on `path` | `Similarity index was not found for a vector similarity search query.` |
 | Unindexed field in `filter` | `The index for filter path '<field>' was not found, please check whether the index is created.` |
