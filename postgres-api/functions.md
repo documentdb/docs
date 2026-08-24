@@ -9,7 +9,7 @@ description: Reference for the PostgreSQL functions exposed by the pg_documentdb
 
 All BSON parameters are encoded as PostgreSQL `bson` values (provided by the `pg_documentdb_core` extension). For example, you can pass a literal BSON spec using the cast `'{ ... }'::documentdb_core.bson` in `psql`.
 
-> **This page describes v0.114-0**, the current release. Behavior added upstream after that tag is not documented here.
+> **This page describes v0.114-0.** It has not yet been revised for the current release (v0.116-0); behavior added upstream after the v0.114-0 tag is not documented here.
 
 > **Reading the signatures below.** Parameter names are the ones the extension actually declares in `pg_documentdb/sql/udfs/`, so they are safe to use in named-argument calls such as `p_database_name => 'mydb'`. They are unquoted identifiers, so PostgreSQL folds them to lower case — `\df documentdb_api.*` prints `commandspec` where the source writes `commandSpec`, and `bigint`/`boolean`/`double precision` where the source writes `int8`/`bool`/`float8`. Either spelling works in a call. Types are written unqualified: `bson` and `bsonsequence` live in `documentdb_core`. A function with **two or more** `OUT` parameters returns a `record` and should be called as `SELECT * FROM ...`; one with a single `OUT` parameter returns that parameter's type directly, so a plain `SELECT fn(...)` is fine. A few wire-protocol entry points are PostgreSQL `PROCEDURE`s and must be invoked with `CALL`; these are called out individually.
 

@@ -50,7 +50,7 @@ Unlike the flags above, these two produce an error rather than a missing effect,
 
 The gateway (`pg_documentdb_gw`) reads its settings from a JSON configuration file and/or `DOCUMENTDB_*` environment variables. Environment variables override the JSON file, which makes them convenient for systemd-managed and container deployments. *(Environment-variable configuration added in v0.114-0.)*
 
-> **Note:** The packaged gateway service (its systemd unit and `gateway.env` file) is not yet published as a release asset — the v0.114-0 GitHub release ships the PostgreSQL extension packages only. The `DOCUMENTDB_*` settings below apply to the `documentdb-gateway` binary (which the `documentdb-local` container image configures internally) and to downstream packaging that installs the systemd unit.
+> **Note:** Since v0.116-0 the packaged gateway service — its systemd unit and per-major `gateway.env` file — is published as a release asset (`documentdb-gateway`, together with `documentdb-common`, which owns the unit templates). The `DOCUMENTDB_*` settings below apply to that packaged service, to the `documentdb-gateway` binary directly (which the `documentdb-local` container image configures internally), and to downstream packaging that installs its own unit. On a packaged install, `documentdb-setup` writes the managed block in `/etc/documentdb/local/<major>/gateway.env`; edits outside that block are preserved, but the managed block is rebuilt whenever the wizard re-runs.
 
 | Environment variable | Purpose |
 | --- | --- |
