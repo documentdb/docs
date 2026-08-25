@@ -1,11 +1,11 @@
 ---
 title: Components
-description: Learn about pg_documentdb_core, pg_documentdb, and pg_documentdb_gw — the PostgreSQL extensions that enable BSON support, document operations, and MongoDB wire protocol compatibility in Postgres.
+description: Learn about pg_documentdb_core, pg_documentdb, and pg_documentdb_gw — the two PostgreSQL extensions and the gateway that enable BSON support, document operations, and MongoDB wire protocol compatibility in Postgres.
 ---
 
 # Components
 
-The DocumentDB implementation consists of three PostgreSQL extensions that work together to provide MongoDB-compatible document database functionality on top of PostgreSQL.
+The DocumentDB implementation consists of two PostgreSQL extensions and a gateway that work together to provide MongoDB-compatible document database functionality on top of PostgreSQL.
 
 ## pg_documentdb_core
 
