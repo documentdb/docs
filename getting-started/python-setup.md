@@ -9,7 +9,7 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
 
 ## Prerequisites
 
-- Python 3.7+
+- Python 3.9 or later (required by PyMongo 4.x)
 - pip package manager
 - DocumentDB installed and running (see [Pre-built Packages](https://documentdb.io/docs/getting-started/packages/))
 - Docker (if DocumentDB is not set up yet)
@@ -101,11 +101,13 @@ DocumentDB Local accepts TLS connections on the gateway port and requires authen
 
 2. Document operations
    ```python
+   from datetime import datetime, timezone
+
    # Insert a single document
    collection.insert_one({
        'name': 'John Doe',
        'email': 'john@example.com',
-       'created_at': datetime.utcnow()
+       'created_at': datetime.now(timezone.utc)
    })
 
    # Insert multiple documents
@@ -145,12 +147,12 @@ DocumentDB Local accepts TLS connections on the gateway port and requires authen
 
 2. DateTime
    ```python
-   from datetime import datetime
+   from datetime import datetime, timezone
 
    # Insert with timestamp
    collection.insert_one({
        'name': 'Event',
-       'timestamp': datetime.utcnow()
+       'timestamp': datetime.now(timezone.utc)
    })
    ```
 
@@ -158,15 +160,13 @@ DocumentDB Local accepts TLS connections on the gateway port and requires authen
 
 1. Bulk operations
    ```python
-   # Initialize bulk operations
-   bulk = collection.initialize_ordered_bulk_op()
-   
-   # Add operations
-   bulk.find({'status': 'pending'}).update({'$set': {'status': 'processed'}})
-   bulk.find({'age': {'$lt': 18}}).delete()
-   
-   # Execute
-   result = bulk.execute()
+   from pymongo import UpdateMany, DeleteMany
+
+   result = collection.bulk_write([
+       UpdateMany({'status': 'pending'}, {'$set': {'status': 'processed'}}),
+       DeleteMany({'age': {'$lt': 18}}),
+   ])
+   print(result.modified_count, result.deleted_count)
    ```
 
 2. Aggregation framework
@@ -183,40 +183,33 @@ DocumentDB Local accepts TLS connections on the gateway port and requires authen
    ```
 
 3. Vector search
-   ```python
-   # Vector similarity search
-   results = collection.find({
-       '$vectorSearch': {
-           'queryVector': [0.1, 0.2, 0.3],
-           'path': 'embeddings',
-           'numCandidates': 100,
-           'limit': 10
-       }
-   })
-   ```
 
-4. PostgreSQL Integration
+   `$vectorSearch` is an aggregation stage and must be the first stage in the
+   pipeline — it does not work inside `find()`.
+
    ```python
-   # Access PostgreSQL features directly
-   from documentdb_api import DocumentDB
-   
-   # Initialize DocumentDB with PostgreSQL support
-   db = DocumentDB(client)
-   
-   # Execute SQL queries on BSON documents
-   result = db.sql_query(
-       "SELECT jsonb_path_query(data, '$.name') FROM collection WHERE data @? '$.age > 21'"
-   )
+   results = collection.aggregate([
+       {
+           '$vectorSearch': {
+               'queryVector': [0.1, 0.2, 0.3],
+               'path': 'embeddings',
+               'numCandidates': 100,
+               'limit': 10
+           }
+       }
+   ])
    ```
 
 ## Error Handling
 
 1. Connection errors
    ```python
+   from pymongo.errors import ConnectionFailure
+
    try:
        client = pymongo.MongoClient(connection_string)
        client.admin.command('ping')
-   except pymongo.errors.ConnectionError as e:
+   except ConnectionFailure as e:
        print(f"Connection error: {e}")
    ```
 
@@ -250,9 +243,8 @@ DocumentDB Local accepts TLS connections on the gateway port and requires authen
 
 3. Proper cleanup
    ```python
-   # Always close connections when done
    try:
-       # Your code here
+       collection.insert_one({'name': 'Example'})
    finally:
        client.close()
    ```

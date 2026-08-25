@@ -9,7 +9,7 @@ Learn how to set up and use DocumentDB with Node.js using the official MongoDB N
 
 ## Prerequisites
 
-- Node.js 14.x or later
+- Node.js 20.19 or later (required by the current `mongodb` driver)
 - npm or yarn package manager
 - DocumentDB installed and running
 - Docker installed (if set up is not completed yet)
@@ -82,62 +82,36 @@ async function connect() {
    ```
 
 2. Document operations
-   - Insert operations
-   - Find operations
-   - Update operations
-   - Delete operations
 
-## Working with Promises and Async/Await
+   ```javascript
+   const users = db.collection('users');
 
-1. Promise-based operations
-2. Async/await patterns
-3. Error handling
-4. Connection management
+   await users.insertOne({ name: 'John Doe', email: 'john@example.com', createdAt: new Date() });
+   await users.insertMany([
+     { name: 'Jane Smith', email: 'jane@example.com' },
+     { name: 'Bob Johnson', email: 'bob@example.com' },
+   ]);
 
-## Advanced Features
+   await users.updateOne({ name: 'John Doe' }, { $set: { status: 'active' } });
+   console.log(await users.findOne({ name: 'John Doe' }));
+   console.log(await users.countDocuments());
 
-1. Bulk operations
-2. Aggregation framework
-3. Vector search
-4. Geospatial queries
-5. Change streams
-6. Transactions
+   await users.deleteOne({ name: 'Bob Johnson' });
+   ```
 
-## Error Handling
+   Always close the client when the process is done:
 
-1. Connection errors
-2. Operation errors
-3. Timeout handling
-4. Retry strategies
+   ```javascript
+   await client.close();
+   ```
 
-## Best Practices
+## Beyond CRUD
 
-1. Connection pooling
-2. Query optimization
-3. Bulk operations
-4. Error handling
-5. Security considerations
-
-## Sample Applications
-
-1. Basic CRUD application
-2. REST API with Express
-3. Vector search example
-4. Real-time applications with change streams
-
-## Testing
-
-1. Setting up test environment
-2. Unit testing with Jest/Mocha
-3. Integration testing
-4. Mock testing
-
-## Deployment
-
-1. Development setup
-2. Production considerations
-3. Monitoring and logging
-4. Performance optimization
+Aggregation pipelines, vector search, geospatial queries and change streams use the
+same syntax as the MongoDB shell. See the
+[Mongo Shell Quick Start](https://documentdb.io/docs/getting-started/mongo-shell-quickstart/)
+for worked examples, and the [API reference](https://documentdb.io/docs/api-reference/)
+for the supported operator set.
 
 ## Next Steps
 
