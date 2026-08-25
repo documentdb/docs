@@ -60,15 +60,17 @@ The repository also keeps the most recent package for distributions a given rele
 
 ## Install from downloaded assets
 
-The packages depend on each other, so **installing the meta package on its own fails**:
+`apt` and `dnf` resolve dependencies only from repository indexes, so a dependency on a bare local file is unresolvable and **installing the meta package on its own fails**:
 
 ```text
 documentdb : Depends: documentdb-18 (>= 0.116.0) but it is not installable
 ```
 
-Pass the whole set for your platform to one command.
+This is not a defect in the packages — the same thing happens to any local `.deb` or `.rpm` whose dependencies are not in an enabled repository. Pass the whole set for your platform to one command.
 
 ### DEB (Ubuntu 24.04, PostgreSQL 18, amd64)
+
+For arm64 swap `amd64` → `arm64`; for PostgreSQL 17 swap `18` → `17`. Only the gateway and extension assets carry an architecture — the other four are `_all.deb` and are the same file on both.
 
 ```bash
 sudo apt install ./ubuntu24.04-documentdb_0.116.0_all.deb \
@@ -80,6 +82,8 @@ sudo apt install ./ubuntu24.04-documentdb_0.116.0_all.deb \
 ```
 
 ### RPM (RHEL-compatible 9, PostgreSQL 18, x86_64)
+
+For arm64 swap `x86_64` → `aarch64`; for PostgreSQL 17 swap `18` → `17`. As with DEB, only the gateway and extension assets are architecture-specific; the other four are `noarch`.
 
 ```bash
 sudo dnf install ./documentdb-0.116.0-1.noarch.rpm \
