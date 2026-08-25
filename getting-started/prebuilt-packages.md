@@ -65,10 +65,10 @@ Installing the packages puts files on disk. The setup wizard creates the Postgre
 sudo documentdb-setup --admin-user admin
 ```
 
-It prompts for the admin password; for servers and CI pass `--admin-password-file <file>` or `--admin-password-stdin` together with `--yes`. Then connect (`mongosh` is not shipped by these packages):
+It prompts for the admin password; for servers and CI pass `--admin-password-file <file>` or `--admin-password-stdin` together with `--yes`. Then connect (`mongosh` is not shipped by these packages). A bare `-p` makes `mongosh` prompt, so pass the password inline in scripts — a non-interactive shell otherwise sends an empty one and fails with the unhelpful `MongoServerError: Invalid key`:
 
 ```bash
-mongosh localhost:10260 -u admin -p --authenticationMechanism SCRAM-SHA-256 \
+mongosh localhost:10260 -u admin -p '<PASSWORD>' --authenticationMechanism SCRAM-SHA-256 \
         --tls --tlsAllowInvalidCertificates --eval 'db.runCommand({ping: 1})'
 ```
 
