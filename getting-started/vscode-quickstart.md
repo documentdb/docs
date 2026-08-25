@@ -45,7 +45,9 @@ Get started with DocumentDB using the Visual Studio Code extension for a seamles
    ```
 
    > **Note:** During the transition to the Linux Foundation, Docker images may still be hosted on Microsoft's container registry. These will be migrated to the new DocumentDB organization as the transition completes.
-   > **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your desired credentials. You must set these when creating the container for authentication to work.
+   >
+   > **Note:** Replace `<YOUR_USERNAME>` and `<YOUR_PASSWORD>` with your own credentials. If you omit `--username`/`--password` the container falls back to the built-in `default_user` / `Admin100` — these are public, so anyone who can reach the published port can authenticate as admin. Always set your own.
+   >
    > **Port Note:** Port `10260` is used by default in these instructions to avoid conflicts with other local database services. You can use port `27017` (the standard MongoDB port) or any other available port if you prefer. If you do, be sure to update the port number in both your `docker run` command and your connection string accordingly.
 
 2. Connecting to your database
@@ -60,7 +62,7 @@ Get started with DocumentDB using the Visual Studio Code extension for a seamles
 3. Creating your first database and collection
    - Click on the drop-down next to your local connection and select "Create Database..."
    - Enter database name and confirm
-   - Click on the drop-down next to your created dataabse and select "Create Collection..."
+   - Click on the drop-down next to your created database and select "Create Collection..."
    - Enter collection name and confirm
    - Repeat for every database and collection you wish to create under your connection
 
@@ -74,7 +76,7 @@ Get started with DocumentDB using the Visual Studio Code extension for a seamles
    {
      "name": "Test Document",
      "type": "example",
-     "created_at": new Date()
+     "created_at": { "$date": "2026-08-25T00:00:00Z" }
    }
    ```
 

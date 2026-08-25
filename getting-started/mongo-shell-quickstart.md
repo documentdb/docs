@@ -163,21 +163,26 @@ Each index above is on a distinct set of keys, which matters: when you don't pas
 
 Note also that a unique index is not sparse unless you say so. Documents that lack the indexed field are all treated as sharing a single "missing" value, so the second such document violates uniqueness. Add `sparse: true` when the field is optional.
 
-To create a vector index on an embedding field, use the `cosmosSearchOptions` index spec accepted by the DocumentDB gateway:
+To create a vector index on an embedding field, use `createIndexes` via `runCommand`. The
+`cosmosSearchOptions` spec is not accepted through the `createIndex` helper, which fails with
+`Index type 'CosmosSearch' was requested, but the 'cosmosSearch' options were not provided.`
 
 ```javascript
-db.products.createIndex(
-  { embedding: "cosmosSearch" },
-  {
-    name: "vectorIndex",
-    cosmosSearchOptions: {
-      kind: "vector-ivf",
-      numLists: 100,
-      similarity: "COS",
-      dimensions: 3
+db.runCommand({
+  createIndexes: "products",
+  indexes: [
+    {
+      name: "vectorIndex",
+      key: { embedding: "cosmosSearch" },
+      cosmosSearchOptions: {
+        kind: "vector-ivf",
+        numLists: 100,
+        similarity: "COS",
+        dimensions: 3
+      }
     }
-  }
-)
+  ]
+})
 ```
 
 `dimensions` must match the length of the vectors you store and query — a query vector of a different length is rejected. Three is used here only to keep the example short; a real embedding field is typically 384, 768, or 1536 wide, depending on the model.
