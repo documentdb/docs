@@ -60,19 +60,13 @@ The repository also keeps the most recent package for distributions a given rele
 
 ## Install from downloaded assets
 
-`apt` and `dnf` resolve dependencies only from repository indexes, so a dependency on a bare local file is unresolvable and **installing the meta package on its own fails**:
+Needs the PostgreSQL upstream (PGDG) repository enabled first; RHEL-compatible hosts also need EPEL and CRB — see [Package Installation](https://documentdb.io/packages). If the host cannot reach PGDG either, see [Offline / air-gapped](#offline--air-gapped).
 
-```text
-documentdb : Depends: documentdb-18 (>= 0.116.0) but it is not installable
-```
-
-This is not a defect in the packages — the same thing happens to any local `.deb` or `.rpm` whose dependencies are not in an enabled repository. Pass the whole set for your platform to one command.
-
-This still assumes the host can reach PGDG for PostgreSQL itself. If it cannot, see [Offline / air-gapped install](#offline--air-gapped-install), which stages the whole dependency closure and restores single-command installs.
+Pass all six files for your platform to **one** command. `apt` and `dnf` resolve dependencies only from repository indexes, so the meta package alone fails with `documentdb : Depends: documentdb-18 (>= 0.116.0) but it is not installable`.
 
 ### DEB (Ubuntu 24.04, PostgreSQL 18, amd64)
 
-For arm64 swap `amd64` → `arm64`; for PostgreSQL 17 swap `18` → `17`. Only the gateway and extension assets carry an architecture — the other four are `_all.deb` and are the same file on both.
+For arm64 swap `amd64` → `arm64`; for PostgreSQL 17 swap `18` → `17`. Only the gateway and extension assets are arch-specific — the other four are `_all.deb`.
 
 ```bash
 sudo apt install ./ubuntu24.04-documentdb_0.116.0_all.deb \
@@ -98,73 +92,19 @@ sudo dnf install ./documentdb-0.116.0-1.noarch.rpm \
 
 The `ubuntu24.04-` and `rhel9-` filename prefixes disambiguate release assets; they are not part of the package name.
 
-Both families need the PostgreSQL upstream (PGDG) repository enabled first, and RHEL-compatible hosts additionally need EPEL and CRB. See [Package Installation](https://documentdb.io/packages) for those prerequisites.
-
 ### Extension only, from a single file
 
-If the target already has PostgreSQL and the PGDG extension dependencies (`postgresql-N-cron`, `-pgvector`, `-postgis-3`), the extension package installs from one file, with no gateway and no `documentdb-setup`:
+If the target already has PostgreSQL and the PGDG extension dependencies (`postgresql-N-cron`, `-pgvector`, `-postgis-3`), the extension installs from one file — no gateway, no `documentdb-setup`:
 
 ```bash
 sudo apt install ./ubuntu24.04-postgresql-18-documentdb_0.116-0_amd64.deb
 ```
 
-## Offline / air-gapped install
+## Offline / air-gapped
 
-An air-gapped host needs more than the DocumentDB assets: the packages depend on PostgreSQL itself and on `pg_cron`, `pgvector` and PostGIS from PGDG, none of which are on the release page. Stage the whole dependency closure on a connected machine first.
+Release assets alone are not enough — DocumentDB also needs PostgreSQL, `pg_cron`, `pgvector` and PostGIS from PGDG. Stage the full dependency closure on a connected machine of the **same distro, release and architecture**, serve it to the target as a local repository, then install with one command. Commands: [Offline / air-gapped install](https://documentdb.io/docs/getting-started/packages/#offline-air-gapped-install).
 
-Run the staging step on a machine with the **same distribution, release and architecture** as the target — the closure is specific to all three.
-
-### Stage the bundle (connected machine)
-
-Configure the repositories exactly as for an online install, then download the closure and index it:
-
-```bash
-# Debian / Ubuntu
-mapfile -t PKGS < <(apt-cache depends --recurse --no-recommends --no-suggests \
-    --no-conflicts --no-breaks --no-replaces --no-enhances documentdb-18 \
-  | grep '^[a-zA-Z0-9]' | sort -u)
-mkdir -p bundle && cd bundle
-apt-get download "${PKGS[@]}"
-dpkg-scanpackages . /dev/null > Packages && gzip -k Packages
-```
-
-```bash
-# RHEL-compatible
-sudo dnf install -y dnf-plugins-core createrepo_c
-mkdir -p bundle
-sudo dnf download --resolve --alldeps --destdir bundle documentdb-18
-createrepo_c bundle
-```
-
-> **Use the full-closure flags, not `--download-only`.** `apt-get install --download-only` and a bare `dnf download --resolve` skip anything already installed on the staging machine. The bundle then looks complete but fails on a clean target with errors like `Depends: adduser but it is not installable`. `apt-cache depends --recurse` and `dnf download --alldeps` ignore local install state, which is what you want.
-
-Expect roughly 200 packages / 200 MB for the DEB closure and 270 packages / 170 MB for the RPM closure, dominated by PostGIS and its GDAL dependencies.
-
-Two warnings from the DEB staging step are expected and harmless: `Download is performed unsandboxed as root`, and a long `dpkg-scanpackages: warning: Packages in archive but missing from override file` list, which is just an artifact of passing `/dev/null` as the override file.
-
-### Install from the bundle (air-gapped target)
-
-Copy `bundle/` across, point the package manager at it, and install with one command — the local index gives you full dependency resolution, so you do not have to name the packages individually or order them correctly:
-
-```bash
-# Debian / Ubuntu
-echo "deb [trusted=yes] file:/path/to/bundle ./" \
-  | sudo tee /etc/apt/sources.list.d/documentdb-offline.list
-sudo apt-get update
-sudo apt install documentdb-18
-```
-
-```bash
-# RHEL-compatible
-printf '%s\n' '[documentdb-offline]' 'name=DocumentDB offline bundle' \
-  'baseurl=file:///path/to/bundle' 'enabled=1' 'gpgcheck=0' \
-  | sudo tee /etc/yum.repos.d/documentdb-offline.repo
-sudo dnf install documentdb-18
-```
-
-`[trusted=yes]` and `gpgcheck=0` tell the package manager to accept the local directory, which has no repository signature of its own. The upstream signatures were already verified when the bundle was staged; verify the transfer itself with `sha256sum` if the bundle crosses an untrusted boundary.
-
-Then continue with [Set up and connect](#set-up-and-connect) as normal — `documentdb-setup` needs no network.
+> Stage with `apt-cache depends --recurse` / `dnf download --alldeps`. `apt-get install --download-only` and a bare `dnf download --resolve` skip whatever is already installed on the staging machine; the bundle looks complete and the target dies with `Depends: adduser but it is not installable`.
 
 ## Set up and connect
 
