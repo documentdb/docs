@@ -14,7 +14,7 @@ The operator is a separate project, with its own repository, release cadence, an
 | Option | Best for |
 |---|---|
 | [DocumentDB Local](https://documentdb.io/docs/documentdb-local/) | A single container for development, prototyping, and integration tests. |
-| [Pre-built packages](https://documentdb.io/docs/getting-started/prebuilt-packages/) | Adding DocumentDB to a PostgreSQL server you already run and operate yourself. |
+| [Pre-built packages](https://documentdb.io/docs/getting-started/packages/) | Adding DocumentDB to a PostgreSQL server you already run and operate yourself. |
 | Kubernetes Operator | Running DocumentDB as a replicated service, with automatic failover, rolling upgrades, backup and restore, and multi-region deployments. |
 
 ## What your cluster needs

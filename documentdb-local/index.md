@@ -175,7 +175,7 @@ For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
 DocumentDB Local runs a single container on one machine, with no replication and no failover, which is what makes it convenient for development and testing. For other ways to run DocumentDB:
 
 - [Kubernetes Operator](https://documentdb.io/docs/kubernetes-operator/) - run DocumentDB as a replicated service, with automatic failover, backup and restore, and rolling upgrades.
-- [Pre-built packages](https://documentdb.io/docs/getting-started/prebuilt-packages/) - add the DocumentDB extension to a PostgreSQL server you already run.
+- [Pre-built packages](https://documentdb.io/docs/getting-started/packages/) - add the DocumentDB extension to a PostgreSQL server you already run.
 
 
 ## Reporting issues
