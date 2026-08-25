@@ -70,7 +70,7 @@ Choose the getting started guide that best fits your needs:
 - [Node.js Setup Guide](https://documentdb.io/docs/getting-started/nodejs-setup/) - Using DocumentDB with Node.js applications
 
 ### Deployment Options
-- [Pre-built Packages](https://documentdb.io/docs/getting-started/prebuilt-packages/) - Download and install ready-to-use packages
+- [Pre-built Packages](https://documentdb.io/docs/getting-started/packages/) - Download and install ready-to-use packages
 - [Kubernetes Operator](https://documentdb.io/docs/kubernetes-operator/) - Run DocumentDB as a replicated service on Kubernetes
 
 ## Community and Support
