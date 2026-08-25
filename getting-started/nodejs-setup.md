@@ -62,48 +62,51 @@ const { MongoClient } = require('mongodb');
 const uri = 'mongodb://<YOUR_USERNAME>:<YOUR_PASSWORD>@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true';
 const client = new MongoClient(uri);
 
-async function connect() {
-  try {
-    await client.connect();
-    const db = client.db('your_database');
-    return db;
-  } catch (error) {
-    console.error('Connection error:', error);
-    throw error;
-  }
+async function main() {
+  await client.connect();
+  const db = client.db('your_database');
+  console.log('connected');
+  return db;
 }
+
+main().catch((error) => {
+  console.error('Connection error:', error);
+  process.exit(1);
+});
 ```
 
 ## Basic Operations
 
-1. Creating collections
-   ```javascript
-   const collection = db.collection('your_collection');
-   ```
+The operations below all run inside `main()`, after `const db = client.db(...)` above.
+`await` is only valid inside an `async` function, and `db` only exists in that scope —
+running these at the top level of a file gives `ReferenceError: db is not defined`.
 
-2. Document operations
+```javascript
+async function main() {
+  await client.connect();
+  const db = client.db('your_database');
+  const users = db.collection('users');
 
-   ```javascript
-   const users = db.collection('users');
+  await users.insertOne({ name: 'John Doe', email: 'john@example.com', createdAt: new Date() });
+  await users.insertMany([
+    { name: 'Jane Smith', email: 'jane@example.com' },
+    { name: 'Bob Johnson', email: 'bob@example.com' },
+  ]);
 
-   await users.insertOne({ name: 'John Doe', email: 'john@example.com', createdAt: new Date() });
-   await users.insertMany([
-     { name: 'Jane Smith', email: 'jane@example.com' },
-     { name: 'Bob Johnson', email: 'bob@example.com' },
-   ]);
+  await users.updateOne({ name: 'John Doe' }, { $set: { status: 'active' } });
+  console.log(await users.findOne({ name: 'John Doe' }));
+  console.log(await users.countDocuments());
 
-   await users.updateOne({ name: 'John Doe' }, { $set: { status: 'active' } });
-   console.log(await users.findOne({ name: 'John Doe' }));
-   console.log(await users.countDocuments());
+  await users.deleteOne({ name: 'Bob Johnson' });
 
-   await users.deleteOne({ name: 'Bob Johnson' });
-   ```
+  await client.close();
+}
 
-   Always close the client when the process is done:
-
-   ```javascript
-   await client.close();
-   ```
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
+```
 
 ## Beyond CRUD
 

@@ -185,7 +185,32 @@ DocumentDB Local accepts TLS connections on the gateway port and requires authen
 3. Vector search
 
    `$vectorSearch` is an aggregation stage and must be the first stage in the
-   pipeline — it does not work inside `find()`.
+   pipeline — it does not work inside `find()`. It also requires a vector index
+   on the field, or the query fails with
+   `Similarity index was not found for a vector similarity search query`.
+
+   Create the index once:
+
+   ```python
+   db.command({
+       'createIndexes': 'your_collection',
+       'indexes': [
+           {
+               'name': 'embeddings_idx',
+               'key': {'embeddings': 'cosmosSearch'},
+               'cosmosSearchOptions': {
+                   'kind': 'vector-ivf',
+                   'numLists': 100,
+                   'similarity': 'COS',
+                   'dimensions': 3
+               }
+           }
+       ]
+   })
+   ```
+
+   `dimensions` must match the length of the vectors you store and query. Three keeps
+   the example short; real embeddings are typically 384, 768, or 1536 wide.
 
    ```python
    results = collection.aggregate([
