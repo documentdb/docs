@@ -97,7 +97,21 @@ First-party CI builds and tests Ubuntu 24.04 (DEB) and RHEL-compatible 9 (RPM), 
 
 Note the two version grammars: on DEB the extension keeps `0.116-0` while every other package uses `0.116.0`; on RPM everything is `0.116.0-1`.
 
-Everything else — PostgreSQL 15/16, Debian 11/12/13, Ubuntu 22.04, RHEL-compatible 8 — is not built by first-party CI for this release. The [package repository](https://documentdb.io/packages) serves those targets the extension package from an earlier release, or build from the tag with the scripts in [`packaging/`](https://github.com/documentdb/documentdb/blob/main/packaging/README.md). PostgreSQL 15 is extension-only: `documentdb-setup` needs 16 or newer.
+Everything else — PostgreSQL 15/16, Debian 11/12/13, Ubuntu 22.04, RHEL-compatible 8 — is not built by first-party CI or hosted by documentdb.io for this release. Starting with v0.116, packages from earlier releases are not carried forward to make those combinations appear current. This also withdraws the older PostgreSQL 16 extension packages previously served for Ubuntu 24.04 and RHEL-compatible 9.
+
+Existing installations keep running, but receive no package updates and cannot reinstall those packages from documentdb.io. Empty signed metadata remains at retired repository URLs so package-manager refreshes do not break unrelated operations. Remove the repository configuration on a host that will not move to the current matrix:
+
+```bash
+# Debian / Ubuntu
+sudo rm -f /etc/apt/sources.list.d/documentdb.list
+sudo apt update
+
+# RHEL-compatible
+sudo rm -f /etc/yum.repos.d/documentdb.repo
+sudo dnf clean all
+```
+
+Community builds for other targets are welcome. Check out the matching source tag and follow its [`packaging/` guide](https://github.com/documentdb/documentdb/blob/v0.116-0/packaging/README.md): `build_packages.sh` builds the extension, `gateway/build_gateway_packages.sh` builds the gateway, and `build_extra_packages.sh` builds the common, tools, stand-alone, and meta packages. PostgreSQL 15 remains extension-only because `documentdb-setup` requires PostgreSQL 16 or newer.
 
 Every release also ships `SHA256SUMS` and `manifest.txt`:
 
