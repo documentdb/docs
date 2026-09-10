@@ -23,7 +23,7 @@ Collections with a `validator` are enforced on `insert`, `update`, `findAndModif
 
 | GUC | Default | Description |
 | --- | --- | --- |
-| `documentdb.rum_library_load_option` | `require_documentdb_extended_rum` (since v0.117-0) | Requires the DocumentDB extended RUM library on every supported PostgreSQL major, not only PG18. Set this in `postgresql.conf` and restart PostgreSQL for a change to take effect. |
+| `documentdb.rum_library_load_option` | `require_documentdb_extended_rum` (since v0.117-0) | Requires the DocumentDB extended RUM library on every supported PostgreSQL major version, not only PG18. Set this in `postgresql.conf` and restart PostgreSQL for a change to take effect. |
 
 The package setup wizard and container startup handle the required extension setup. For a manually configured PostgreSQL instance, create both `documentdb` and `documentdb_extended_rum`; `CREATE EXTENSION documentdb CASCADE` does not create `documentdb_extended_rum` automatically. Follow the [package setup guidance](https://documentdb.io/docs/getting-started/packages/) before creating indexes.
 

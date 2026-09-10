@@ -133,7 +133,7 @@ main().catch((error) => {
 
 ## Beyond CRUD
 
-Aggregation pipelines, vector search, geospatial queries and change streams use the
+Aggregation pipelines, vector search, geospatial queries, and change streams use the
 same syntax as the MongoDB shell. See the
 [Mongo Shell Quick Start](https://documentdb.io/docs/getting-started/mongo-shell-quickstart/)
 for worked examples, and the [API reference](https://documentdb.io/docs/reference/)

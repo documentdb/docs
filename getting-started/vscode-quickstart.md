@@ -48,7 +48,7 @@ This is the fastest way to get a database running. The wizard handles the contai
 
 5. Select **Open Connection** to reveal the saved connection in the Connections view, then expand it to browse databases and collections.
 
-If you keep the sample data option, a `sampledb` database is created with `users`, `products`, `orders`, and `analytics` collections, so you have something to query straight away.
+If you keep the sample data option, the extension loads the image's own dataset, so you have something to query immediately. On the `latest` image, that is [StoreData](https://documentdb.io/docs/documentdb-local/#built-in-sample-data): a `StoreData` database holding 41,505 `stores` documents and 2 `ratings` documents. Images before 0.117 seed a smaller `sampledb` database instead, so pin an older tag in the advanced options if you want that one.
 
 ### Managing the Instance
 

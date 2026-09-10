@@ -7,7 +7,7 @@ description: Learn how to install and run DocumentDB Local using Docker for loca
 
 DocumentDB Local provides a lightweight, containerized environment for developing and testing applications locally, including prototyping and integration testing.
 
-The examples below use the PostgreSQL 17 image from release **0.117.0**. Other PostgreSQL majors and image tags are listed in the [0.117 release](https://github.com/documentdb/documentdb/releases/tag/v0.117-0).
+The examples below use the PostgreSQL 17 image from release **0.117.0**. Other PostgreSQL major versions and image tags are listed in the [0.117 release](https://github.com/documentdb/documentdb/releases/tag/v0.117-0).
 
 ## Prerequisites
 
