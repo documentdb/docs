@@ -11,7 +11,7 @@ description: Try DocumentDB 1.0 RC1 from release assets or container images. For
 >
 > - **No upgrade path.** Upgrades from 0.117 to the RC, and from the RC to 1.0, are not supported. Start from an empty instance or volume, and expect to discard it.
 > - **No maintenance.** The RC receives no fixes or security updates. Fixes ship in 1.0.
-> - **Not the default.** The package repository and the container `latest` tag stay on the current stable release, v0.117-0. You only get the RC by asking for it explicitly, as shown below.
+> - **Not the default.** GitHub marks the RC as a pre-release. The package repository, the container `latest` tag and GitHub's latest release stay on the current stable release, v0.117-0. You only get the RC by asking for it explicitly, as shown below.
 
 ## Container image
 
