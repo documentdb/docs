@@ -7,7 +7,7 @@ description: Learn how to install and run DocumentDB Local using Docker for loca
 
 DocumentDB Local provides a lightweight, containerized environment for developing and testing applications locally, including prototyping and integration testing.
 
-The examples below use the PostgreSQL 17 image from release **v1.0-RC1** (`pg17-1.0.0`). Images for PostgreSQL 15, 16 and 18 use the matching `pg15-1.0.0`, `pg16-1.0.0` and `pg18-1.0.0` tags, and `latest` currently points to `pg17-1.0.0`. See the [v1.0-RC1 release](https://github.com/documentdb/documentdb/releases/tag/v1.0-RC1).
+The examples below use the PostgreSQL 17 image from release **0.117.0**. Other PostgreSQL major versions and image tags are listed in the [0.117 release](https://github.com/documentdb/documentdb/releases/tag/v0.117-0).
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ The examples below use the PostgreSQL 17 image from release **v1.0-RC1** (`pg17-
 Get the Docker container image using `docker pull`.
 
 ```bash
-docker pull ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0
+docker pull ghcr.io/documentdb/documentdb/documentdb-local:pg17-0.117.0
 
 ```
 
@@ -33,7 +33,7 @@ printf '\n'
 export DOCUMENTDB_USERNAME DOCUMENTDB_PASSWORD
 
 docker run -dt -p 127.0.0.1:10260:10260 --name docdb \
-  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0 \
+  ghcr.io/documentdb/documentdb/documentdb-local:pg17-0.117.0 \
   --username "${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" \
   --password "${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}"
 
@@ -42,8 +42,8 @@ docker ps
 ```
 
 ```output
-CONTAINER ID   IMAGE                                                       COMMAND                  CREATED         STATUS                   PORTS                        NAMES
-5aff734a3591   ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0   "/bin/bash -c '/home…"   8 seconds ago   Up 7 seconds (healthy)   127.0.0.1:10260->10260/tcp   docdb
+CONTAINER ID   IMAGE                                                                             COMMAND                  CREATED         STATUS         PORTS                              NAMES
+5aff734a3591   ghcr.io/documentdb/documentdb/documentdb-local:pg17-0.117.0                        "/bin/bash -c '/home…"   5 seconds ago   Up 4 seconds   127.0.0.1:10260->10260/tcp       docdb
 ```
 
 > The prompts export the credentials for the later client examples, and the guards
@@ -54,23 +54,20 @@ CONTAINER ID   IMAGE                                                       COMMA
 > certificate that remote clients can validate.
 >
 > This container writes its database to `/data`, which the image declares as a Docker volume. The command above mounts nothing there, so each `docker run` gets a fresh anonymous volume: the data does not survive re-creating the container, and the old volume is left behind on the host until you prune it. Mount a named volume - `-v documentdb-data:/data` - to persist it. See `--data-path` in the table below.
->
-> Only one container can use a data volume at a time; a second container on the same volume exits with `another DocumentDB container is already using the data directory`. Stop a container with `docker stop` before removing it. After `docker kill`, `docker rm -f`, or a crash, the volume keeps a stale `postmaster.pid` and the next container refuses to start on it; see [Recovering after an unclean stop](#recovering-after-an-unclean-stop).
 
 ### Wait for the container to be ready
 
-The image ships a pre-initialized database, so a new named or anonymous volume is usually ready within a few seconds; a bind-mounted host directory runs full initialization, and `--init-data true` adds the sample-data load. Connecting before startup finishes fails with `MongoServerSelectionError` or `ECONNREFUSED`.
+`docker ps` reports the container as `Up` well before DocumentDB can accept connections - PostgreSQL has to initialize, the extensions have to be set up, and the admin user has to be created first. Connecting too early fails with `MongoServerSelectionError` or `ECONNREFUSED`.
 
-The image has a Docker health check that reports `healthy` once PostgreSQL accepts connections and the gateway completes a TLS handshake. `docker ps` shows `(health: starting)` until then. Wait for it before connecting:
+The entrypoint prints a ready banner after gateway startup and any requested data initialization finish. Wait for it before connecting:
 
 ```bash
-until [ "$(docker inspect -f '{{.State.Health.Status}}' docdb)" = healthy ]; do
-  [ "$(docker inspect -f '{{.State.Running}}' docdb)" = true ] || { docker logs docdb; break; }
-  sleep 2
-done
+until docker logs docdb 2>&1 | grep -q "=== DocumentDB is ready ==="; do sleep 2; done
 ```
 
-The loop also stops if the container exits during startup, and prints its logs. The entrypoint prints `=== DocumentDB is ready ===` at the same point. In Docker Compose, gate dependent services with `depends_on: { documentdb: { condition: service_healthy } }`; the [Compose example](https://github.com/documentdb/documentdb/tree/v1.0-RC1/documentdb-local/examples/docker-compose) shows a complete setup.
+First start typically takes a few tens of seconds. If the command has not returned after a couple of minutes, the container most likely exited during startup - interrupt it and check `docker ps -a` and `docker logs docdb` for the error.
+
+> Use `docker logs docdb` rather than `docker logs -f docdb` to check readiness. The container streams the PostgreSQL, gateway, and entrypoint logs to stdout for its whole lifetime, so `-f` never returns.
 
 ### Connect with mongosh
 
@@ -103,62 +100,43 @@ The following table summarizes the available Docker commands for configuring the
 | Requirement | Arg | Env | Allowed values | Default | Description |
 |---|---|---|---|---|---|
 | Print the settings to stdout from the container | `--help`, `-h` | N/A | N/A | N/A | Display information on available configuration |
-| Specify the username for DocumentDB. | `--username [value]` | Overrides `USERNAME` environment variable | STRING | `default_user` | Username for DocumentDB. It may not begin with `documentdb`, `citus`, `pg`, or `internal_role` (case-insensitive). The container rejects a reserved name and exits before starting anything. |
-| Specify the password for DocumentDB. | `--password [value]` | Overrides `PASSWORD` environment variable | STRING | `Admin100` | Password for DocumentDB. Always set this explicitly. The built-in default is well known, and anyone who can reach the published port can authenticate with it; the container prints a warning when it is used. A `--password` value stays visible in the container's process list and in `docker inspect`, so prefer `-e PASSWORD=...`. |
+| Specify the username for DocumentDB. | `--username [value]` | Overrides `USERNAME` environment variable | STRING | `default_user` | Username for DocumentDB. It may not be an internal DocumentDB role name, and it may not begin with `documentdb`, `citus`, `pg`, or `internal_role` (case-insensitive). The container rejects a reserved name and exits before starting anything. |
+| Specify the password for DocumentDB. | `--password [value]` | Overrides `PASSWORD` environment variable | STRING | `Admin100` | Password for DocumentDB. Always set this explicitly. The built-in default is well known, and anyone who can reach the published port can authenticate with it. |
 | The port of the DocumentDB endpoint. | `--documentdb-port [value]` | Overrides `DOCUMENTDB_PORT` environment variable | INT | `10260` | The port needs to be published. For local use, bind only to loopback - for example, `-p 127.0.0.1:10260:10260`. To use host port `27017` without changing the gateway port, publish `-p 127.0.0.1:27017:10260`; add `--documentdb-port 27017` only when changing the container-side port too. |
 | Specify a directory for data. | `--data-path [value]` | Overrides `DATA_PATH` environment variable. | STRING | `/data` | Data is not persisted unless you mount a volume at this path - for example, `-v documentdb-data:/data`. To use a different directory, set the mount and the flag together, keeping in mind that they go on opposite sides of the image name: `-v` / `--mount` is a `docker run` option and comes before it, `--data-path` is a container argument and comes after it. See the example below the table. |
 | Specify the owner. | `--owner [value]` | Overrides `OWNER` environment variable. | STRING | `documentdb` | The PostgreSQL role used to create the admin user. The cluster this image initializes has a single superuser role, `documentdb`, so leave this at the default: any other value fails with `role "<value>" does not exist` after PostgreSQL has already initialized, and the container exits. |
-| Specify whether to start the PostgreSQL server. | `--start-pg [value]` | Overrides `START_POSTGRESQL` environment variable | `true`, `false` | `true` | Set this to `false` only when you are pointing the gateway at a PostgreSQL server you run yourself; the container then expects one on `localhost` at `--pg-port`, and does not configure it. |
-| Specify whether to create a user. | `--create-user [value]` | Overrides `CREATE_USER` environment variable | `true`, `false` | `true` | With `false` the container starts the gateway without creating the admin user. Nothing can authenticate with `--username` / `--password` until you create a user yourself. `--init-data true` then loads nothing but still marks the volume as seeded. |
+| Specify whether to start the PostgreSQL server. | `--start-pg [value]` | Overrides `START_POSTGRESQL` environment variable | `true`, `false` | `true` | Set this to `false` only when you are pointing the gateway at a PostgreSQL server you run yourself; the container then expects one to be reachable on `--pg-port`. |
+| Specify whether to create a user. | `--create-user [value]` | Overrides `CREATE_USER` environment variable | `true`, `false` | `true` | With `false` the container starts the gateway without creating the admin user. Nothing can authenticate with `--username` / `--password` until you create a user yourself, and data initialization fails if you enabled it. |
 | Specify the port for the PostgreSQL server. | `--pg-port [value]` | Overrides `POSTGRESQL_PORT` environment variable | INT | `9712` | Specify the port for the PostgreSQL server. |
 | Specify whether to allow external connections to PostgreSQL. | `--allow-external-connections [value]` | Overrides `ALLOW_EXTERNAL_CONNECTIONS` environment variable | `true`, `false` | `false` | Opens the container's internal PostgreSQL server to all interfaces and adds permissive host-based authentication rules (`host all all 0.0.0.0/0 scram-sha-256` and `host all all ::0/0 scram-sha-256`), which let any role reach any database from any address with a password. It only changes configuration inside the container, so you also need to publish the PostgreSQL port - for example `-p 9712:9712` - to connect from the host. Ignored when `--start-pg false`. This does not affect the gateway, which always listens on all interfaces on the DocumentDB port. |
 | Specify the path to a certificate for securing traffic. | `--cert-path [value]` | Overrides `CERT_PATH` environment variable. | STRING | NA | PEM-format certificate. Must be set together with `--key-file` - setting only one of the two fails at startup. You need to mount this file into the container. For example, to set `/mycert.pem`, add this option to `docker run` command: `--mount type=bind,source=./mycert.pem,target=/mycert.pem`. |
 | Override default key with key in key file. | `--key-file [value]` | Overrides `KEY_FILE` environment variable. | STRING | NA | PEM-format private key. Must be set together with `--cert-path` - setting only one of the two fails at startup. You need to mount this file into the container. For example, to set `/mykey.key`, add this option to `docker run` command: `--mount type=bind,source=./mykey.key,target=/mykey.key` |
-| Set the TLS mode for client connections. | `--tlsMode [value]` | Overrides `TLS_MODE` environment variable | `disabled`, `allowTLS`, `requireTLS` | `allowTLS` | With `allowTLS` the gateway accepts both plain and TLS connections; `disabled` behaves the same way and logs a warning. `requireTLS` rejects plain connections, so every client must connect with `tls=true`. |
+| Set the TLS mode for client connections. | `--tlsMode [value]` | Overrides `TLS_MODE` environment variable | `disabled`, `allowTLS`, `requireTLS` | `allowTLS` | With `allowTLS` the gateway accepts both plain and TLS connections; `disabled` behaves the same way. `requireTLS` rejects plain connections, so every client must connect with `tls=true`. |
 | Enable initialization with built-in sample data. | `--init-data [value]` | Overrides `INIT_DATA` environment variable | `true`, `false` | `false` | Loads the `StoreData` dataset once per fresh data volume. Use a new, empty volume to seed again; see [Built-in sample data](#built-in-sample-data). |
-| Specify a directory of scripts for database initialization. | `--init-data-path [value]` | Overrides `INIT_DATA_PATH` environment variable | STRING | `/init_doc_db.d` | JavaScript files run alphabetically using `mongosh`, once per fresh data volume. Errors in a script are printed to the log but do not stop the container, and the volume is still marked as initialized. Check `docker logs` after the first start; to retry, fix the scripts and use a fresh volume. |
+| Specify a directory of scripts for database initialization. | `--init-data-path [value]` | Overrides `INIT_DATA_PATH` environment variable | STRING | `/init_doc_db.d` | JavaScript files run alphabetically using `mongosh`, once per fresh data volume. Syntax or runtime errors abort initialization. An attempted script run is not repeated on restart, so fix the scripts and use a fresh volume to retry. |
 | Skip initialization with built-in sample data. | `--skip-init-data` | Overrides `SKIP_INIT_DATA` environment variable | `true`, `false` (`SKIP_INIT_DATA` only - the flag itself takes no value) | N/A | Legacy alias for `--init-data false`. Note that `SKIP_INIT_DATA=false` does the opposite of the flag: with `INIT_DATA` unset it enables the built-in sample data. Does not affect `--init-data-path`. |
-| Disable the use of extended RUM for indexes. | `--disable-extended-rum` | Overrides `DISABLE_EXTENDED_RUM` environment variable | N/A (takes no value) | N/A | Deprecated and ignored: `documentdb_extended_rum` is always enabled on a volume this image initializes, and the flag only logs a warning. To use the plain `rum` access method, set `documentdb.alternate_index_handler_name = 'rum'` in the data volume's `postgresql.conf` and restart the container. |
+| Disable the use of extended RUM for indexes. | `--disable-extended-rum` | Overrides `DISABLE_EXTENDED_RUM` environment variable | N/A (takes no value) | N/A | Extended RUM is enabled by default. **Known issue:** this flag does not currently disable it - the container still starts with `documentdb_extended_rum` configured. |
 | Enable telemetry data. | `--enable-telemetry [value]` | Overrides `ENABLE_TELEMETRY` environment variable | `true`, `false` | `false` | **Known issue:** the value is validated at startup but no telemetry is currently emitted - the gateway's metrics and tracing exporters are disabled in this image, and an invalid value only serves to abort startup. |
-| Specify log verbosity. | `--log-level [value]` | Overrides `LOG_LEVEL` environment variable. | `quiet`, `error`, `warn`, `info`, `debug`, `trace` | `info` | **Known issue:** the value is validated at startup but does not currently change what the container logs. To change the gateway's own verbosity, set the `DOCUMENTDB_LOG_LEVEL` environment variable instead; it takes a tracing filter such as `error`, `info` or `debug`. Do not use `quiet` there: it is accepted without error but hides all gateway output, errors included. |
+| Specify log verbosity. | `--log-level [value]` | Overrides `LOG_LEVEL` environment variable. | `quiet`, `error`, `warn`, `info`, `debug`, `trace` | `info` | **Known issue:** the value is validated at startup but does not currently change what the container logs. To change the gateway's own verbosity, set the `DOCUMENTDB_LOG_LEVEL` environment variable instead; it takes a tracing filter such as `info` or `debug` (`quiet` is not one of its values). |
 
-| Set TOAST compression for large values. | `--toast-compression [value]` | Overrides `DOCUMENTDB_TOAST_COMPRESSION` environment variable | `lz4`, `pglz`, `default` | `lz4` | Compression for values PostgreSQL stores out of line. Affects newly written values only; `default` leaves PostgreSQL's own setting. Ignored with a warning when `--start-pg false`. |
+> `--skip-init-data` and `--disable-extended-rum` are the only options that take no value. Passing one anyway - for example `--disable-extended-rum false` - is rejected as an unexpected argument and the container exits.
 
-> `--skip-init-data` and `--disable-extended-rum` are the only options that take no value. Passing one anyway - for example `--disable-extended-rum false` - fails with `Unknown option false` and the container exits. Every other option requires a value; an empty one fails at startup.
-
-A complete `docker run` showing where each kind of option goes - Docker options before the image name, container arguments after it. This is the command from the **Running** section above with a persistent volume and sample data added, so remove that container first with `docker stop docdb && docker rm docdb`:
+A complete `docker run` showing where each kind of option goes - Docker options before the image name, container arguments after it. This is the command from the **Running** section above with a persistent volume and sample data added, so remove that container first with `docker rm -f docdb`:
 
 ```bash
 docker run -dt \
   -p 127.0.0.1:10260:10260 \
   -v documentdb-data:/data \
   --name docdb \
-  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0 \
+  ghcr.io/documentdb/documentdb/documentdb-local:pg17-0.117.0 \
   --username "${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
   --password "${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}" \
   --init-data true
 ```
 
-## Recovering after an unclean stop
-
-If the container was killed rather than stopped, the next container on the same volume exits with `postmaster.pid exists ... Refusing to start`. Make sure no other container uses the volume, then re-create the container once with `DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true` (`docker start` cannot add it):
-
-```bash
-docker rm docdb 2>/dev/null   # if the old container still exists
-docker run -dt -p 127.0.0.1:10260:10260 -v documentdb-data:/data \
-  -e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true \
-  --name docdb ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0 \
-  --username "${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
-  --password "${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}"
-```
-
-PostgreSQL runs crash recovery on startup. The variable stays in force for every later start of that container, so re-create it without the variable once it is up.
-
-If PostgreSQL instead reports a permission error on files left by an interrupted start, re-create the container with `DOCUMENTDB_FORCE_OWNERSHIP_REPAIR=true` to repair ownership of the whole data directory.
-
 ## Built-in sample data
 
-The image bundles the `StoreData` dataset. Loading is opt-in: add `--init-data true` to the container arguments, as in the example above.
+Release 0.117 replaces the earlier small `sampledb` seed with the complete `StoreData` dataset. Loading remains opt-in: add `--init-data true` to the container arguments, as in the example above.
 
 | Collection | Documents |
 |---|---:|
@@ -172,8 +150,29 @@ db.getSiblingDB("StoreData").stores.countDocuments({})   // 41505
 db.getSiblingDB("StoreData").ratings.countDocuments({})  // 2
 ```
 
-Seeding is one-shot per data volume; use a new, empty volume to seed again. A direct loader rerun tolerates duplicate keys rather than duplicating documents. See the [versioned sample-data guide](https://github.com/documentdb/documentdb/tree/v1.0-RC1/documentdb-local/sample-data) for manual loader instructions.
+Seeding remains one-shot per data volume. Previously seeded volumes are **not automatically migrated** to StoreData; use a new, empty volume when you want the new sample dataset. A direct loader rerun tolerates duplicate keys rather than duplicating documents. See the [versioned sample-data guide](https://github.com/documentdb/documentdb/tree/v0.117-0/documentdb-local/sample-data) for manual loader instructions.
 
+
+## Test the 1.0 release candidate
+
+[`v1.0-RC1`](https://github.com/documentdb/documentdb/releases/tag/v1.0-RC1) is a pre-release for testing only; the rest of this page describes 0.117. Its images are tagged `pg15-1.0.0` through `pg18-1.0.0`. Run one on a new volume, not one an 0.117 container has used:
+
+```bash
+docker run -dt -p 127.0.0.1:10260:10260 -v documentdb-rc1-data:/data --name docdb-rc1 \
+  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0 \
+  --username "${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
+  --password "${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}"
+```
+
+Differences you will notice from 0.117:
+
+- **Faster start and a health check.** A new volume is usually ready within seconds. Wait for `docker inspect -f '{{.State.Health.Status}}' docdb-rc1` to report `healthy`.
+- **One container per volume.** A second container on the same volume exits immediately. After `docker kill`, `docker rm -f`, or a crash, the next container also refuses to start because of a stale `postmaster.pid`. Re-create it once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`, then without it. Use `docker stop` before `docker rm` to avoid this.
+- **Init script errors don't stop startup.** Errors in `--init-data-path` scripts are logged, and the volume is still marked as initialized. Check `docker logs` after the first start.
+- **`--disable-extended-rum` is ignored** apart from a deprecation warning.
+- **`--toast-compression lz4|pglz|default`** is new and defaults to `lz4`.
+
+Report problems as described under [Reporting issues](#reporting-issues) and mention the RC.
 
 ## Feature support
 
@@ -200,7 +199,7 @@ The gateway logs the path it actually chose on startup. Check there first if the
 docker logs docdb | grep "TLS auto-gen"
 ```
 
-To keep the same certificate across re-creating the container, pin the location with `DOCUMENTDB_TLS_STATE_DIR` and put it inside the data volume. This replaces the container you started earlier, so run `docker stop docdb && docker rm docdb` first:
+To keep the same certificate across re-creating the container, pin the location with `DOCUMENTDB_TLS_STATE_DIR` and put it inside the data volume. This replaces the container you started earlier, so run `docker rm -f docdb` first:
 
 ```bash
 docker run -dt \
@@ -208,12 +207,12 @@ docker run -dt \
   -v documentdb-data:/data \
   -e DOCUMENTDB_TLS_STATE_DIR=/data/tls \
   --name docdb \
-  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0 \
+  ghcr.io/documentdb/documentdb/documentdb-local:pg17-0.117.0 \
   --username "${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
   --password "${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}"
 ```
 
-Point it inside the data directory rather than at a volume of its own: the entrypoint makes sure the data directory is owned by the container user, whereas a separate volume is created root-owned and the gateway - which runs as an unprivileged user - cannot write its key there. The key stays owner-only unless the entrypoint has to repair ownership of the data directory (a foreign-owned volume, or `DOCUMENTDB_FORCE_OWNERSHIP_REPAIR=true`), which runs `chmod -R 750` and leaves it group-readable. Either way, it is included in any backup of the data volume.
+Point it inside the data directory rather than at a volume of its own: the entrypoint takes ownership of the data directory on every start, whereas a separate volume is created root-owned and the gateway - which runs as an unprivileged user - cannot write its key there. The trade-off is that the same step runs `chmod -R 750` over that directory, so from the second start onwards the private key is group-readable rather than owner-only, and it is included in any backup of the data volume.
 
 ### Use the certificate with mongosh
 

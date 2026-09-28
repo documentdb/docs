@@ -9,7 +9,7 @@ category: diagnostic
 
 The `hello` command returns a document describing the role of the DocumentDB server, along with connection limits, supported authentication mechanisms, and the version of the DocumentDB engine you are connected to. It's the recommended way to discover the DocumentDB version from a MongoDB client, since the `internal.documentdb_versions` field reports the underlying engine version rather than only the emulated MongoDB wire-protocol version.
 
-The versions in `internal.documentdb_versions` come from the backend DocumentDB PostgreSQL extension, not from the gateway. The array reports two values: the installed SQL extension version (from the `pg_extension` catalog, in `major-minor` form such as `1.0-0`) followed by the loaded binary version (from `documentdb_api.binary_version()`, in dotted form such as `1.0.0`). In PostgreSQL, the installed extension version *is* the schema version — it tracks which SQL upgrade scripts have been applied — so the first value reflects the schema currently installed in the database. These two values normally describe the same release and differ only in formatting, but they can diverge during an upgrade — for example, when the shared library has been updated but `ALTER EXTENSION documentdb UPDATE` hasn't yet been run. If the first value is lower than the second, the SQL schema is behind the loaded binary.
+The versions in `internal.documentdb_versions` come from the backend DocumentDB PostgreSQL extension, not from the gateway. The array reports two values: the installed SQL extension version (from the `pg_extension` catalog, in `major-minor` form such as `0.113-0`) followed by the loaded binary version (from `documentdb_api.binary_version()`, in dotted form such as `0.113.0`). In PostgreSQL, the installed extension version *is* the schema version — it tracks which SQL upgrade scripts have been applied — so the first value reflects the schema currently installed in the database. These two values normally describe the same release and differ only in formatting, but they can diverge during an upgrade — for example, when the shared library has been updated but `ALTER EXTENSION documentdb UPDATE` hasn't yet been run. A mismatch such as `["0.112-0", "0.113.0"]` indicates the SQL schema is behind the loaded binary.
 
 ## Syntax
 
@@ -42,7 +42,7 @@ The response includes the following fields. Fields marked as DocumentDB-specific
 | **`readOnly`** | `true` when the connection is read-only. |
 | **`connectionId`** | Identifier of the current connection. |
 | **`saslSupportedMechs`** | Authentication mechanisms the server supports, for example `SCRAM-SHA-256`. |
-| **`internal.documentdb_versions`** | (DocumentDB-specific) Versions reported by the backend DocumentDB PostgreSQL extension: the installed SQL extension version — which in PostgreSQL is the schema version (`major-minor`, for example `1.0-0`) — followed by the loaded binary version (dotted, for example `1.0.0`). These normally match and diverge only during an upgrade. |
+| **`internal.documentdb_versions`** | (DocumentDB-specific) Versions reported by the backend DocumentDB PostgreSQL extension: the installed SQL extension version — which in PostgreSQL is the schema version (`major-minor`, for example `0.113-0`) — followed by the loaded binary version (dotted, for example `0.113.0`). These normally match and diverge only during an upgrade. |
 | **`ok`** | `1` when the command succeeds. |
 
 ## Examples
@@ -75,8 +75,8 @@ The server returns a document similar to the following:
   ],
   "internal": {
     "documentdb_versions": [
-      "1.0-0",
-      "1.0.0"
+      "0.113-0",
+      "0.113.0"
     ],
     "kind": ""
   },
@@ -95,7 +95,7 @@ db.runCommand({ hello: 1 }).internal.documentdb_versions
 The command returns an array with the installed SQL extension version followed by the loaded binary version:
 
 ```json
-[ "1.0-0", "1.0.0" ]
+[ "0.113-0", "0.113.0" ]
 ```
 
 The first value is the installed SQL extension version — the schema version, from the `pg_extension` catalog — and the second is the compiled binary version. They normally describe the same release and differ only in formatting.

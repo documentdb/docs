@@ -53,4 +53,4 @@ To use `pg_documentdb`, you need to have `pg_documentdb_core` installed and conf
 
 - **Cursor and Session Management:** Translates `getMore`, `killCursors`, `killSessions`, and `killOp` commands to the corresponding backend operations.
 
-- **Deployment Options:** Can be run as a standalone process (the default in the `documentdb-local` container) or as a PostgreSQL background worker via the `pg_documentdb_gw_host` extension.
+- **Deployment Options:** Can be run as a standalone process (the default in the `documentdb-local` container) or, since v0.108-0, as a PostgreSQL background worker via the `pg_documentdb_gw_host` extension.

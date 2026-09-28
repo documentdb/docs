@@ -9,6 +9,8 @@ category: aggregation
 
 The `$bucketAuto` stage categorizes documents into a specified number of buckets, attempting to evenly distribute the documents based on the values of a `groupBy` expression. Unlike [`$bucket`](https://documentdb.io/docs/reference/operators/aggregation/%24bucket/), you do not have to provide boundaries — DocumentDB computes them for you.
 
+Supported since `v0.105-0`.
+
 ## Syntax
 
 ```javascript
