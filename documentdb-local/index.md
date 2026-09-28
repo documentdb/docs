@@ -144,7 +144,7 @@ docker run -dt \
 If the container was killed rather than stopped, the next container on the same volume exits with `postmaster.pid exists ... Refusing to start`. Make sure no other container uses the volume, then re-create the container once with `DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true` (`docker start` cannot add it):
 
 ```bash
-docker rm docdb
+docker rm docdb 2>/dev/null   # if the old container still exists
 docker run -dt -p 127.0.0.1:10260:10260 -v documentdb-data:/data \
   -e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true \
   --name docdb ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0 \
