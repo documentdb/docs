@@ -1,6 +1,6 @@
 ---
 title: Try the 1.0 Release Candidate
-description: Try DocumentDB 1.0 RC1 from release assets or container images. For testing only, with no upgrade path and no maintenance.
+description: Try DocumentDB 1.0 RC1 from release assets or container images. For testing only, with no upgrade path and no fixes to RC1.
 ---
 
 # Try the 1.0 release candidate
@@ -9,8 +9,8 @@ description: Try DocumentDB 1.0 RC1 from release assets or container images. For
 
 > **For testing only.** Don't use a release candidate for production or for data you need to keep.
 >
-> - **No upgrade path.** Upgrades from 0.117 to the RC, and from the RC to 1.0, are not supported. Start from an empty instance or volume, and expect to discard it.
-> - **No maintenance.** The RC receives no fixes or security updates. Fixes ship in 1.0.
+> - **No upgrade path.** Upgrades from 0.117 to an RC, between release candidates, and from an RC to 1.0 are not supported. Start from an empty instance or volume, and expect to discard it.
+> - **No fixes to RC1.** Fixes go into the next release candidate or 1.0, not into RC1. Expect an RC2.
 > - **Not the default.** GitHub marks the RC as a pre-release. The package repository, the container `latest` tag and GitHub's latest release stay on the current stable release, v0.117-0. You only get the RC by asking for it explicitly, as shown below.
 
 ## Container image
