@@ -9,13 +9,13 @@ description: Try DocumentDB 1.0 RC1 from release assets or container images. For
 
 > **For testing only.** Don't use a release candidate for production or for data you need to keep.
 >
-> - **No upgrade path.** Upgrades from 0.117 to the RC, and from the RC to a later RC or to 1.0, are not supported. Start from an empty instance or volume, and expect to discard it.
-> - **No maintenance.** The RC receives no fixes or security updates. Fixes ship in the next RC or in 1.0.
+> - **No upgrade path.** Upgrades from 0.117 to the RC, and from the RC to 1.0, are not supported. Start from an empty instance or volume, and expect to discard it.
+> - **No maintenance.** The RC receives no fixes or security updates. Fixes ship in 1.0.
 > - **Not the default.** The package repository and the container `latest` tag stay on the current stable release, v0.117-0. You only get the RC by asking for it explicitly, as shown below.
 
 ## Container image
 
-The RC images are tagged `pg15-1.0.0`, `pg16-1.0.0`, `pg17-1.0.0` and `pg18-1.0.0`, for Linux amd64 and arm64. Use a new volume, not one a 0.117 container has used:
+The RC images are tagged `pg15-1.0.0`, `pg16-1.0.0`, `pg17-1.0.0` and `pg18-1.0.0`, for Linux amd64 and arm64. These tags hold RC1 despite the final version number, so the 1.0 release may replace them; include the image digest when you [report issues](#report-issues). Use a new volume, not one a 0.117 container has used:
 
 ```bash
 docker run -dt -p 127.0.0.1:10260:10260 -v documentdb-rc1-data:/data --name docdb-rc1 \
@@ -68,7 +68,7 @@ sudo dnf install ./documentdb-18-1.0.0-1.noarch.rpm \
 
 For arm64, replace `amd64` with `arm64` or `x86_64` with `aarch64`. For PostgreSQL 17, use the `17` files instead of the two PostgreSQL-specific `18` files. Then run the [setup wizard](prebuilt-packages.md#2-run-the-setup-wizard) as usual.
 
-The wizard and `documentdb-tune` now set `default_toast_compression = 'lz4'`; override it with `documentdb-tune --toast-compression lz4|pglz|default`.
+The wizard now sets `default_toast_compression = 'lz4'`. To keep another setting, pass it through `sudo` when you run the wizard, for example `sudo DOCUMENTDB_TOAST_COMPRESSION=pglz documentdb-setup ...`; `default` leaves PostgreSQL's own setting alone.
 
 The release also publishes `install.sh`, but it installs from the package repository, so it sets up v0.117-0, not the RC.
 
@@ -76,4 +76,4 @@ To remove the RC, uninstall its packages and discard the host or its data direct
 
 ## Report issues
 
-Open an issue in [documentdb/documentdb](https://github.com/documentdb/documentdb/issues) and include `v1.0-RC1`, the image tag or package file names, and your PostgreSQL major version. The [release notes](https://github.com/documentdb/documentdb/releases/tag/v1.0-RC1) list what changed since 0.117.
+Open an issue in [documentdb/documentdb](https://github.com/documentdb/documentdb/issues) and include `v1.0-RC1`, your PostgreSQL major version, and either the package file names or the image digest from `docker inspect -f '{{.Image}}' docdb-rc1`. The [release notes](https://github.com/documentdb/documentdb/releases/tag/v1.0-RC1) list what changed since 0.117.

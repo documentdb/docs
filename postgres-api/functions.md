@@ -74,7 +74,7 @@ Functions for managing collections, views, databases, and sharding.
 | `documentdb_api.reshard_collection(p_shard_key_spec bson)` | Re-shards an already-sharded collection. |
 | `documentdb_api.unshard_collection(p_shard_key_spec bson)` | Removes the shard key from a sharded collection, returning it to a single unsharded table. |
 | `documentdb_api.coll_mod(p_database_name text, p_collection_name text, p_spec bson)` | Executes a MongoDB `collMod` command. Changes collection options — `viewOn`, `pipeline`, `validator`, `expireAfterSeconds`, `changeStreamPreAndPostImages` — on an existing collection. |
-| `documentdb_api.compact(p_spec bson)` | Vacuums a collection's data table and its indexes (added in v0.104-0). The default is a non-blocking `VACUUM`; the blocking `mode: "full"` needs a GUC that is off by default — see the note below. |
+| `documentdb_api.compact(p_spec bson)` | Compacts a collection's data and indexes (added in v0.104-0). Requires a GUC that is off by default — see the note below. |
 
 > **Shard keys must be hashed.** Every value in the shard key document has to be the string `"hashed"`; anything else raises `only shard keys that use hashed are supported` (or `Shard key value provided is invalid` for a different string). A first-time shard therefore looks like `SELECT documentdb_api.shard_collection('mydb', 'users', '{ "value": "hashed" }'::documentdb_core.bson, false);`.
 
@@ -82,7 +82,7 @@ Functions for managing collections, views, databases, and sharding.
 
 > **Sharding operations rewrite the whole collection.** `shard_collection`, `reshard_collection`, and `unshard_collection` each build a shadow table and re-insert every document, so plan for roughly double the collection's disk footprint for the duration and expect a runtime proportional to collection size. None of them warn about this.
 
-> **`compact` modes.** `mode` is `"standard"` (the default: a plain `VACUUM`, which does not block reads or writes and rarely returns space to the OS) or `"full"` (`VACUUM FULL`, which rewrites the table under an exclusive lock). Only `"full"` needs `documentdb.enableCompactVacuumFull`: with the GUC at its default `off`, it returns `{ "ok": 1, "bytesFreed": 0 }` and reclaims nothing — no error, no warning. `dryRun: true` reports an estimate without vacuuming. `compact` also required a separate `documentdb.enableCompact` GUC when it was introduced in v0.104-0; that flag was removed in v0.109-0.
+> **`compact` requires `documentdb.enableCompactVacuumFull`, which defaults to `off`.** With the GUC off, `compact` returns `{ "ok": 1, "bytesFreed": 0 }` and reclaims nothing — no error, no warning. Turn the GUC on to actually run the (blocking) `VACUUM FULL`. `compact` also required a separate `documentdb.enableCompact` GUC when it was introduced in v0.104-0; that flag was removed in v0.109-0.
 
 ## Index Management
 
