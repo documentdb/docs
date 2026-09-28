@@ -19,7 +19,7 @@ Get first-party packages from [documentdb.io](https://documentdb.io/packages), e
 
 ## First-party packages
 
-The current release is [`v1.0-RC1`](https://github.com/documentdb/documentdb/releases/tag/v1.0-RC1), a release candidate published on **2026-09-28**.
+The current release is [`v1.0-RC1`](https://github.com/documentdb/documentdb/releases/tag/v1.0-RC1), a release candidate published on **2026-09-28**. The package repository, release assets, and container images all serve this version.
 
 First-party CI builds and tests the full stack for:
 
@@ -97,7 +97,7 @@ sh documentdb-install.sh --dry-run    # preview
 sh documentdb-install.sh              # prompts for the admin password
 ```
 
-The script installs the packages the repository serves, not the release assets it was downloaded with. It refuses conflicting repository files or setup state rather than reconciling them, and never upgrades; if the selected major is already set up, it only reports its status. Useful options: `--pg-major 17`, `--listen-port`, `--packages-only` (skip the wizard), `--no-enable`. Unattended runs need `--yes --accept-external-listen --admin-password-file /path/to/protected-file`.
+It refuses conflicting repository files or setup state rather than reconciling them, and never upgrades; if the selected major is already set up, it only reports its status. Useful options: `--pg-major 17`, `--listen-port`, `--packages-only` (skip the wizard), `--no-enable`. Unattended runs need `--yes --accept-external-listen --admin-password-file /path/to/protected-file`.
 
 ## What each release publishes
 
