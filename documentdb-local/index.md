@@ -7,7 +7,7 @@ description: Learn how to install and run DocumentDB Local using Docker for loca
 
 DocumentDB Local provides a lightweight, containerized environment for developing and testing applications locally, including prototyping and integration testing.
 
-The examples below use the PostgreSQL 17 image from release **0.117.0**. Other PostgreSQL major versions and image tags are listed in the [0.117 release](https://github.com/documentdb/documentdb/releases/tag/v0.117-0).
+The examples below use the PostgreSQL 17 image from release **0.117.0**. Other PostgreSQL major versions and image tags are listed in the [0.117 release](https://github.com/documentdb/documentdb/releases/tag/v0.117-0). To test the 1.0 release candidate, see [Try the 1.0 release candidate](../getting-started/release-candidate.md).
 
 ## Prerequisites
 
@@ -152,27 +152,6 @@ db.getSiblingDB("StoreData").ratings.countDocuments({})  // 2
 
 Seeding remains one-shot per data volume. Previously seeded volumes are **not automatically migrated** to StoreData; use a new, empty volume when you want the new sample dataset. A direct loader rerun tolerates duplicate keys rather than duplicating documents. See the [versioned sample-data guide](https://github.com/documentdb/documentdb/tree/v0.117-0/documentdb-local/sample-data) for manual loader instructions.
 
-
-## Test the 1.0 release candidate
-
-[`v1.0-RC1`](https://github.com/documentdb/documentdb/releases/tag/v1.0-RC1) is a pre-release for testing only; the rest of this page describes 0.117. Its images are tagged `pg15-1.0.0` through `pg18-1.0.0`. Run one on a new volume, not one an 0.117 container has used:
-
-```bash
-docker run -dt -p 127.0.0.1:10260:10260 -v documentdb-rc1-data:/data --name docdb-rc1 \
-  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0 \
-  --username "${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
-  --password "${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}"
-```
-
-Differences you will notice from 0.117:
-
-- **Faster start and a health check.** A new volume is usually ready within seconds. Wait for `docker inspect -f '{{.State.Health.Status}}' docdb-rc1` to report `healthy`.
-- **One container per volume.** A second container on the same volume exits immediately. After `docker kill`, `docker rm -f`, or a crash, the next container also refuses to start because of a stale `postmaster.pid`. Re-create it once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`, then without it. Use `docker stop` before `docker rm` to avoid this.
-- **Init script errors don't stop startup.** Errors in `--init-data-path` scripts are logged, and the volume is still marked as initialized. Check `docker logs` after the first start.
-- **`--disable-extended-rum` is ignored** apart from a deprecation warning.
-- **`--toast-compression lz4|pglz|default`** is new and defaults to `lz4`.
-
-Report problems as described under [Reporting issues](#reporting-issues) and mention the RC.
 
 ## Feature support
 

@@ -28,6 +28,8 @@ The current release is [`v0.117-0`](https://github.com/documentdb/documentdb/rel
 
 Ubuntu 24.04 with PostgreSQL 18 is the recommended default. Other targets may be available through PGDG or the build scripts; they are not part of this hosted matrix.
 
+The 1.0 release candidate is available for testing but is not in the package repository; see [Try the 1.0 release candidate](release-candidate.md).
+
 ## Set up and connect
 
 These steps are for a **new stand-alone installation**. For an existing deployment, read [Upgrades and retired targets](#upgrades-and-retired-targets) first.
@@ -229,22 +231,6 @@ Filename prefixes such as `ubuntu24.04-` and `rhel9-` identify release assets, n
 ### Offline / air-gapped
 
 Release assets do not include the full dependency set. Stage PostgreSQL, its required extensions, and all other dependencies on a connected machine of the **same distro, release, and architecture**. Include dependencies already installed on the staging machine. Follow [Offline / air-gapped install](https://documentdb.io/docs/linux-packages/offline/) to serve the bundle as a local repository.
-
-## Test the 1.0 release candidate
-
-[`v1.0-RC1`](https://github.com/documentdb/documentdb/releases/tag/v1.0-RC1) is a pre-release for testing only. The package repository and every other step on this page stay on v0.117-0. Install the candidate on a clean, disposable host from its release assets:
-
-```bash
-gh release download v1.0-RC1 -R documentdb/documentdb -D pkgs-rc1 && cd pkgs-rc1 && sha256sum -c SHA256SUMS
-```
-
-Then follow [Install from downloaded assets](#install-from-downloaded-assets), replacing `0.117` with `1.0` in each file name, for example `ubuntu24.04-postgresql-18-documentdb_1.0-0_amd64.deb`.
-
-- Extension upgrade scripts from `0.117-0` are included but untested. Don't upgrade an existing installation to the candidate.
-- `documentdb-setup` and `documentdb-tune` set `default_toast_compression = 'lz4'`. Override it with `documentdb-tune --toast-compression lz4|pglz|default`.
-- The release also publishes `install.sh`. It installs from the package repository, so it sets up v0.117-0, not the candidate.
-
-Report problems in [GitHub issues](https://github.com/documentdb/documentdb/issues) and mention the RC.
 
 ## Upgrades and retired targets
 
