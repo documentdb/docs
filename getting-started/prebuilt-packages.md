@@ -28,6 +28,19 @@ The current release is [`v0.117-0`](https://github.com/documentdb/documentdb/rel
 
 Ubuntu 24.04 with PostgreSQL 18 is the recommended default. Other targets may be available through PGDG or the build scripts; they are not part of this hosted matrix.
 
+The 1.0 release candidate is available for testing but is not in the package repository; see [Try the 1.0 release candidate](release-candidate.md).
+
+For a clean host, the installer configures repositories, installs packages,
+and runs setup:
+
+```sh
+curl -fsSLo documentdb-install.sh https://documentdb.io/install.sh &&
+sh documentdb-install.sh
+```
+
+This installs v0.117-0 on PostgreSQL 18. Use `--pg-major 17` for PostgreSQL 17.
+The manual steps below install the same release.
+
 ## Set up and connect
 
 These steps are for a **new stand-alone installation**. For an existing deployment, read [Upgrades and retired targets](#upgrades-and-retired-targets) first.
