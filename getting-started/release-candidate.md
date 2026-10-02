@@ -17,13 +17,13 @@ There is no date for 1.0 yet. A release candidate is meant to be close to what 1
 
 ## Container image
 
-The RC images are tagged `pg15-1.0.0-rc1`, `pg16-1.0.0-rc1`, `pg17-1.0.0-rc1` and `pg18-1.0.0-rc1`, for Linux amd64 and arm64. The `pg15-1.0.0` to `pg18-1.0.0` tags currently point at the same images but will move to the final 1.0 build, so pin the `-rc1` tags and include the image digest when you [report issues](#report-issues). Use a new volume, not one a 0.117 container has used:
+The RC images are tagged `pg15-1.0-rc1`, `pg16-1.0-rc1`, `pg17-1.0-rc1` and `pg18-1.0-rc1`, for Linux amd64 and arm64. Don't use the older `pgNN-1.0.0-rc1` and `pgNN-1.0.0` tags: they hold an earlier RC1 build, and `pgNN-1.0.0` will move to the final 1.0 build. Include the image digest when you [report issues](#report-issues). Use a new volume, not one a 0.117 container has used:
 
 ```bash
 docker run -dt -p 127.0.0.1:10260:10260 -v documentdb-rc1-data:/data --name docdb-rc1 \
   -e USERNAME="${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
   -e PASSWORD="${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}" \
-  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0-rc1
+  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0-rc1
 ```
 
 Everything else in [DocumentDB Local](../documentdb-local/index.md) applies, with these differences:
@@ -42,7 +42,20 @@ docker stop docdb-rc1 && docker rm docdb-rc1 && docker volume rm documentdb-rc1-
 
 ## Linux packages
 
-The RC is not in the package repository. Install it from its release assets on a clean, disposable Ubuntu 24.04 or RHEL-compatible 9 host that has never had DocumentDB installed and runs systemd (not WSL without systemd, a chroot or a plain container).
+The RC is not in the package repository. Use a clean, disposable Ubuntu 24.04 or RHEL-compatible 9 host that has never had DocumentDB installed and runs systemd (not WSL without systemd, a chroot or a plain container). Then run the installer with `--version`:
+
+```sh
+curl -fsSLo documentdb-install.sh https://documentdb.io/install.sh &&
+sh documentdb-install.sh --version v1.0-RC1
+```
+
+It enables PGDG (plus EPEL and CRB on EL9), downloads this host's five RC1 packages from the [release](https://github.com/documentdb/documentdb/releases/tag/v1.0-RC1), verifies them against its `SHA256SUMS` and runs the setup wizard. It doesn't add the DocumentDB package repository, so the host never picks up a stable release by accident. PostgreSQL 18 is the default; add `--pg-major 17` for 17, or `--dry-run` to see the plan first. Without `--version`, the same installer sets up v0.117-0.
+
+After an RC run, the installer refuses that host, even in stable mode. Use a fresh host for anything else.
+
+To check what you got, run `dpkg-query -W 'documentdb*'` or `rpm -qa 'documentdb*'`. RC1 packages are version `1.0~rc1`, `documentdb-gateway --version` prints `1.0.0-rc1`, and the extension version is `1.0-0`.
+
+### Manual installation
 
 Enable PGDG first, but not the DocumentDB package repository. On Ubuntu 24.04:
 
@@ -60,42 +73,34 @@ sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-
 sudo dnf -qy module disable postgresql
 ```
 
-Download and verify the release assets:
+Download and verify the release files:
 
 ```bash
-gh release download v1.0-RC1 -R documentdb/documentdb -D pkgs-rc1 && cd pkgs-rc1 && sha256sum -c SHA256SUMS
+base=https://github.com/documentdb/documentdb/releases/download/v1.0-RC1
+mkdir pkgs-rc1 && cd pkgs-rc1
+curl -fsSLO "$base/SHA256SUMS"
+awk '{print $2}' SHA256SUMS | while read -r f; do curl -fsSLO "$base/$f"; done
+sha256sum -c SHA256SUMS
 ```
 
-Ubuntu 24.04, PostgreSQL 18, amd64:
+Install the five packages for PostgreSQL 18. On Ubuntu 24.04:
 
 ```bash
-sudo apt install ./ubuntu24.04-documentdb-18_1.0.0_all.deb \
-                 ./ubuntu24.04-documentdb-common_1.0.0_all.deb \
-                 ./ubuntu24.04-documentdb-postgresql-tools_1.0.0_all.deb \
-                 ./ubuntu24.04-documentdb-gateway_1.0.0_amd64.deb \
-                 ./ubuntu24.04-postgresql-18-documentdb_1.0-0_amd64.deb
+arch=$(dpkg --print-architecture)
+sudo apt install -y ./ubuntu24.04-documentdb-{18,common,postgresql-tools}_*_all.deb \
+                    ./ubuntu24.04-documentdb-gateway_*_"$arch".deb \
+                    ./ubuntu24.04-postgresql-18-documentdb_*_"$arch".deb
 ```
 
-RHEL-compatible 9, PostgreSQL 18, x86_64:
+On RHEL-compatible 9:
 
 ```bash
-sudo dnf install ./documentdb-18-1.0.0-1.noarch.rpm \
-                 ./documentdb-common-1.0.0-1.noarch.rpm \
-                 ./documentdb-postgresql-tools-1.0.0-1.noarch.rpm \
-                 ./documentdb-gateway-1.0.0-1.el9.x86_64.rpm \
-                 ./rhel9-postgresql18-documentdb-1.0.0-1.el9.x86_64.rpm
+sudo dnf install -y ./documentdb-{18,common,postgresql-tools}-[0-9]*.noarch.rpm \
+                    ./documentdb-gateway-*.el9.$(uname -m).rpm \
+                    ./rhel9-postgresql18-documentdb-*.el9.$(uname -m).rpm
 ```
 
-For arm64, replace `amd64` with `arm64` or `x86_64` with `aarch64`. For PostgreSQL 17, use the `17` files instead of the two PostgreSQL-specific `18` files.
-
-Then run the installer. It finds the RC packages already installed, so it adds no package repository and only runs the setup wizard:
-
-```sh
-curl -fsSLo documentdb-install.sh https://documentdb.io/install.sh &&
-sh documentdb-install.sh
-```
-
-Add `--pg-major 17` if you installed the `17` files. On a host without the RC packages, the same installer sets up v0.117-0 instead. You can also run the setup wizard directly:
+For PostgreSQL 17, replace `18` with `17` in the first and last package names. Then run the setup wizard:
 
 ```bash
 sudo documentdb-setup --pg-version 18 --use-new-postgres-instance --admin-user admin
