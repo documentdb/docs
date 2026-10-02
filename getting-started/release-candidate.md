@@ -17,7 +17,7 @@ There is no date for 1.0 yet. A release candidate is meant to be close to what 1
 
 ## Container image
 
-The RC images are tagged `pg15-1.0-rc1`, `pg16-1.0-rc1`, `pg17-1.0-rc1` and `pg18-1.0-rc1`, for Linux amd64 and arm64. Don't use the older `pgNN-1.0.0-rc1` and `pgNN-1.0.0` tags: they hold an earlier RC1 build, and `pgNN-1.0.0` will move to the final 1.0 build. Include the image digest when you [report issues](#report-issues). Use a new volume, not one a 0.117 container has used:
+The RC images are tagged `pg15-1.0-rc1`, `pg16-1.0-rc1`, `pg17-1.0-rc1` and `pg18-1.0-rc1`, for Linux amd64 and arm64. Don't use the older `pgNN-1.0.0-rc1` and `pgNN-1.0.0` tags: they hold an earlier RC1 build, and `pgNN-1.0.0` will move to the final 1.0 build. Include the container's `Release Version` log line when you [report issues](#report-issues). Use a new volume, not one a 0.117 container has used:
 
 ```bash
 docker run -dt -p 127.0.0.1:10260:10260 -v documentdb-rc1-data:/data --name docdb-rc1 \
@@ -53,7 +53,7 @@ It enables PGDG (plus EPEL and CRB on EL9), downloads this host's five RC1 packa
 
 After an RC run, the installer refuses that host, even in stable mode. Use a fresh host for anything else.
 
-To check what you got, run `dpkg-query -W 'documentdb*'` or `rpm -qa 'documentdb*'`. RC1 packages are version `1.0~rc1`, `documentdb-gateway --version` prints `1.0.0-rc1`, and the extension version is `1.0-0`.
+To check what you got, run `dpkg-query -W 'documentdb*' '*-documentdb'` or `rpm -qa '*documentdb*'`. RC1 packages are version `1.0~rc1`, `documentdb-gateway --version` prints `1.0.0-rc1`, and the extension version is `1.0-0`.
 
 ### Manual installation
 
@@ -100,7 +100,7 @@ sudo dnf install -y ./documentdb-{18,common,postgresql-tools}-[0-9]*.noarch.rpm 
                     ./rhel9-postgresql18-documentdb-*.el9.$(uname -m).rpm
 ```
 
-For PostgreSQL 17, replace `18` with `17` in the first and last package names. Then run the setup wizard:
+For PostgreSQL 17, replace `18` with `17` in the first and last package names, and in `--pg-version` below. Then run the setup wizard:
 
 ```bash
 sudo documentdb-setup --pg-version 18 --use-new-postgres-instance --admin-user admin
@@ -112,4 +112,4 @@ To remove the RC, uninstall its packages and discard the host or its data direct
 
 ## Report issues
 
-Open an issue in [documentdb/documentdb](https://github.com/documentdb/documentdb/issues) and include `v1.0-RC1`, your PostgreSQL major version, and either the package file names or the image digest from `docker inspect -f '{{.Image}}' docdb-rc1`. The [release notes](https://github.com/documentdb/documentdb/releases/tag/v1.0-RC1) list what changed since 0.117.
+Open an issue in [documentdb/documentdb](https://github.com/documentdb/documentdb/issues) and include `v1.0-RC1`, your PostgreSQL major version, and either the package versions or the `Release Version` line from `docker logs docdb-rc1`, which names the build commit. The [release notes](https://github.com/documentdb/documentdb/releases/tag/v1.0-RC1) list what changed since 0.117.
