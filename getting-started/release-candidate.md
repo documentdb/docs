@@ -60,16 +60,29 @@ To check what you got, run `dpkg-query -W 'documentdb*' '*-documentdb'` or `rpm 
 Enable PGDG first, but not the DocumentDB package repository. On Ubuntu 24.04:
 
 ```bash
-sudo apt install -y postgresql-common
+sudo apt update &&
+sudo apt install -y postgresql-common gnupg &&
 sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
 ```
 
-On RHEL-compatible 9, also enable EPEL and CRB. On RHEL itself, enable CRB with `sudo subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms` instead of `dnf config-manager`.
+On RHEL-compatible 9, also enable EPEL and CRB. Enable CRB on Rocky Linux, AlmaLinux or CentOS Stream 9:
 
 ```bash
-sudo dnf install -y dnf-plugins-core https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+sudo dnf install -y dnf-plugins-core &&
 sudo dnf config-manager --set-enabled crb
-sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-$(uname -m)/pgdg-redhat-repo-latest.noarch.rpm
+```
+
+Or on RHEL 9:
+
+```bash
+sudo subscription-manager repos --enable "codeready-builder-for-rhel-9-$(arch)-rpms"
+```
+
+Then enable EPEL and PGDG:
+
+```bash
+sudo dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm &&
+sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-$(uname -m)/pgdg-redhat-repo-latest.noarch.rpm &&
 sudo dnf -qy module disable postgresql
 ```
 
@@ -77,16 +90,19 @@ Download and verify the release files:
 
 ```bash
 base=https://github.com/documentdb/documentdb/releases/download/v1.0-RC1
-mkdir pkgs-rc1 && cd pkgs-rc1
-curl -fsSLO "$base/SHA256SUMS"
-awk '{print $2}' SHA256SUMS | while read -r f; do curl -fsSLO "$base/$f"; done
+mkdir pkgs-rc1 && cd pkgs-rc1 &&
+curl -fsSLO "$base/SHA256SUMS" &&
+awk '{print $2}' SHA256SUMS | xargs -I{} curl -fsSLO "$base/{}" &&
 sha256sum -c SHA256SUMS
 ```
+
+Continue only if every file reports `OK`. The install commands below check again and stop on any mismatch.
 
 Install the five packages for PostgreSQL 18. On Ubuntu 24.04:
 
 ```bash
 arch=$(dpkg --print-architecture)
+sha256sum -c --quiet SHA256SUMS &&
 sudo apt install -y ./ubuntu24.04-documentdb-{18,common,postgresql-tools}_*_all.deb \
                     ./ubuntu24.04-documentdb-gateway_*_"$arch".deb \
                     ./ubuntu24.04-postgresql-18-documentdb_*_"$arch".deb
@@ -95,12 +111,15 @@ sudo apt install -y ./ubuntu24.04-documentdb-{18,common,postgresql-tools}_*_all.
 On RHEL-compatible 9:
 
 ```bash
+sha256sum -c --quiet SHA256SUMS &&
 sudo dnf install -y ./documentdb-{18,common,postgresql-tools}-[0-9]*.noarch.rpm \
                     ./documentdb-gateway-*.el9.$(uname -m).rpm \
                     ./rhel9-postgresql18-documentdb-*.el9.$(uname -m).rpm
 ```
 
-For PostgreSQL 17, replace `18` with `17` in the first and last package names, and in `--pg-version` below. Then run the setup wizard:
+For PostgreSQL 17, replace `18` with `17` in the first and last package names, and in `--pg-version` below.
+
+The setup wizard binds the gateway on all interfaces on port 10260, with a self-signed TLS certificate. On a host reachable from other networks, block port 10260 with the host firewall first. Then run the wizard:
 
 ```bash
 sudo documentdb-setup --pg-version 18 --use-new-postgres-instance --admin-user admin
@@ -109,6 +128,15 @@ sudo documentdb-setup --pg-version 18 --use-new-postgres-instance --admin-user a
 The wizard now sets `default_toast_compression = 'lz4'`. To keep another setting, run the wizard directly and pass it through `sudo`, for example `sudo DOCUMENTDB_TOAST_COMPRESSION=pglz documentdb-setup ...`; `default` leaves PostgreSQL's own setting alone. The installer doesn't forward this variable.
 
 To remove the RC, uninstall its packages and discard the host or its data directories. Don't reuse them for a stable installation.
+
+## Known issues
+
+- **The setup admin can't create users with `readAnyDatabase` or `readWriteAnyDatabase`** ([#752](https://github.com/documentdb/documentdb/issues/752)). `createUser` with those roles fails with `User is not authorized to perform this action`. This also affects v0.117-0. On a package install, create the user on the host instead:
+
+  ```bash
+  sudo documentdb-gateway-admin create-user --username app --password-file app.pw \
+    --roles '[{"role":"readAnyDatabase","db":"admin"}]'
+  ```
 
 ## Report issues
 
