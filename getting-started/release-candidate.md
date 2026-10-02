@@ -19,6 +19,15 @@ There is no date for 1.0 yet. A release candidate is meant to be close to what 1
 
 The RC images are tagged `pg15-1.0-rc1`, `pg16-1.0-rc1`, `pg17-1.0-rc1` and `pg18-1.0-rc1`, for Linux amd64 and arm64. Include the container's `Release Version` log line when you [report issues](#report-issues). Use a new volume, not one a 0.117 container has used:
 
+Choose the admin credentials first, in the same terminal (works in bash and zsh):
+
+```bash
+printf 'DocumentDB username: '; read -r DOCUMENTDB_USERNAME
+printf 'DocumentDB password: '; stty -echo; read -r DOCUMENTDB_PASSWORD; stty echo; echo
+```
+
+Then start the container:
+
 ```bash
 docker run -dt -p 127.0.0.1:10260:10260 -v documentdb-rc1-data:/data --name docdb-rc1 \
   -e USERNAME="${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
@@ -28,7 +37,7 @@ docker run -dt -p 127.0.0.1:10260:10260 -v documentdb-rc1-data:/data --name docd
 
 Everything else in [DocumentDB Local](../documentdb-local/index.md) applies, with these differences:
 
-- **Health check.** The first health check runs about 30 seconds after start. Wait until `docker inspect -f '{{.State.Health.Status}}' docdb-rc1` reports `healthy`.
+- **Health check.** Wait until `docker inspect -f '{{.State.Health.Status}}' docdb-rc1` reports `healthy`.
 - **A stale `postmaster.pid` refuses to start.** After `docker kill`, `docker rm -f` or a crash, the next container on that volume refuses to start; 0.117 removed the stale file automatically. Re-create the container once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`, then without it. Run `docker stop` before `docker rm` to avoid this. As in 0.117, a second container on a volume that is already in use exits immediately.
 - **Known issue: init script errors don't stop startup.** In RC1, an error in an `--init-data-path` script is logged but the container still reports success and marks the volume as initialized. Check `docker logs` after the first start; after fixing the script, start from a new volume. Fixed in the next release candidate.
 - **`--disable-extended-rum` is ignored**, apart from a deprecation warning.
@@ -46,14 +55,46 @@ The RC is not in the package repository. Use a clean, disposable Ubuntu 24.04 or
 
 ```sh
 curl -fsSLo documentdb-install.sh https://documentdb.io/install.sh &&
-sh documentdb-install.sh --version v1.0-RC1
+sudo sh documentdb-install.sh --version v1.0-RC1
 ```
 
 It enables PGDG (plus EPEL and CRB on EL9), downloads this host's five RC1 packages from the [release](https://github.com/documentdb/documentdb/releases/tag/v1.0-RC1), verifies them against its `SHA256SUMS` and runs the setup wizard. It doesn't add the DocumentDB package repository, so the host never picks up a stable release by accident. PostgreSQL 18 is the default; add `--pg-major 17` for 17, or `--dry-run` to see the plan first. Without `--version`, the same installer sets up v0.117-0.
 
+It asks you to confirm the plan and to choose the admin password. For an unattended run, store the password in a root-owned file and pass it with `--yes`:
+
+```sh
+printf 'DocumentDB admin password: '; stty -echo; read -r PW; stty echo; echo
+printf '%s\n' "$PW" | sudo install -m 600 /dev/stdin /root/documentdb-admin.pw
+sudo sh documentdb-install.sh --version v1.0-RC1 --yes \
+  --admin-password-file /root/documentdb-admin.pw --accept-external-listen
+```
+
 After an RC run, the installer refuses that host, even in stable mode. Use a fresh host for anything else.
 
 To check what you got, run `dpkg-query -W 'documentdb*' '*-documentdb'` or `rpm -qa '*documentdb*'`. RC1 packages are version `1.0~rc1`, `documentdb-gateway --version` prints `1.0.0-rc1`, and the extension version is `1.0-0`.
+
+### Connect and try it
+
+Install `mongosh` on the host:
+
+```bash
+# Ubuntu 24.04
+curl -fsSL https://pgp.mongodb.com/server-8.0.asc | sudo gpg --dearmor --yes -o /usr/share/keyrings/mongodb.gpg
+echo "deb [signed-by=/usr/share/keyrings/mongodb.gpg] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb.list
+sudo apt update && sudo apt install -y mongodb-mongosh
+
+# EL9
+printf '[mongodb-org-8.0]\nname=MongoDB\nbaseurl=https://repo.mongodb.org/yum/redhat/9/mongodb-org/8.0/$basearch/\ngpgcheck=1\nenabled=1\ngpgkey=https://pgp.mongodb.com/server-8.0.asc\n' | sudo tee /etc/yum.repos.d/mongodb.repo
+sudo dnf install -y mongodb-mongosh
+```
+
+Then connect as the admin user you created; `mongosh` prompts for the password:
+
+```bash
+mongosh "mongodb://localhost:10260/?tls=true&tlsAllowInvalidCertificates=true" -u admin -p
+```
+
+For the container, use `-u "$DOCUMENTDB_USERNAME"`. `db.version()` reports the MongoDB version DocumentDB is compatible with, not the DocumentDB version; use the checks above for that.
 
 ### Manual installation
 
@@ -127,16 +168,28 @@ sudo documentdb-setup --pg-version 18 --use-new-postgres-instance --admin-user a
 
 The wizard now sets `default_toast_compression = 'lz4'`. To keep another setting, run the wizard directly and pass it through `sudo`, for example `sudo DOCUMENTDB_TOAST_COMPRESSION=pglz documentdb-setup ...`; `default` leaves PostgreSQL's own setting alone. The installer doesn't forward this variable.
 
-To remove the RC, uninstall its packages and discard the host or its data directories. Don't reuse them for a stable installation.
+To remove the RC, delete the instance first, then the packages (use your PostgreSQL major):
+
+```bash
+sudo documentdb-local-reset --pg-version 18 --confirm-destroy
+sudo apt purge -y '*documentdb*'      # Ubuntu
+sudo dnf remove -y '*documentdb*'     # EL9
+```
+
+The installer refuses a host that ran the RC, even in stable mode, so discard the host afterwards rather than reusing it.
 
 ## Known issues
 
 - **The setup admin can't create users with `readAnyDatabase` or `readWriteAnyDatabase`** ([#752](https://github.com/documentdb/documentdb/issues/752)). `createUser` with those roles fails with `User is not authorized to perform this action`. This also affects v0.117-0. On a package install, create the user on the host instead:
 
   ```bash
-  sudo documentdb-gateway-admin create-user --username app --password-file app.pw \
-    --roles '[{"role":"readAnyDatabase","db":"admin"}]'
+  printf 'Password for app: '; stty -echo; read -r APP_PASSWORD; stty echo; echo
+  printf '%s' "$APP_PASSWORD" | sudo documentdb-gateway-admin create-user --username app \
+    --password-stdin --roles '[{"role":"readAnyDatabase","db":"admin"}]'
   ```
+
+- **Harmless errors in the container log.** The health check logs `FATAL: database "documentdb" does not exist` about every 30 seconds, and startup logs one `Failed to accept a TCP connection (IPv6)` error. Neither affects the server.
+- **The installer's summary says `Gateway: 127.0.0.1:10260`.** The gateway actually listens on all interfaces, as the installer warns earlier.
 
 ## Report issues
 
