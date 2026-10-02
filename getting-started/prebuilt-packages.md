@@ -38,10 +38,8 @@ curl -fsSLo documentdb-install.sh https://documentdb.io/install.sh &&
 sh documentdb-install.sh
 ```
 
-This defaults to v0.117-0 and PostgreSQL 18. Use `--pg-major 17` for PostgreSQL 17.
-RC1 requires an explicit `--version v1.0-RC1` and a disposable host with no
-DocumentDB packages, configuration, or data. It has no supported upgrade path.
-The manual steps below install the stable release.
+This installs v0.117-0 on PostgreSQL 18. Use `--pg-major 17` for PostgreSQL 17.
+The manual steps below install the same release.
 
 ## Set up and connect
 

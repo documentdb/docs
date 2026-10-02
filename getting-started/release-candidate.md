@@ -42,27 +42,6 @@ docker stop docdb-rc1 && docker rm docdb-rc1 && docker volume rm documentdb-rc1-
 
 ## Linux packages
 
-The current installer supports explicit RC1 selection on a clean, disposable
-Ubuntu 24.04 or RHEL-compatible 9 host:
-
-```sh
-curl -fsSLo documentdb-install.sh https://documentdb.io/install.sh &&
-sh documentdb-install.sh --version v1.0-RC1
-```
-
-It detects your architecture, configures prerequisites, downloads and verifies
-the matching RC1 packages, and runs setup. PostgreSQL 18 is the default; add
-`--pg-major 17` to select 17. Use `--dry-run` to preview or `--packages-only`
-to skip setup. Existing DocumentDB packages, configuration, or data are refused.
-The RC installer also refuses an existing DocumentDB stable repository and
-does not configure one. It records the RC installation before installing
-packages, so later runs cannot adopt it as stable. Use a fresh host if a
-package installation fails; use the setup wizard directly after `--packages-only`.
-Without `--version v1.0-RC1`, the installer uses the stable repository,
-currently v0.117-0.
-
-### Manual installation
-
 The RC is not in the package repository. Install it from its release assets on a clean, disposable Ubuntu 24.04 or RHEL-compatible 9 host that has never had DocumentDB installed. Enable PGDG first, plus EPEL and CRB on EL9; see [Pre-built Packages](prebuilt-packages.md).
 
 ```bash
@@ -89,13 +68,18 @@ sudo dnf install ./documentdb-18-1.0.0-1.noarch.rpm \
                  ./rhel9-postgresql18-documentdb-1.0.0-1.el9.x86_64.rpm
 ```
 
-For arm64, replace `amd64` with `arm64` or `x86_64` with `aarch64`. For PostgreSQL 17, use the `17` files instead of the two PostgreSQL-specific `18` files. Then run the [setup wizard](prebuilt-packages.md#2-run-the-setup-wizard) as usual.
+For arm64, replace `amd64` with `arm64` or `x86_64` with `aarch64`. For PostgreSQL 17, use the `17` files instead of the two PostgreSQL-specific `18` files.
+
+Then run the installer. It finds the RC packages already installed, so it adds no package repository and only runs the setup wizard:
+
+```sh
+curl -fsSLo documentdb-install.sh https://documentdb.io/install.sh &&
+sh documentdb-install.sh
+```
+
+Add `--pg-major 17` if you installed the `17` files. You can also run the [setup wizard](prebuilt-packages.md#2-run-the-setup-wizard) directly. On a host without the RC packages, the same installer sets up v0.117-0 instead.
 
 The wizard now sets `default_toast_compression = 'lz4'`. To keep another setting, pass it through `sudo` when you run the wizard, for example `sudo DOCUMENTDB_TOAST_COMPRESSION=pglz documentdb-setup ...`; `default` leaves PostgreSQL's own setting alone.
-
-The original `install.sh` attached to the RC1 release installs v0.117-0 and
-does not accept `--version`. Use the current website installer above for
-explicit RC selection; the original release assets remain unchanged.
 
 To remove the RC, uninstall its packages and discard the host or its data directories. Don't reuse them for a stable installation.
 
