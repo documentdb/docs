@@ -17,7 +17,7 @@ There is no date for 1.0 yet. A release candidate is meant to be close to what 1
 
 ## Container image
 
-The RC images are tagged `pg15-1.0-rc1`, `pg16-1.0-rc1`, `pg17-1.0-rc1` and `pg18-1.0-rc1`, for Linux amd64 and arm64. Don't use the older `pgNN-1.0.0-rc1` and `pgNN-1.0.0` tags: they hold an earlier RC1 build, and `pgNN-1.0.0` will move to the final 1.0 build. Include the container's `Release Version` log line when you [report issues](#report-issues). Use a new volume, not one a 0.117 container has used:
+The RC images are tagged `pg15-1.0-rc1`, `pg16-1.0-rc1`, `pg17-1.0-rc1` and `pg18-1.0-rc1`, for Linux amd64 and arm64. Include the container's `Release Version` log line when you [report issues](#report-issues). Use a new volume, not one a 0.117 container has used:
 
 ```bash
 docker run -dt -p 127.0.0.1:10260:10260 -v documentdb-rc1-data:/data --name docdb-rc1 \
