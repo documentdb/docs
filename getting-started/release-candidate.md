@@ -28,7 +28,7 @@ docker run -dt -p 127.0.0.1:10260:10260 -v documentdb-rc1-data:/data --name docd
 
 Everything else in [DocumentDB Local](../documentdb-local/index.md) applies, with these differences:
 
-- **Health check.** A new volume is usually ready within seconds. Wait until `docker inspect -f '{{.State.Health.Status}}' docdb-rc1` reports `healthy`.
+- **Health check.** The first health check runs about 30 seconds after start. Wait until `docker inspect -f '{{.State.Health.Status}}' docdb-rc1` reports `healthy`.
 - **A stale `postmaster.pid` refuses to start.** After `docker kill`, `docker rm -f` or a crash, the next container on that volume refuses to start; 0.117 removed the stale file automatically. Re-create the container once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`, then without it. Run `docker stop` before `docker rm` to avoid this. As in 0.117, a second container on a volume that is already in use exits immediately.
 - **Known issue: init script errors don't stop startup.** In RC1, an error in an `--init-data-path` script is logged but the container still reports success and marks the volume as initialized. Check `docker logs` after the first start; after fixing the script, start from a new volume. Fixed in the next release candidate.
 - **`--disable-extended-rum` is ignored**, apart from a deprecation warning.
@@ -42,7 +42,25 @@ docker stop docdb-rc1 && docker rm docdb-rc1 && docker volume rm documentdb-rc1-
 
 ## Linux packages
 
-The RC is not in the package repository. Install it from its release assets on a clean, disposable Ubuntu 24.04 or RHEL-compatible 9 host that has never had DocumentDB installed. Enable PGDG first, plus EPEL and CRB on EL9; see [Pre-built Packages](prebuilt-packages.md).
+The RC is not in the package repository. Install it from its release assets on a clean, disposable Ubuntu 24.04 or RHEL-compatible 9 host that has never had DocumentDB installed and runs systemd (not WSL without systemd, a chroot or a plain container).
+
+Enable PGDG first, but not the DocumentDB package repository. On Ubuntu 24.04:
+
+```bash
+sudo apt install -y postgresql-common
+sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+```
+
+On RHEL-compatible 9, also enable EPEL and CRB. On RHEL itself, enable CRB with `sudo subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms` instead of `dnf config-manager`.
+
+```bash
+sudo dnf install -y dnf-plugins-core https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+sudo dnf config-manager --set-enabled crb
+sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-$(uname -m)/pgdg-redhat-repo-latest.noarch.rpm
+sudo dnf -qy module disable postgresql
+```
+
+Download and verify the release assets:
 
 ```bash
 gh release download v1.0-RC1 -R documentdb/documentdb -D pkgs-rc1 && cd pkgs-rc1 && sha256sum -c SHA256SUMS
@@ -77,9 +95,13 @@ curl -fsSLo documentdb-install.sh https://documentdb.io/install.sh &&
 sh documentdb-install.sh
 ```
 
-Add `--pg-major 17` if you installed the `17` files. You can also run the [setup wizard](prebuilt-packages.md#2-run-the-setup-wizard) directly. On a host without the RC packages, the same installer sets up v0.117-0 instead.
+Add `--pg-major 17` if you installed the `17` files. On a host without the RC packages, the same installer sets up v0.117-0 instead. You can also run the setup wizard directly:
 
-The wizard now sets `default_toast_compression = 'lz4'`. To keep another setting, pass it through `sudo` when you run the wizard, for example `sudo DOCUMENTDB_TOAST_COMPRESSION=pglz documentdb-setup ...`; `default` leaves PostgreSQL's own setting alone.
+```bash
+sudo documentdb-setup --pg-version 18 --use-new-postgres-instance --admin-user admin
+```
+
+The wizard now sets `default_toast_compression = 'lz4'`. To keep another setting, run the wizard directly and pass it through `sudo`, for example `sudo DOCUMENTDB_TOAST_COMPRESSION=pglz documentdb-setup ...`; `default` leaves PostgreSQL's own setting alone. The installer doesn't forward this variable.
 
 To remove the RC, uninstall its packages and discard the host or its data directories. Don't reuse them for a stable installation.
 
