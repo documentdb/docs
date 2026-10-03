@@ -51,7 +51,7 @@ docker stop docdb-rc1 && docker rm docdb-rc1 && docker volume rm documentdb-rc1-
 
 ## Linux packages
 
-The RC is not in the package repository. Use a clean, disposable Ubuntu 24.04 or RHEL-compatible 9 host that has never had DocumentDB installed and runs systemd (not WSL without systemd, a chroot or a plain container). Then run the installer with `--version`:
+The RC is not in the package repository. Use a clean Ubuntu 24.04 or RHEL-compatible 9 host that has never had DocumentDB installed and runs systemd (not WSL without systemd, a chroot or a plain container). Then run the installer with `--version`:
 
 ```sh
 curl -fsSLo documentdb-install.sh https://documentdb.io/install.sh &&
