@@ -116,7 +116,7 @@ The following table summarizes the available Docker commands for configuring the
 | Specify a directory of scripts for database initialization. | `--init-data-path [value]` | Overrides `INIT_DATA_PATH` environment variable | STRING | `/init_doc_db.d` | JavaScript files run alphabetically using `mongosh`, once per fresh data volume. Syntax or runtime errors abort initialization. An attempted script run is not repeated on restart, so fix the scripts and use a fresh volume to retry. |
 | Skip initialization with built-in sample data. | `--skip-init-data` | Overrides `SKIP_INIT_DATA` environment variable | `true`, `false` (`SKIP_INIT_DATA` only - the flag itself takes no value) | N/A | Legacy alias for `--init-data false`. Note that `SKIP_INIT_DATA=false` does the opposite of the flag: with `INIT_DATA` unset it enables the built-in sample data. Does not affect `--init-data-path`. |
 | Disable the use of extended RUM for indexes. | `--disable-extended-rum` | Overrides `DISABLE_EXTENDED_RUM` environment variable | N/A (takes no value) | N/A | Extended RUM is enabled by default. **Known issue:** this flag does not currently disable it - the container still starts with `documentdb_extended_rum` configured. |
-| Enable telemetry data. | `--enable-telemetry [value]` | Overrides `ENABLE_TELEMETRY` environment variable | `true`, `false` | `false` | **Known issue:** the value is validated at startup but no telemetry is currently emitted - the gateway's metrics and tracing exporters are disabled in this image, and an invalid value only serves to abort startup. |
+| Enable telemetry data. | `--enable-telemetry [value]` | Overrides `ENABLE_TELEMETRY` environment variable | `true`, `false` | `false` | The gateway's operational metrics, unrelated to [usage telemetry](#usage-telemetry). **Known issue:** the value is validated at startup but no telemetry is currently emitted - the gateway's metrics and tracing exporters are disabled in this image, and an invalid value only serves to abort startup. |
 | Specify log verbosity. | `--log-level [value]` | Overrides `LOG_LEVEL` environment variable. | `quiet`, `error`, `warn`, `info`, `debug`, `trace` | `info` | **Known issue:** the value is validated at startup but does not currently change what the container logs. To change the gateway's own verbosity, set the `DOCUMENTDB_LOG_LEVEL` environment variable instead; it takes a tracing filter such as `info` or `debug` (`quiet` is not one of its values). |
 
 > `--skip-init-data` and `--disable-extended-rum` are the only options that take no value. Passing one anyway - for example `--disable-extended-rum false` - is rejected as an unexpected argument and the container exits.
@@ -133,6 +133,16 @@ docker run -dt \
   --password "${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}" \
   --init-data true
 ```
+
+## Usage telemetry
+
+Starting with the 1.0 RC2 images (`pg15-1.0-rc2` to `pg18-1.0-rc2`), DocumentDB Local sends anonymous usage data by default. The 0.117 images used on this page send none, and neither do the native packages.
+
+At startup and then hourly, the image reports its version, platform and CPU architecture to [Scarf](https://scarf.sh). It never sends database, collection or user names, queries, documents or credentials. A `[TELEMETRY]` notice in the container log says when it is on.
+
+To turn it off, add `-e DOCUMENTDB_USAGE_TELEMETRY=false`, `-e NO_ANALYTICS=1` or `-e DO_NOT_TRACK=1` before the image name, or `--disable-usage-telemetry` after it. In CI, turn it off explicitly: the image skips telemetry when `CI` is set inside the container, but `docker run` doesn't pass the host's `CI` through. `--enable-telemetry` is a separate setting for the gateway's own metrics and doesn't affect this.
+
+The [privacy statement](https://github.com/documentdb/documentdb/blob/v1.0-RC2/documentdb-local/PRIVACY.md) has the details. The image also includes it at `/home/documentdb/PRIVACY.md`.
 
 ## Built-in sample data
 

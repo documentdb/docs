@@ -17,6 +17,7 @@ There is no date for 1.0 yet. A release candidate is meant to be close to what 1
 
 ## Changes since RC1
 
+- **Usage telemetry in the container image.** The RC2 image sends anonymous usage data by default; native packages send nothing. See [Container image](#container-image).
 - **Gateway v2 runtime.** The gateway now runs on its v2 runtime by default.
 - **Init script errors stop startup.** RC1's known issue is fixed: an error in an `--init-data-path` script now stops the container with an error. The run isn't retried on restart, so fix the script and start from a new volume.
 - **Permission fixes.** `find` and `aggregate` with `batchSize: 0` now check that the caller can read the collection, and `$merge` and `$out` now need insert or update permission on the target collection, not just read.
@@ -36,6 +37,7 @@ docker run -dt -p 127.0.0.1:10260:10260 -v documentdb-rc2-data:/data --name docd
 
 Everything else in [DocumentDB Local](../documentdb-local/index.md) applies, with these differences:
 
+- **Usage telemetry is on by default.** At startup and then hourly, the image reports its version, platform and CPU architecture to Scarf, and nothing about your data, queries or credentials. Turn it off with `-e DOCUMENTDB_USAGE_TELEMETRY=false`, `-e NO_ANALYTICS=1` or `-e DO_NOT_TRACK=1`, or pass `--disable-usage-telemetry` after the image name. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
 - **Health check.** The first health check runs about 30 seconds after start. Wait until `docker inspect -f '{{.State.Health.Status}}' docdb-rc2` reports `healthy`.
 - **Stale `postmaster.pid`.** After `docker kill`, `docker rm -f` or a crash, the next start removes the stale file, as 0.117 did, but only when the volume's lock shows an RC2 container wrote it. Otherwise it refuses to start: re-create the container once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`, then without it. Don't share a volume between hosts. As in 0.117, a second container on a volume that is already in use exits immediately.
 - **PostgreSQL loss stops the container.** If PostgreSQL inside the container stops, the gateway fails requests straight away and the container exits after 20 seconds (`DOCUMENTDB_POSTMASTER_EXIT_TIMEOUT`).
