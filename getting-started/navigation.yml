@@ -12,5 +12,5 @@
   link: mongo-shell-quickstart.md
 - title: Pre-built Packages
   link: prebuilt-packages.md
-- title: Try the 1.0 Release Candidate
-  link: release-candidate.md
+- title: 1.0 Release Notes
+  link: release-notes-1.0.md
