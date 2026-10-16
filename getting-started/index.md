@@ -29,7 +29,7 @@ DocumentDB provides a NoSQL datastore implemented using PostgreSQL, giving devel
 
 ## Architecture Components
 
-DocumentDB consists of three primary components:
+DocumentDB consists of four primary components:
 
 1. **pg_documentdb_core**: A PostgreSQL extension that provides:
    - Native BSON data type support in PostgreSQL
@@ -48,6 +48,8 @@ DocumentDB consists of three primary components:
    - Terminates TLS and authenticates clients (SCRAM-SHA-256)
    - Translates MongoDB commands into calls against `pg_documentdb`
    - Manages cursors, sessions, and connection state for MongoDB drivers
+
+4. **pg_documentdb_extended_rum**: The index access method behind DocumentDB's document indexes, required in 1.0
 
 ## Common Use Cases
 

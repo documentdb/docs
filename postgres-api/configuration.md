@@ -27,7 +27,7 @@ Collections with a `validator` are enforced on `insert`, `update`, `findAndModif
 
 The package setup wizard and container startup handle the required extension setup. For a manually configured PostgreSQL instance, create both `documentdb` and `documentdb_extended_rum`; `CREATE EXTENSION documentdb CASCADE` does not create `documentdb_extended_rum` automatically. Follow the [package setup guidance](https://documentdb.io/docs/getting-started/packages/) before creating indexes.
 
-Setting the option to `none` opts out of the requirement and loads the upstream `rum` library instead; `prefer_documentdb_extended_rum` tries the extended library and falls back to `rum` if it cannot be loaded.
+Leave this at the default on package and container installs: they also set `documentdb.alternate_index_handler_name = 'extended_rum'`, and with `none` index builds crash the server (and the PostgreSQL 18 image, which ships no upstream `rum` library, doesn't start). On a server you built yourself, `none` loads the upstream `rum` library instead, which must be installed. `prefer_documentdb_extended_rum` falls back to `rum` only when the extended library loads but lacks its index handler; if the library itself is missing, PostgreSQL still fails to start.
 
 ### Non-blocking unique index builds
 
@@ -43,7 +43,7 @@ When enabled, creating a unique ordered index on an existing collection no longe
 | --- | --- | --- |
 | `documentdb_core.enableCollation` | `off` | Accepts the `collation` option on queries. It is defined by `pg_documentdb_core`, hence the `documentdb_core.` prefix, and can be set per session. |
 
-While `off`, `find`, `aggregate`, and `count` reject a `collation` option with "collation is not supported in the find command yet." (or `aggregate` / `count` in place of `find`). `distinct` rejects `collation` whether or not the flag is on. Setting `documentdb.skipFailOnCollation` (default `off`) makes these commands ignore the option instead, so they compare strings by binary value.
+While `off`, `find`, `aggregate`, and `count` reject a `collation` option with "collation is not supported in the find command yet." (or `aggregate` / `count` in place of `find`). `delete` follows the flag too. `distinct`, `findAndModify` and `update` reject `collation` whether or not the flag is on. Setting `documentdb.skipFailOnCollation` (default `off`) makes these commands ignore the option instead, so they compare strings by binary value.
 
 With the flag on, a few aggregation stages still reject a collation, including `$bucket`, `$bucketAuto`, `$densify`, `$fill`, `$geoNear`, `$merge`, `$setWindowFields`, and `$sortByCount`.
 

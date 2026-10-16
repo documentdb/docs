@@ -33,7 +33,7 @@ helm install documentdb-operator oci://ghcr.io/documentdb/documentdb-operator \
 
 Check one thing before you plan a deployment. The operator mounts the DocumentDB extension into PostgreSQL pods using the Kubernetes [ImageVolume](https://kubernetes.io/docs/concepts/storage/volumes/#image) feature, which constrains where it can run:
 
-- **Kubernetes 1.35 or later**, where ImageVolume is generally available. On 1.33 and 1.34 the feature is beta, and works only if you enable the `ImageVolume` feature gate on the API server and the kubelets.
+- **Kubernetes 1.35 or later.** ImageVolume is GA from 1.36. In 1.35 it is beta and on by default, so check that your cluster hasn't turned the `ImageVolume` feature gate off. On 1.33 and 1.34 it is off by default, and works only if you enable the gate on the API server and the kubelets.
 - **containerd or CRI-O** as the container runtime. The Docker runtime does not support ImageVolume.
 
 If the feature is unavailable, the operator's admission webhook rejects the `DocumentDB` resource with an explanatory error rather than leaving pods stuck. Managed Kubernetes offerings vary in the versions and runtimes they expose, and local tools often need an explicit flag to select a supported runtime, so confirm both up front. [Before You Start](https://documentdb.io/documentdb-kubernetes-operator/latest/preview/getting-started/before-you-start/) has the full prerequisite list, including supported tooling versions and resource sizing.

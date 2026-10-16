@@ -150,7 +150,7 @@ This query updates all elements in the discounts array inside each promotion eve
 
 ```javascript
 db.stores.updateOne(
-  { _id: "905d1939-e03a-413e-a9c4-221f74055aac" },
+  { _id: "0fcc0bf0-ed18-4ab8-b558-9848e18058f4" },
   {
     $inc: {
       "promotionEvents.$[].discounts.$[].discountPercentage": 5
@@ -165,7 +165,7 @@ This query increase the total sales for all categories by 10% by using the $[] o
 
 ```javascript
 db.stores.update(
-  { _id: "905d1939-e03a-413e-a9c4-221f74055aac" },
+  { _id: "0fcc0bf0-ed18-4ab8-b558-9848e18058f4" },
   {
     $mul: {
       "sales.salesByCategory.$[].totalSales": 1.10

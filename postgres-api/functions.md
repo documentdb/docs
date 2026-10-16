@@ -161,7 +161,7 @@ Functions for creating, updating, and managing database users. Backed by the wir
 
 Functions for custom roles. Backed by the wire protocol `createRole`, `dropRole`, `rolesInfo`, and `updateRole` commands.
 
-`create_role`, `drop_role`, and `roles_info` are gated behind `documentdb.enableRoleCrud`, which is off by default, so on a stock build they raise "The CreateRole command is currently unsupported." and its equivalents before doing any work. With it on, `create_role` creates the role, grants its parent roles and collection privileges (`find`, `insert`, `update`, `remove`), and records it in the `documentdb_api_catalog.roles` table. The wire-protocol commands are additionally required to run against the `admin` database (`documentdb.enableRolesAdminDBCheck`, on by default); the user management functions above are not.
+`create_role`, `drop_role`, and `roles_info` are gated behind `documentdb.enableRoleCrud`, which is off by default, so on a stock build they raise "The CreateRole command is currently unsupported." and its equivalents before doing any work. With it on, `create_role` creates the role, grants its parent roles, and records it in the `documentdb_api_catalog.roles` table. A non-empty `privileges` array fails with "Privileges on a collection are currently unsupported.", so a custom role can only inherit built-in roles. The role functions require `"$db": "admin"` in the spec, from SQL as well as over the wire, and fail with "The required $db property is missing." without it (`documentdb.enableRolesAdminDBCheck`, on by default, also rejects any other database).
 
 | Function | Description |
 | --- | --- |

@@ -29,7 +29,7 @@ Choose the admin credentials first, in the same terminal (this works in bash and
 
 ```bash
 printf 'DocumentDB username: '; read -r DOCUMENTDB_USERNAME
-printf 'DocumentDB password: '; stty -echo; read -r DOCUMENTDB_PASSWORD; stty echo; echo
+printf 'DocumentDB password: '; IFS= read -r -s DOCUMENTDB_PASSWORD; echo
 export DOCUMENTDB_USERNAME DOCUMENTDB_PASSWORD
 ```
 
@@ -101,7 +101,7 @@ The following table summarizes the available Docker commands for configuring the
 |---|---|---|---|---|---|
 | Print the settings to stdout from the container | `--help`, `-h` | N/A | N/A | N/A | Display information on available configuration |
 | Specify the username for DocumentDB. | `--username [value]` | Overrides `USERNAME` environment variable | STRING | `default_user` | Username for DocumentDB. It may not be an internal DocumentDB role name, and it may not begin with `documentdb`, `citus`, `pg`, or `internal_role` (case-insensitive). The container rejects a reserved name and exits before starting anything. |
-| Specify the password for DocumentDB. | `--password [value]` | Overrides `PASSWORD` environment variable | STRING | `Admin100` | Password for DocumentDB. Always set this explicitly. The built-in default is well known, and anyone who can reach the published port can authenticate with it. When the username or password is left at its default, the container prints a warning at startup; `DOCUMENTDB_ALLOW_DEFAULT_PASSWORD=true` silences it. Prefer the environment variable: a `--password` argument stays visible in the container's process list. A changed password on an existing data volume is ignored; the volume keeps the admin user it was initialized with. |
+| Specify the password for DocumentDB. | `--password [value]` | Overrides `PASSWORD` environment variable | STRING | `Admin100` | Password for DocumentDB. Always set this explicitly. The built-in default is well known, and anyone who can reach the published port can authenticate with it. When the password is left at its default, the container prints a warning at startup; `DOCUMENTDB_ALLOW_DEFAULT_PASSWORD=true` silences it. Prefer the environment variable: a `--password` argument stays visible in the container's process list. A changed password on an existing data volume is ignored; the volume keeps the admin user it was initialized with. |
 | The port of the DocumentDB endpoint. | `--documentdb-port [value]` | Overrides `DOCUMENTDB_PORT` environment variable | INT | `10260` | The port needs to be published. For local use, bind only to loopback - for example, `-p 127.0.0.1:10260:10260`. To use host port `27017` without changing the gateway port, publish `-p 127.0.0.1:27017:10260`; add `--documentdb-port 27017` only when changing the container-side port too. |
 | Specify a directory for data. | `--data-path [value]` | Overrides `DATA_PATH` environment variable. | STRING | `/data` | Data is not persisted unless you mount a volume at this path - for example, `-v documentdb-data:/data`. To use a different directory, set the mount and the flag together, keeping in mind that they go on opposite sides of the image name: `-v` / `--mount` is a `docker run` option and comes before it, `--data-path` is a container argument and comes after it. See the example below the table. |
 | Specify the owner. | `--owner [value]` | Overrides `OWNER` environment variable. | STRING | `documentdb` | The PostgreSQL role used to create the admin user. The cluster this image initializes has a single superuser role, `documentdb`, so leave this at the default: any other value fails with `role "<value>" does not exist` after PostgreSQL has already initialized, and the container exits. |
@@ -112,10 +112,10 @@ The following table summarizes the available Docker commands for configuring the
 | Specify the path to a certificate for securing traffic. | `--cert-path [value]` | Overrides `CERT_PATH` environment variable. | STRING | NA | PEM-format certificate. Must be set together with `--key-file` - setting only one of the two fails at startup. You need to mount this file into the container. For example, to set `/mycert.pem`, add this option to `docker run` command: `--mount type=bind,source=./mycert.pem,target=/mycert.pem`. |
 | Override default key with key in key file. | `--key-file [value]` | Overrides `KEY_FILE` environment variable. | STRING | NA | PEM-format private key. Must be set together with `--cert-path` - setting only one of the two fails at startup. You need to mount this file into the container. For example, to set `/mykey.key`, add this option to `docker run` command: `--mount type=bind,source=./mykey.key,target=/mykey.key` |
 | Set the TLS mode for client connections. | `--tlsMode [value]` | Overrides `TLS_MODE` environment variable | `disabled`, `allowTLS`, `requireTLS` | `allowTLS` | With `allowTLS` the gateway accepts both plain and TLS connections; `disabled` behaves the same way. `requireTLS` rejects plain connections, so every client must connect with `tls=true`. |
-| Enable initialization with built-in sample data. | `--init-data [value]` | Overrides `INIT_DATA` environment variable | `true`, `false` | `false` | Loads the `StoreData` dataset once per fresh data volume. Use a new, empty volume to seed again; see [Built-in sample data](#built-in-sample-data). |
-| Specify a directory of scripts for database initialization. | `--init-data-path [value]` | Overrides `INIT_DATA_PATH` environment variable | STRING | `/init_doc_db.d` | JavaScript files run alphabetically using `mongosh`, once per fresh data volume. A syntax or runtime error stops the container with an error. The run isn't repeated on restart, so fix the scripts and start from a fresh volume. |
+| Enable initialization with built-in sample data. | `--init-data [value]` | Overrides `INIT_DATA` environment variable | `true`, `false` | `false` | Loads the `StoreData` dataset once per data volume: a marker file in the volume records that it ran, so it also loads into a volume that already holds data but was never seeded. Use a new volume to seed again; see [Built-in sample data](#built-in-sample-data). |
+| Specify a directory of scripts for database initialization. | `--init-data-path [value]` | Overrides `INIT_DATA_PATH` environment variable | STRING | `/init_doc_db.d` | JavaScript files run alphabetically using `mongosh`, once per data volume (a marker file records the attempt, so they also run against an existing volume that never ran them), before the built-in sample data when both are enabled. A syntax or runtime error stops the container with an error. The run isn't repeated on restart, so fix the scripts and start from a fresh volume. |
 | Skip initialization with built-in sample data. | `--skip-init-data` | Overrides `SKIP_INIT_DATA` environment variable | `true`, `false` (`SKIP_INIT_DATA` only - the flag itself takes no value) | N/A | Legacy alias for `--init-data false`. Note that `SKIP_INIT_DATA=false` does the opposite of the flag: with `INIT_DATA` unset it enables the built-in sample data. Does not affect `--init-data-path`. |
-| Disable the use of extended RUM for indexes. | `--disable-extended-rum` | Overrides `DISABLE_EXTENDED_RUM` environment variable | N/A (takes no value) | N/A | **Deprecated and ignored**, apart from a warning at startup; it will be removed in a later release. `documentdb_extended_rum` is always enabled on a volume this image initializes. To use the plain `rum` access method instead, set `documentdb.alternate_index_handler_name = 'rum'` in the data volume's `postgresql.conf` and restart the container. |
+| Disable the use of extended RUM for indexes. | `--disable-extended-rum` | Overrides `DISABLE_EXTENDED_RUM` environment variable | N/A (takes no value) | N/A | **Deprecated and ignored**, apart from a warning at startup; it will be removed in a later release. `documentdb_extended_rum` is always enabled on a volume this image initializes. |
 | Enable telemetry data. | `--enable-telemetry [value]` | Overrides `ENABLE_TELEMETRY` environment variable | `true`, `false` | `false` | The gateway's operational metrics, unrelated to [usage telemetry](#usage-telemetry). **Known issue:** the value is validated at startup but no telemetry is currently emitted - the gateway's metrics and tracing exporters are disabled in this image, and an invalid value only serves to abort startup. |
 | Specify log verbosity. | `--log-level [value]` | Overrides `LOG_LEVEL` environment variable. | `quiet`, `error`, `warn`, `info`, `debug`, `trace` | `info` | **Known issue:** the value is validated at startup but does not currently change what the container logs. To change the gateway's own verbosity, set the `DOCUMENTDB_LOG_LEVEL` environment variable instead; it takes a tracing filter such as `info` or `debug` (`quiet` is not one of its values). |
 | Turn usage telemetry on or off. | `--usage-telemetry [value]` | Overrides `DOCUMENTDB_USAGE_TELEMETRY` environment variable | `true`, `false` (also `1`/`0`, `yes`/`no`, `on`/`off`, case-insensitive) | `true` | Reports the image version, platform and CPU architecture at startup and hourly. An unrecognized value is treated as `false` with a warning, so an opt-out can never stop the container from starting. See [Usage telemetry](#usage-telemetry). |
@@ -141,7 +141,7 @@ docker run -dt \
 
 The 1.0 image sends usage data by default. The native packages send nothing.
 
-At startup and then hourly, the image reports its version, platform and CPU architecture to [Scarf](https://scarf.sh). It never sends database, collection or user names, queries, documents or credentials. Scarf does see the source IP address of each request, so the privacy statement says the data shouldn't be assumed to be anonymous. A `[TELEMETRY]` notice in the container log says when it is on.
+At startup and then hourly, the image reports its version, platform and CPU architecture to [Scarf](https://scarf.sh). It never sends database, collection or user names, queries, documents or credentials. Scarf does see the source IP address of each request, and the privacy statement says that address shouldn't be assumed to be anonymous once received. A `[TELEMETRY]` notice in the container log says when it is on.
 
 To turn it off, add any of these before the image name:
 
@@ -159,7 +159,7 @@ The [privacy statement](https://github.com/documentdb/documentdb/blob/v1.0-0/doc
 
 ## Built-in sample data
 
-The built-in sample data is the `StoreData` dataset. Loading it is opt-in: add `--init-data true` to the container arguments, as in the example above.
+The built-in sample data is the `StoreData` dataset. Loading it is opt-in: add `--init-data true` to the container arguments, as in the example above. If you also give scripts in `--init-data-path`, both run: your scripts first, then the sample data, each tracked by its own marker in the volume.
 
 | Collection | Documents |
 |---|---:|
@@ -177,7 +177,7 @@ Seeding is one-shot per data volume; use a new, empty volume to seed again. A di
 
 ## Container lifecycle
 
-- **Health check.** The image has a Docker health check; the first check runs about 30 seconds after start. `docker inspect -f '{{.State.Health.Status}}' docdb` reports `healthy` once DocumentDB accepts connections.
+- **Health check.** The image has a Docker health check. `docker inspect -f '{{.State.Health.Status}}' docdb` reports `healthy` once DocumentDB accepts connections.
 - **Stale `postmaster.pid`.** After `docker kill`, `docker rm -f`, an out-of-memory kill or a host crash, the next start removes the stale file, but only when the volume's lock shows a 1.0 container wrote it. Otherwise it refuses to start, because an older container may still be using the volume. Once nothing else uses it, re-create the container once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`, then without it (`docker start` can't add the variable). Don't share a volume between hosts. A second container on a volume that is already in use exits immediately.
 - **PostgreSQL loss stops the container.** If PostgreSQL inside the container stops, the gateway fails requests straight away and the container exits after 20 seconds (`DOCUMENTDB_POSTMASTER_EXIT_TIMEOUT`), so a restart policy can bring it back.
 
@@ -185,7 +185,7 @@ Seeding is one-shot per data volume; use a new, empty volume to seed again. A di
 
 A newer image on an existing data volume doesn't update the DocumentDB extensions in it ([#773](https://github.com/documentdb/documentdb/issues/773)), so the volume keeps the old schema under the new binaries. Upgrading a volume in place is not supported in 1.0. To move data from a 0.117 container to 1.0, export it with `mongodump`, start a 1.0 container on a new volume, and load it with `mongorestore`. The PostgreSQL major version of the image must also match the one that initialized the volume.
 
-If you do start a 1.0 image on a volume a 0.117 container used, stop the old container cleanly with `docker stop` first. After `docker kill`, `docker rm -f` or a crash, the 1.0 image finds the 0.117 container's `postmaster.pid` and refuses to start until you re-create it once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`; see [Container lifecycle](#container-lifecycle).
+If you do start a 1.0 image on a volume an older container used, the 1.0 image refuses to start while the old container's `postmaster.pid` is still there, until you re-create it once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`; see [Container lifecycle](#container-lifecycle). For 0.116 and 0.117, stop the old container with `docker stop` first, which removes the file; after `docker kill`, `docker rm -f` or a crash it stays. Images 0.114 and earlier never stop PostgreSQL cleanly, so their volumes always leave the file behind.
 
 ## Feature support
 
@@ -225,7 +225,7 @@ docker run -dt \
   ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0
 ```
 
-Point it inside the data directory rather than at a volume of its own: the entrypoint takes ownership of the data directory on every start, whereas a separate volume is created root-owned and the gateway - which runs as an unprivileged user - cannot write its key there. The trade-off is that the same step runs `chmod -R 750` over that directory, so from the second start onwards the private key is group-readable rather than owner-only, and it is included in any backup of the data volume.
+Point it inside the data directory rather than at a volume of its own: a separate volume is created root-owned, and the gateway - which runs as an unprivileged user - cannot write its key there. The trade-off is that the key is included in any backup of the data volume. If the entrypoint ever has to repair the data directory's ownership (it does when the owner doesn't match, or with `DOCUMENTDB_FORCE_OWNERSHIP_REPAIR=true`), it runs `chmod -R 750` over the directory, which leaves the private key group-readable rather than owner-only.
 
 ### Use the certificate with mongosh
 

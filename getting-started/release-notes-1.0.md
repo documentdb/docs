@@ -5,7 +5,7 @@ description: What's new in DocumentDB 1.0, where to get it, how to upgrade from 
 
 # DocumentDB 1.0 release notes
 
-[DocumentDB v1.0-0](https://github.com/documentdb/documentdb/releases/tag/v1.0-0) was released on **2026-10-19**. It is built from the same commit as the second release candidate, v1.0-RC2. The [changelog](https://github.com/documentdb/documentdb/blob/v1.0-0/CHANGELOG.md) lists every change.
+[DocumentDB v1.0-0](https://github.com/documentdb/documentdb/releases/tag/v1.0-0) was released on **2026-10-19**. It is built from the same commit as the second release candidate, v1.0-RC2. The [changelog](https://github.com/documentdb/documentdb/blob/v1.0-0/CHANGELOG.md) lists the engine changes.
 
 ## Where to get it
 
@@ -13,7 +13,7 @@ description: What's new in DocumentDB 1.0, where to get it, how to upgrade from 
 | --- | --- | --- |
 | [Linux packages](prebuilt-packages.md) | packages `1.0.0`, extension `1.0-0` | Ubuntu 24.04 and RHEL-compatible 9, PostgreSQL 17 and 18, amd64 and arm64 |
 | [Container image](../documentdb-local/index.md) | `pg15-1.0.0` to `pg18-1.0.0`; `latest` is `pg17-1.0.0` | Linux amd64 and arm64 |
-| [Kubernetes operator](../kubernetes-operator/index.md) | operator `1.0.0`, which runs engine `1.0-0` | Kubernetes 1.35+, or 1.33-1.34 with the `ImageVolume` feature gate |
+| [Kubernetes operator](../kubernetes-operator/index.md) | operator `1.0.0`, which runs engine `1.0-0` | Kubernetes 1.33+ with the `ImageVolume` feature gate on (on by default from 1.35, GA in 1.36) |
 
 The SQL extension version is `1.0-0` everywhere, and `hello` reports it in `internal.documentdb_versions`.
 
@@ -25,31 +25,34 @@ The SQL extension version is `1.0-0` everywhere, and `hello` reports it in `inte
 - **Custom roles.** With `documentdb.enableRoleCrud` on (off by default), `createRole` and `dropRole` keep custom roles in a roles catalog. `updateRole` is still unsupported.
 - **`compact`** reports `bytesFreed` as the measured change in on-disk size.
 - **Gateway.** The gateway runs on its new v2 runtime by default. It now returns retryable or specific error codes for backend connection and pool failures instead of `InternalError`, and exits with an error instead of panicking when PostgreSQL is unreachable at startup.
-- **Crash and correctness fixes**, including `$getField`/`$setField`/`$unsetField` on system variables, `$firstN`/`$lastN` without a sort, `$documents` inside `$facet`, `find`/`count`/`distinct` on views that end in `$group`, `$near`/`$geoNear` ordering on `2dsphere` indexes, overlapping `dropIndexes` deadlocks, and several RUM index scan and vacuum fixes.
-- **Container behavior.** An error in an `--init-data-path` script now stops the container. A stale `postmaster.pid` left by an unclean stop is removed on the next start, and the container exits if PostgreSQL inside it stops. TOAST compression defaults to `lz4`, and `--disable-extended-rum` is deprecated and ignored. See [Container lifecycle](../documentdb-local/index.md#container-lifecycle).
+- **Crash and correctness fixes**, including `$getField`/`$setField`/`$unsetField` on system variables, `$firstN`/`$lastN` without a sort, `$documents` inside `$facet`, `$near`/`$geoNear` ordering on `2dsphere` indexes, overlapping `dropIndexes` deadlocks, and several RUM index scan and vacuum fixes.
+- **Container behavior.** An error in an `--init-data-path` script now stops the container. A stale `postmaster.pid` is removed on the next start only when the volume's lock shows a 1.0 container wrote it; otherwise the container refuses to start. The container exits if PostgreSQL inside it stops. TOAST compression defaults to `lz4`, and `--disable-extended-rum` is deprecated and ignored. See [Container lifecycle](../documentdb-local/index.md#container-lifecycle).
 - **Packages.** The setup wizard sets `default_toast_compression = 'lz4'`; pass `DOCUMENTDB_TOAST_COMPRESSION=pglz` or `default` through `sudo` to keep another setting.
 
 ## Upgrading
 
-- **Packages:** 0.116 and 0.117 installations can be upgraded in place: upgrade the packages, then update the extensions. See [Upgrading to 1.0](prebuilt-packages.md#upgrading-to-10).
+- **Packages:** 0.116 and 0.117 installations can be upgraded in place: upgrade the packages, restart PostgreSQL so it loads the new libraries, then update the extensions. See [Upgrading](https://documentdb.io/docs/linux-packages#upgrading).
 - **Containers:** a 1.0 image on an existing volume doesn't update the extensions. Move the data to a new volume with `mongodump` and `mongorestore`. See [Upgrading the image](../documentdb-local/index.md#upgrading-the-image).
-- **Release candidates:** hosts and volumes that ran an RC can't be upgraded. Start 1.0 on a fresh host or a new volume.
+- **Release candidates:** upgrading hosts and volumes that ran an RC isn't supported. Start 1.0 on a fresh host or a new volume.
 
 ## Known issues
 
-- **The setup admin can't create or drop users** ([#752](https://github.com/documentdb/documentdb/issues/752)). `createUser` from the admin user created at setup fails with `User is not authorized to perform this action`. On a package install, manage users on the host instead:
+- **The setup admin can't create or drop users or roles** ([#752](https://github.com/documentdb/documentdb/issues/752)). `createUser`, and `createRole` with `documentdb.enableRoleCrud` on, fail with `User is not authorized to perform this action` when run as the admin user created at setup or by the container. On a package install, manage users on the host instead:
 
   ```bash
-  printf 'Password for app: '; stty -echo; read -r APP_PASSWORD; stty echo; echo
+  printf 'Password for app: '; IFS= read -r -s APP_PASSWORD; echo
   printf '%s' "$APP_PASSWORD" | sudo documentdb-gateway-admin create-user --username app \
     --password-stdin --roles '[{"role":"readAnyDatabase","db":"admin"}]'
   sudo documentdb-gateway-admin drop-user --username app
   ```
 
+- **`distinct` or `count` on a grouped view can crash the server.** `distinct` on a view whose pipeline ends in `$group` with an accumulator such as `$sum`, or `count` with a query on such a view, crashes the PostgreSQL backend. PostgreSQL restarts and disconnects every other session.
 - **A newer container image doesn't upgrade an existing volume** ([#773](https://github.com/documentdb/documentdb/issues/773)). The image never runs `ALTER EXTENSION ... UPDATE`, and a changed `--password` on an existing volume is ignored.
-- **A 1.0 container refuses a volume after an unclean 0.117 stop.** If a 0.117 container on the volume was killed or crashed, the 1.0 image reports that `postmaster.pid` exists and refuses to start until it is re-created once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`. Stop the old container with `docker stop` first.
-- **`updateOne` with `let` can miss a match.** An update with `multi: false` that filters on fields other than `_id` through `let` variables can report no match when PostgreSQL runs it with a generic plan. This is rare with default settings; setting `plan_cache_mode = force_custom_plan` in the PostgreSQL configuration avoids it.
-- **An expensive `$replaceAll` can outlive `maxTimeMS`.** A very costly `$replaceAll` on a large string can keep running after `maxTimeMS` expires and can't be cancelled.
+- **A 1.0 container can refuse a volume an older container used.** If the volume still has an older container's `postmaster.pid`, the 1.0 image reports that it exists and refuses to start until it is re-created once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`. For 0.116 and 0.117, stopping the old container with `docker stop` first avoids this. Images 0.114 and earlier never stop PostgreSQL cleanly, so their volumes always need the override.
+- **A single-document update can miss a match.** An update with `multi: false`, or a `findAndModify`, whose filter uses fields other than `_id` can report no match when PostgreSQL runs it with a generic plan; with `upsert` it then inserts a duplicate. This is rare with default settings; setting `plan_cache_mode = force_custom_plan` in the PostgreSQL configuration avoids it.
+- **An expensive `$replaceAll` or `$regexFindAll` can outlive `maxTimeMS`.** A very costly call on a large string can keep running after `maxTimeMS` expires and can't be cancelled.
+- **A write can be applied twice** ([#767](https://github.com/documentdb/documentdb/issues/767)). If the backend connection is lost after a write commits but before the reply, the gateway retries it, so a non-idempotent update such as `$inc` can be applied twice even with `retryWrites=false`.
+- **`$lookup` can fail on a collection with a wildcard index** ([#769](https://github.com/documentdb/documentdb/issues/769)), with `Unrecognized BSON data type code 0`.
 - **Collation is off by default.** `find`, `aggregate`, `count` and `delete` with a `collation` fail as unsupported unless `documentdb_core.enableCollation` is on. `distinct`, `findAndModify` and `update` don't support `collation` at all.
 - **Container options that do nothing.** `--log-level` and `--enable-telemetry` are validated but have no effect, and a `--data-path` that contains a space fails.
 - **Open packaging and container issues:**

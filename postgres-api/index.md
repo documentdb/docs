@@ -46,7 +46,8 @@ To use `pg_documentdb`, you need to have `pg_documentdb_core` installed and conf
 It is required in 1.0: `documentdb.rum_library_load_option` defaults to `require_documentdb_extended_rum`, so `pg_documentdb` loads its index handler from the extended RUM library. The library loads only from `shared_preload_libraries`, and `CREATE EXTENSION documentdb CASCADE` does not create the extension, so a manually configured server needs both steps before indexes are built:
 
 ```sql
--- postgresql.conf: add pg_documentdb_extended_rum to shared_preload_libraries, then restart
+-- postgresql.conf: add pg_documentdb_extended_rum to shared_preload_libraries and set
+-- documentdb.alternate_index_handler_name = 'extended_rum', then restart
 CREATE EXTENSION documentdb_extended_rum;
 ```
 
@@ -66,4 +67,4 @@ The package setup wizard and the `documentdb-local` image do this for you. See [
 
 - **Cursor and Session Management:** Translates `getMore`, `killCursors`, `killSessions`, and `killOp` commands to the corresponding backend operations.
 
-- **Deployment Options:** Can be run as a standalone process (the default in the `documentdb-local` container) or as a PostgreSQL background worker via the `pg_documentdb_gw_host` extension.
+- **Deployment Options:** Can be run as a standalone process (the default in the `documentdb-local` container) or, when built from source, as a PostgreSQL background worker via the `pg_documentdb_gw_host` extension, which the packages and the container image don't include.

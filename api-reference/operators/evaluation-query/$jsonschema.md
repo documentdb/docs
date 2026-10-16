@@ -90,6 +90,8 @@ These keywords are rejected with `The '<keyword>' keyword in $jsonSchema is not 
 | `format` | strings | Use `pattern` |
 | `id` | N/A | Omit it |
 
+`encrypt` and `encryptMetadata` are accepted so that client-side field-level encryption schemas parse; DocumentDB doesn't encrypt anything.
+
 Any other keyword, including `additionalProperties`, `allOf`, `anyOf`, `dependencies`, `maxProperties`, `minProperties`, `not`, `patternProperties`, and `title`, is rejected with `Unknown $jsonSchema keyword: <keyword>`.
 
 ## Examples
@@ -130,6 +132,7 @@ This query retrieves all stores with names between 5 and 100 characters long, an
 db.stores.find({
   $jsonSchema: {
     bsonType: "object",
+    required: ["name", "location"],
     properties: {
       _id: {
         bsonType: "string"
@@ -141,6 +144,7 @@ db.stores.find({
       },
       location: {
         bsonType: "object",
+        required: ["lat", "lon"],
         properties: {
           lat: {
             bsonType: "double",
@@ -168,9 +172,11 @@ This query retrieves all store documents where the sales field is a valid object
 db.stores.find({
   $jsonSchema: {
     bsonType: "object",
+    required: ["sales"],
     properties: {
       sales: {
         bsonType: "object",
+        required: ["totalSales", "salesByCategory"],
         properties: {
           totalSales: {
             bsonType: "int",
@@ -201,20 +207,22 @@ db.stores.find({
 
 ```
 
-This query should return this output:
+This query matches one store in the sample data. Its `name` and `sales` fields are:
 
 ```javascript
 [
   {
-    _id: 'new-store-001',
-    name: 'Adatum Corporation - Downtown Branch',
-    sales: { totalSales: 5000 },
-    createdDate: ISODate('2025-06-11T11:11:32.262Z'),
-    status: 'new',
-    staff: { totalStaff: { fullTime: 0, partTime: 0 } },
-    version: 1,
-    storeOpeningDate: ISODate('2025-06-11T11:11:32.262Z'),
-    storeFeatures: 213
+    _id: 'f2a8c190-28e4-4e14-9d8b-0256e53dca66',
+    name: 'Fabrikam, Inc. | Car Accessory Outlet - West Adele',
+    sales: {
+      salesByCategory: [
+        { categoryName: 'Phone Mounts', totalSales: 12000 },
+        { categoryName: 'Dash Cameras', totalSales: 22300 }
+      ],
+      peakSalesRecord: 100000,
+      revenue: 50000,
+      totalSales: 50000
+    }
   }
 ]
 ```
@@ -228,12 +236,15 @@ db.stores.find({
   $and: [
     {
       $jsonSchema: {
+        required: ["staff"],
         properties: {
           staff: {
             bsonType: "object",
+            required: ["totalStaff"],
             properties: {
               totalStaff: {
                 bsonType: "object",
+                required: ["fullTime"],
                 properties: {
                   fullTime: {
                     bsonType: "int",
@@ -254,26 +265,19 @@ db.stores.find({
 }).limit(1)
 ```
 
-This query returns the following result:
+This query matches one store in the sample data. Its `name`, `staff` and `sales.totalSales` fields are:
 
 ```javascript
 [
   {
-    _id: 'future-electronics-001',
-    address: { city: 'New Tech City' },
-    name: 'Boulder Innovations - Future Electronics Hub',
-    sales: { totalSales: 25000 },
-    establishedDate: ISODate('2025-06-11T11:14:23.147Z'),
-    categories: [ 'electronics', 'gadgets', 'smart-home' ],
-    promotionEvents: [],
-    ratings: { average: 0, count: 0, reviews: [] },
-    inventory: {
-      lastUpdated: ISODate('2025-06-11T11:14:23.147Z'),
-      totalItems: 0,
-      lowStockAlerts: []
+    _id: 'f2a8c190-28e4-4e14-9d8b-0256e53dca66',
+    name: 'Fabrikam, Inc. | Car Accessory Outlet - West Adele',
+    staff: {
+      maxStaffCapacity: 25,
+      employeeCount: { fullTime: 10, partTime: 2 },
+      totalStaff: { fullTime: 10, partTime: 2 }
     },
-    storeOpeningDate: ISODate('2025-06-11T11:11:32.262Z'),
-    storeFeatures: 120
+    sales: { totalSales: 50000 }
   }
 ]
 ```

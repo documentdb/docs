@@ -247,7 +247,7 @@ Release assets do not include the full dependency set. Stage PostgreSQL, its req
 
 A 0.116 or 0.117 package installation can be upgraded in place; move the whole stack together. Upgrading the packages replaces the libraries and installs the upgrade scripts, but doesn't change the databases: each PostgreSQL instance keeps reporting the old extension version until its extensions are updated. Back up first; there is no downgrade.
 
-A host that ever ran a release candidate can't be upgraded, by the installer or by hand. Install 1.0 on a fresh host and move the data with `mongodump` and `mongorestore`.
+Upgrading a host that ever ran a release candidate isn't supported, and the installer refuses it. Install 1.0 on a fresh host and move the data with `mongodump` and `mongorestore`. Removing packages keeps the PostgreSQL data; don't reset or reuse an adopted instance as an upgrade workaround.
 
 ### Stand-alone stack
 
@@ -255,20 +255,25 @@ Upgrade the packages, restart the stack so PostgreSQL loads the new libraries, t
 
 ```bash
 # Debian / Ubuntu
-sudo apt update && sudo apt install --only-upgrade documentdb documentdb-18 documentdb-common \
-  documentdb-postgresql-tools documentdb-gateway postgresql-18-documentdb
-# RHEL-compatible 9
-sudo dnf upgrade 'documentdb*' postgresql18-documentdb
+sudo apt update && sudo apt install --only-upgrade documentdb-18 postgresql-18-documentdb \
+  documentdb-common documentdb-gateway documentdb-postgresql-tools &&
+sudo systemctl restart documentdb-local@18.target &&
+sudo documentdb-setup --pg-version 18 --use-new-postgres-instance --admin-user admin
 
-sudo systemctl restart documentdb-local@18.target
+# RHEL-compatible 9
+sudo dnf upgrade documentdb-18 postgresql18-documentdb \
+  documentdb-common documentdb-gateway documentdb-postgresql-tools &&
+sudo systemctl restart documentdb-local@18.target &&
 sudo documentdb-setup --pg-version 18 --use-new-postgres-instance --admin-user admin
 ```
 
-On a configured instance the wizard is a day-2 re-run: it keeps the gateway port and TLS settings, skips the existing admin user, and runs `ALTER EXTENSION ... UPDATE` for each DocumentDB extension. Use `--target-postgres-instance` instead of `--use-new-postgres-instance` if that is how you installed. For PostgreSQL 17, use `17` throughout.
+These commands assume the DocumentDB package repository, which carries 1.0 from the release date. If you installed from release assets, download the 1.0 assets and install the same set of files [the same way](#install-from-downloaded-assets) in place of the `apt`/`dnf` command, keeping the `&&` so the restart and setup run only if the install succeeds. The shared packages (`documentdb-common`, `documentdb-gateway`, `documentdb-postgresql-tools`) serve every PostgreSQL major on the host, so if more than one major is installed, upgrade and re-run setup for each of them.
+
+On a configured instance the wizard is a day-2 re-run: it keeps the gateway port and TLS settings and runs `ALTER EXTENSION ... UPDATE` for each DocumentDB extension. It also asks for the admin password and, after a warning and a confirmation, sets it on the existing admin user: enter the current password to keep it, because any other value replaces it and the old one stops working. For PostgreSQL 17, use `17` throughout. If pressing Enter at the password prompt aborts the wizard, run it again and type the password ([#772](https://github.com/documentdb/documentdb/issues/772)).
 
 ### Extension and gateway on your own PostgreSQL
 
-If you adopted the instance with `documentdb-setup --target-postgres-instance`, upgrade the packages and re-run that command, as above; the wizard also fixes the preload list and restarts PostgreSQL when needed.
+If you adopted the instance with `documentdb-setup --target-postgres-instance 18/main`, the wizard never restarts PostgreSQL for you. Upgrade the packages, restart PostgreSQL yourself (`sudo systemctl restart postgresql@18-main` on Ubuntu, `sudo systemctl restart postgresql-18` on EL9), then re-run the same `documentdb-setup --pg-version 18 --target-postgres-instance 18/main --admin-user admin` command; it warns about the admin password as above. If the wizard has to change `shared_preload_libraries`, it writes the change, asks you to restart PostgreSQL, and exits without updating the extensions: restart and run it once more.
 
 Otherwise, upgrade the packages first. On Ubuntu with a cluster named `main`:
 
@@ -285,15 +290,15 @@ sudo documentdb-tune --pg-version 18 --cluster main --dry-run
 sudo documentdb-tune --pg-version 18 --cluster main --yes
 ```
 
-Then restart PostgreSQL so it loads the new libraries, and update the extensions in every database where you created them, in this order, because `ALTER EXTENSION` doesn't update dependencies:
+Then restart PostgreSQL so it loads the new libraries, and update the extensions in every database where you created them, in this order, because `ALTER EXTENSION` doesn't update dependencies. `-1` runs the statements as one transaction, so a failure leaves every extension at its old version, and the gateway restarts only on success. The transaction doesn't detect a missing preload, though: when `documentdb_extended_rum` already exists, the statements succeed without it and index builds fail later with `The index access method extended_rum could not be located`. That is why the preload check above comes first:
 
 ```bash
 sudo systemctl restart postgresql@18-main
-sudo -u postgres /usr/bin/psql --cluster 18/main -d postgres -v ON_ERROR_STOP=1 \
+sudo -u postgres /usr/bin/psql --cluster 18/main -d postgres -1 -v ON_ERROR_STOP=1 \
   -c "ALTER EXTENSION documentdb_core UPDATE;" \
   -c "ALTER EXTENSION documentdb UPDATE;" \
   -c "CREATE EXTENSION IF NOT EXISTS documentdb_extended_rum CASCADE;" \
-  -c "ALTER EXTENSION documentdb_extended_rum UPDATE;"
+  -c "ALTER EXTENSION documentdb_extended_rum UPDATE;" &&
 sudo systemctl restart documentdb-gateway
 ```
 
@@ -305,7 +310,7 @@ Connect with `mongosh` and run:
 db.hello().internal.documentdb_versions
 ```
 
-It should print `[ '1.0-0', '1.0.0' ]`: the installed extension version, then the loaded library version. If the first value is still `0.116-0` or `0.117-0`, the extensions weren't updated. See [`hello`](../api-reference/commands/diagnostic/hello.md).
+It should print `[ '1.0-0', '1.0.0' ]`: the installed extension version, then the loaded library version. If the first value is still `0.116-0` or `0.117-0`, the extensions weren't updated. See [`hello`](https://documentdb.io/docs/reference/commands/diagnostic/hello/).
 
 ### Containers
 

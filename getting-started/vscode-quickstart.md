@@ -44,7 +44,7 @@ This is the fastest way to get a database running. The wizard handles the contai
 
    The defaults give you an available port (starting at `10260`), generated credentials, the `latest` official image, and optional sample data. Expand the advanced options to set the port, the image tag, or the credentials yourself, or to skip the sample data.
 
-   > **Telemetry note:** The 1.0 image sends usage data (its version, platform and CPU architecture) by default. Extension 1.0.0 and later turn it off for containers it starts when VS Code telemetry is off. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
+   > **Telemetry note:** The 1.0 image sends usage data (its version, platform and CPU architecture) by default. Extension 1.0.0 and later turn it off for a container it creates if VS Code telemetry is disabled at that moment; to turn it off yourself, start the container as shown under the alternative below. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
 
 4. Wait for setup to finish. The extension pulls the image if needed, creates a container named `vscode-documentdb-local` with a persistent volume, starts it, and waits until the database accepts connections.
 
@@ -68,9 +68,9 @@ Use this if you already run DocumentDB Local outside VS Code, or you want to man
    docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
    docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
    printf 'DocumentDB username: '; read -r DOCUMENTDB_USERNAME
-   printf 'DocumentDB password: '; stty -echo; read -r DOCUMENTDB_PASSWORD; stty echo; echo
+   printf 'DocumentDB password: '; IFS= read -r -s DOCUMENTDB_PASSWORD; echo
    export DOCUMENTDB_USERNAME DOCUMENTDB_PASSWORD
-   if docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container documentdb --username "${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" --password "${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}"; then
+   if docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container -e USERNAME="${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" -e PASSWORD="${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}" documentdb; then
      docker image rm -f ghcr.io/documentdb/documentdb/documentdb-local:latest || echo "No existing documentdb image to remove"
    fi
    ```
@@ -86,7 +86,7 @@ Use this if you already run DocumentDB Local outside VS Code, or you want to man
    if ([string]::IsNullOrWhiteSpace($env:DOCUMENTDB_USERNAME) -or [string]::IsNullOrWhiteSpace($env:DOCUMENTDB_PASSWORD)) {
        throw 'DocumentDB credentials cannot be empty'
    } else {
-       docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container documentdb --username "$env:DOCUMENTDB_USERNAME" --password "$env:DOCUMENTDB_PASSWORD"
+       docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container -e "USERNAME=$env:DOCUMENTDB_USERNAME" -e "PASSWORD=$env:DOCUMENTDB_PASSWORD" documentdb
        if ($LASTEXITCODE -eq 0) {
            docker image rm -f ghcr.io/documentdb/documentdb/documentdb-local:latest
            if ($LASTEXITCODE -ne 0) { echo "No existing documentdb image to remove" }

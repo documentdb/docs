@@ -38,13 +38,14 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
    docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
 
    printf 'DocumentDB username: '; read -r DOCUMENTDB_USERNAME
-   printf 'DocumentDB password: '; stty -echo; read -r DOCUMENTDB_PASSWORD; stty echo; echo
+   printf 'DocumentDB password: '; IFS= read -r -s DOCUMENTDB_PASSWORD; echo
    export DOCUMENTDB_USERNAME DOCUMENTDB_PASSWORD
 
    # Run the container with your chosen username and password
-   if docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container documentdb \
-     --username "${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" \
-     --password "${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}"; then
+   if docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container \
+     -e USERNAME="${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" \
+     -e PASSWORD="${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}" \
+     documentdb; then
      docker image rm -f ghcr.io/documentdb/documentdb/documentdb-local:latest
    fi
    ```
@@ -226,7 +227,7 @@ The code reads the same `DOCUMENTDB_USERNAME` and `DOCUMENTDB_PASSWORD` values e
 
    ```python
    db.command({
-       'createIndexes': 'your_collection',
+       'createIndexes': 'sample_collection',
        'indexes': [
            {
                'name': 'embeddings_idx',

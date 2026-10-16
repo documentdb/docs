@@ -25,13 +25,14 @@ docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
 docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
 
 printf 'DocumentDB username: '; read -r DOCUMENTDB_USERNAME
-printf 'DocumentDB password: '; stty -echo; read -r DOCUMENTDB_PASSWORD; stty echo; echo
+printf 'DocumentDB password: '; IFS= read -r -s DOCUMENTDB_PASSWORD; echo
 export DOCUMENTDB_USERNAME DOCUMENTDB_PASSWORD
 
 # Run the container with your chosen username and password
-docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container documentdb \
-  --username "${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" \
-  --password "${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}"
+docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container \
+  -e USERNAME="${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" \
+  -e PASSWORD="${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}" \
+  documentdb
 ```
 
 > **Note:** The prompts export the credentials for the `mongosh` command below. The guards reject empty values so the container cannot fall through to the public `default_user` / `Admin100` defaults. If you open a new shell, set both environment variables again.
@@ -283,6 +284,8 @@ SELECT pg_reload_conf();
 ```
 
 This is a PostgreSQL GUC, so it cannot be set from `mongosh` — use `psql` or your provider's parameter settings. `updateRole` is not implemented regardless of this setting.
+
+> **Known issue:** in 1.0, the admin user that the container or the setup wizard creates can't run `createUser` or `createRole`; both fail with `User is not authorized to perform this action` ([#752](https://github.com/documentdb/documentdb/issues/752)). See the [1.0 known issues](release-notes-1.0.md#known-issues).
 
 ```javascript
 // Users — can be created from any database
