@@ -1,11 +1,11 @@
 ---
 title: Components
-description: Learn about pg_documentdb_core, pg_documentdb, and pg_documentdb_gw — the two PostgreSQL extensions and the gateway that enable BSON support, document operations, and MongoDB wire protocol compatibility in Postgres.
+description: Learn about pg_documentdb_core, pg_documentdb, pg_documentdb_extended_rum, and pg_documentdb_gw — the three PostgreSQL extensions and the gateway that enable BSON support, document operations, indexing, and MongoDB wire protocol compatibility in Postgres.
 ---
 
 # Components
 
-The DocumentDB implementation consists of two PostgreSQL extensions and a gateway that work together to provide MongoDB-compatible document database functionality on top of PostgreSQL.
+The DocumentDB implementation consists of three PostgreSQL extensions and a gateway that work together to provide MongoDB-compatible document database functionality on top of PostgreSQL.
 
 ## pg_documentdb_core
 
@@ -39,6 +39,19 @@ The DocumentDB implementation consists of two PostgreSQL extensions and a gatewa
 
 To use `pg_documentdb`, you need to have `pg_documentdb_core` installed and configured in your PostgreSQL environment. Once set up, you can leverage the APIs provided by `pg_documentdb` to perform document operations from any PostgreSQL client. For the full list of callable functions, see [Functions](https://documentdb.io/docs/postgres-api/functions/).
 
+## pg_documentdb_extended_rum
+
+`pg_documentdb_extended_rum` (SQL extension name `documentdb_extended_rum`) is DocumentDB's fork of the PostgreSQL RUM index access method, which backs DocumentDB's document indexes. It keeps RUM's on-disk format and extends the query path for document workloads.
+
+It is required in 1.0: `documentdb.rum_library_load_option` defaults to `require_documentdb_extended_rum`, so `pg_documentdb` loads its index handler from the extended RUM library. The library loads only from `shared_preload_libraries`, and `CREATE EXTENSION documentdb CASCADE` does not create the extension, so a manually configured server needs both steps before indexes are built:
+
+```sql
+-- postgresql.conf: add pg_documentdb_extended_rum to shared_preload_libraries, then restart
+CREATE EXTENSION documentdb_extended_rum;
+```
+
+The package setup wizard and the `documentdb-local` image do this for you. See [Configuration](https://documentdb.io/docs/postgres-api/configuration/) for the load option.
+
 ## pg_documentdb_gw
 
 `pg_documentdb_gw` is the gateway protocol translation layer that converts the user's MongoDB wire protocol commands into PostgreSQL queries against the `pg_documentdb` API. It is what allows MongoDB-compatible drivers and tools (`mongosh`, PyMongo, the official MongoDB Node.js driver, the VS Code extension, and others) to talk to a DocumentDB instance unmodified.
@@ -53,4 +66,4 @@ To use `pg_documentdb`, you need to have `pg_documentdb_core` installed and conf
 
 - **Cursor and Session Management:** Translates `getMore`, `killCursors`, `killSessions`, and `killOp` commands to the corresponding backend operations.
 
-- **Deployment Options:** Can be run as a standalone process (the default in the `documentdb-local` container) or, since v0.108-0, as a PostgreSQL background worker via the `pg_documentdb_gw_host` extension.
+- **Deployment Options:** Can be run as a standalone process (the default in the `documentdb-local` container) or as a PostgreSQL background worker via the `pg_documentdb_gw_host` extension.
