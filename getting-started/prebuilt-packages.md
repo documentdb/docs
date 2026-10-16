@@ -268,11 +268,26 @@ On a configured instance the wizard is a day-2 re-run: it keeps the gateway port
 
 ### Extension and gateway on your own PostgreSQL
 
-Upgrade the packages, restart PostgreSQL, then update the extensions in every database where you created them, in this order, because `ALTER EXTENSION` doesn't update dependencies. On Ubuntu with a cluster named `main`:
+If you adopted the instance with `documentdb-setup --target-postgres-instance`, upgrade the packages and re-run that command, as above; the wizard also fixes the preload list and restarts PostgreSQL when needed.
+
+Otherwise, upgrade the packages first. On Ubuntu with a cluster named `main`:
 
 ```bash
 sudo apt update && sudo apt install --only-upgrade postgresql-18-documentdb \
   documentdb-postgresql-tools documentdb-gateway
+sudo -u postgres /usr/bin/psql --cluster 18/main -d postgres -Atc "SHOW shared_preload_libraries;"
+```
+
+1.0 loads the extended RUM library only from `shared_preload_libraries`; `CREATE EXTENSION documentdb_extended_rum` fails with `pg_documentdb_extended_rum can only be loaded via shared_preload_libraries` otherwise. If `pg_documentdb_extended_rum` isn't in the list (it may be missing on a 0.116 installation), add it with `documentdb-tune`, reviewing the dry run first:
+
+```bash
+sudo documentdb-tune --pg-version 18 --cluster main --dry-run
+sudo documentdb-tune --pg-version 18 --cluster main --yes
+```
+
+Then restart PostgreSQL so it loads the new libraries, and update the extensions in every database where you created them, in this order, because `ALTER EXTENSION` doesn't update dependencies:
+
+```bash
 sudo systemctl restart postgresql@18-main
 sudo -u postgres /usr/bin/psql --cluster 18/main -d postgres -v ON_ERROR_STOP=1 \
   -c "ALTER EXTENSION documentdb_core UPDATE;" \
