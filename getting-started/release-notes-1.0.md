@@ -47,6 +47,7 @@ The SQL extension version is `1.0-0` everywhere, and `hello` reports it in `inte
   ```
 
 - **A newer container image doesn't upgrade an existing volume** ([#773](https://github.com/documentdb/documentdb/issues/773)). The image never runs `ALTER EXTENSION ... UPDATE`, and a changed `--password` on an existing volume is ignored.
+- **A 1.0 container refuses a volume after an unclean 0.117 stop.** If a 0.117 container on the volume was killed or crashed, the 1.0 image reports that `postmaster.pid` exists and refuses to start until it is re-created once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`. Stop the old container with `docker stop` first.
 - **`updateOne` with `let` can miss a match.** An update with `multi: false` that filters on fields other than `_id` through `let` variables can report no match when PostgreSQL runs it with a generic plan. This is rare with default settings; setting `plan_cache_mode = force_custom_plan` in the PostgreSQL configuration avoids it.
 - **An expensive `$replaceAll` can outlive `maxTimeMS`.** A very costly `$replaceAll` on a large string can keep running after `maxTimeMS` expires and can't be cancelled.
 - **Collation is off by default.** `find`, `aggregate`, `count` and `delete` with a `collation` fail as unsupported unless `documentdb_core.enableCollation` is on. `distinct`, `findAndModify` and `update` don't support `collation` at all.

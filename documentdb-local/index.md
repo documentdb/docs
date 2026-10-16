@@ -153,7 +153,7 @@ To turn it off, add any of these before the image name:
 
 or `--disable-usage-telemetry` (or `--usage-telemetry false`) after it. `NO_ANALYTICS` and `DO_NOT_TRACK` win over any setting that turns it on. To send the reports to your own collector instead, set `DOCUMENTDB_USAGE_TELEMETRY_ENDPOINT`.
 
-In CI, turn it off explicitly. The image skips telemetry when `CI`, `GITHUB_ACTIONS` or `TF_BUILD` is set inside the container, but `docker run` doesn't pass the host's variables through. `--enable-telemetry` is a separate setting for the gateway's own metrics and doesn't affect this.
+In CI, turn it off explicitly with `-e DOCUMENTDB_USAGE_TELEMETRY=false`. The image skips telemetry only when `CI`, `GITHUB_ACTIONS` or `TF_BUILD` is set in the container's own environment, and `docker run` doesn't pass the runner's variables through: a container started on a CI runner still reports unless you forward one, for example `-e GITHUB_ACTIONS`. `--enable-telemetry` is a separate setting for the gateway's own metrics and doesn't affect this.
 
 The [privacy statement](https://github.com/documentdb/documentdb/blob/v1.0-0/documentdb-local/PRIVACY.md) has the details. The image also includes it at `/home/documentdb/PRIVACY.md`.
 
@@ -184,6 +184,8 @@ Seeding is one-shot per data volume; use a new, empty volume to seed again. A di
 ## Upgrading the image
 
 A newer image on an existing data volume doesn't update the DocumentDB extensions in it ([#773](https://github.com/documentdb/documentdb/issues/773)), so the volume keeps the old schema under the new binaries. Upgrading a volume in place is not supported in 1.0. To move data from a 0.117 container to 1.0, export it with `mongodump`, start a 1.0 container on a new volume, and load it with `mongorestore`. The PostgreSQL major version of the image must also match the one that initialized the volume.
+
+If you do start a 1.0 image on a volume a 0.117 container used, stop the old container cleanly with `docker stop` first. After `docker kill`, `docker rm -f` or a crash, the 1.0 image finds the 0.117 container's `postmaster.pid` and refuses to start until you re-create it once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`; see [Container lifecycle](#container-lifecycle).
 
 ## Feature support
 
