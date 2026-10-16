@@ -9,12 +9,24 @@ The [DocumentDB Kubernetes Operator](https://github.com/documentdb/documentdb-ku
 
 The operator is a separate project, with its own repository, release cadence, and documentation. This page covers when to reach for it and what your cluster needs; the operator's own documentation covers everything else.
 
+## Versions
+
+Operator **1.0.0** runs DocumentDB engine **1.0-0**. Pin the chart version for repeatable installs (cert-manager must be installed first; see the quickstarts below):
+
+```bash
+helm install documentdb-operator oci://ghcr.io/documentdb/documentdb-operator \
+  --version 1.0.0 \
+  --namespace documentdb-operator \
+  --create-namespace \
+  --wait
+```
+
 ## When to use it
 
 | Option | Best for |
 |---|---|
-| [DocumentDB Local](https://documentdb.io/docs/documentdb-local/) | A single container for development, prototyping, and integration tests. |
-| [Pre-built packages](https://documentdb.io/docs/getting-started/packages/) | Adding DocumentDB to a PostgreSQL server you already run and operate yourself. |
+| [DocumentDB Local](../documentdb-local/index.md) | A single container for development, prototyping, and integration tests. |
+| [Pre-built packages](../getting-started/prebuilt-packages.md) | Adding DocumentDB to a PostgreSQL server you already run and operate yourself. |
 | Kubernetes Operator | Running DocumentDB as a replicated service, with automatic failover, rolling upgrades, backup and restore, and multi-region deployments. |
 
 ## What your cluster needs
