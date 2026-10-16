@@ -44,6 +44,8 @@ This is the fastest way to get a database running. The wizard handles the contai
 
    The defaults give you an available port (starting at `10260`), generated credentials, the `latest` official image, and optional sample data. Expand the advanced options to set the port, the image tag, or the credentials yourself, or to skip the sample data.
 
+   > **Telemetry note:** The 1.0 image sends usage data (its version, platform and CPU architecture) by default. Extension 1.0.0 and later turn it off for containers it starts when VS Code telemetry is off. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
+
 4. Wait for setup to finish. The extension pulls the image if needed, creates a container named `vscode-documentdb-local` with a persistent volume, starts it, and waits until the database accepts connections.
 
 5. Select **Open Connection** to reveal the saved connection in the Connections view, then expand it to browse databases and collections.
@@ -65,9 +67,8 @@ Use this if you already run DocumentDB Local outside VS Code, or you want to man
    ```bash
    docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
    docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
-   read -r -p 'DocumentDB username: ' DOCUMENTDB_USERNAME
-   read -r -s -p 'DocumentDB password: ' DOCUMENTDB_PASSWORD
-   printf '\n'
+   printf 'DocumentDB username: '; read -r DOCUMENTDB_USERNAME
+   printf 'DocumentDB password: '; stty -echo; read -r DOCUMENTDB_PASSWORD; stty echo; echo
    export DOCUMENTDB_USERNAME DOCUMENTDB_PASSWORD
    if docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container documentdb --username "${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" --password "${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}"; then
      docker image rm -f ghcr.io/documentdb/documentdb/documentdb-local:latest || echo "No existing documentdb image to remove"
@@ -96,6 +97,8 @@ Use this if you already run DocumentDB Local outside VS Code, or you want to man
    > **Note:** During the transition to the Linux Foundation, Docker images may still be hosted on Microsoft's container registry. These will be migrated to the new DocumentDB organization as the transition completes.
    >
    > **Note:** Both versions prompt for credentials and reject empty values so the container cannot fall through to the public `default_user` / `Admin100` defaults. Enter the same values when the extension asks for the local connection credentials.
+   >
+   > **Telemetry note:** The 1.0 image sends usage data (its version, platform and CPU architecture) by default. To turn it off, add `-e DOCUMENTDB_USAGE_TELEMETRY=false` before the image name. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
    >
    > **Network Note:** The example binds the gateway only to the local host. Expose it to other machines only after adding firewall rules and a certificate those clients can validate.
    >
