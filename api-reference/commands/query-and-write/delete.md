@@ -30,7 +30,7 @@ db.collection.deleteMany(
 | Parameter | Description |
 | --- | --- |
 | **<`filter`>** | A document that specifies the criteria for deletion. Only the documents that match the filter are deleted|
-| **`options`** | Optional. A document that specifies options for the delete operation. Common options include writeConcern and collation|
+| **`options`** | Optional. A document that specifies options for the delete operation. Common options include writeConcern and collation. Collation is off by default: a delete that sets it fails with `BSON field 'delete.deletes.collation' is not yet supported` unless the server enables `documentdb_core.enableCollation`.|
 
 ## Example(s)
 

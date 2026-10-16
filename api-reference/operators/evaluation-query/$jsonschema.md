@@ -58,8 +58,10 @@ DocumentDB supports the following JSON Schema keywords:
 |---------|------|-------------|--------|
 | `additionalItems` | arrays | Schema for extra array items | Extended array validation |
 | `bsonType` | all types | MongoDB extension - accepts BSON type aliases | `"string"`, `"int"`, `"double"`, `"object"`, `"array"`, `"bool"`, `"date"` |
-| `exclusiveMinimum` | numbers | Exclusive minimum boundary | Advanced numeric validation |
-| `exclusiveMaximum` | numbers | Exclusive maximum boundary | Advanced numeric validation |
+| `description` | N/A | Informational text; must be a string | Documentation only |
+| `enum` | all types | Value must equal one of the listed values | Restrict a field to fixed values |
+| `exclusiveMinimum` | numbers | Boolean; makes `minimum` exclusive (requires `minimum`) | Advanced numeric validation |
+| `exclusiveMaximum` | numbers | Boolean; makes `maximum` exclusive (requires `maximum`) | Advanced numeric validation |
 | `items` | arrays | Schema for array elements | Array element validation |
 | `minimum` | numbers | Minimum value constraint | Numeric validation |
 | `maximum` | numbers | Maximum value constraint | Numeric validation |
@@ -68,6 +70,7 @@ DocumentDB supports the following JSON Schema keywords:
 | `multipleOf` | numbers | Value must be multiple of specified number | Mathematical constraints |
 | `minLength` | strings | Minimum string length | String validation |
 | `maxLength` | strings | Maximum string length | String validation |
+| `oneOf` | all types | Value must match exactly one of the listed subschemas | Alternative structures |
 | `pattern` | strings | Regular expression pattern matching | String format validation |
 | `properties` | objects | Define validation rules for object fields | Schema definition for nested objects |
 | `required` | objects | Array of required field names | Enforce mandatory fields |
@@ -76,22 +79,18 @@ DocumentDB supports the following JSON Schema keywords:
 
 ### Unsupported Keywords
 
-These JSON Schema keywords are yet to be supported in DocumentDB:
+These keywords are rejected with `The '<keyword>' keyword in $jsonSchema is not supported at this time`:
 
-| Keyword | Type | Reason for Non-Support | Workaround |
-|---------|------|----------------------|------------|
-| `additionalProperties` | objects | Not implemented | Use explicit `properties` definitions |
-| `allOf` | all types | Logical operator not supported | Use nested validation |
-| `anyOf` | all types | Logical operator not supported | Use separate queries |
-| `dependencies` | objects | Complex dependency validation not supported | Handle in application logic |
-| `description` | N/A | Might not appear in error messages | Informational only |
-| `enum` | all types | Enumeration validation not supported | Use `$in` operator instead |
-| `maxProperties` | objects | Property count validation not supported | Handle in application logic |
-| `minProperties` | objects | Property count validation not supported | Handle in application logic |
-| `not` | all types | Negation operator not supported | Use positive validation rules |
-| `oneOf` | all types | Logical operator not supported | Use application-level validation |
-| `patternProperties` | objects | Pattern-based property validation not supported | Use explicit property names |
-| `title` | N/A | Metadata field not processed | Use `description` instead |
+| Keyword | Type | Workaround |
+|---------|------|------------|
+| `$ref` | N/A | Inline the referenced schema |
+| `$schema` | N/A | Omit it |
+| `default` | N/A | Set defaults in application logic |
+| `definitions` | N/A | Inline the subschemas |
+| `format` | strings | Use `pattern` |
+| `id` | N/A | Omit it |
+
+Any other keyword, including `additionalProperties`, `allOf`, `anyOf`, `dependencies`, `maxProperties`, `minProperties`, `not`, `patternProperties`, and `title`, is rejected with `Unknown $jsonSchema keyword: <keyword>`.
 
 ## Examples
 

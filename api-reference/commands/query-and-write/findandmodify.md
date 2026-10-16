@@ -35,6 +35,8 @@ db.collection.findAndModify({
 - **fields**: Limits the fields to return for the matching document.
 - **upsert**: If `true`, creates a new document if no document matches the query.
 
+`collation` isn't supported and fails with `findAndModify.collation is not implemented yet`.
+
 ## Examples
 
 ### Example 1: Update total sales

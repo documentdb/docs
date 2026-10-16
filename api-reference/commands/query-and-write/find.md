@@ -25,6 +25,8 @@ db.collection.find(query, projection, options)
 | **`projection`** | (Optional) A document that specifies the fields in the matching documents to be returned in the result set|
 | **`options`** | (Optional) A document that specifies options for query behavior and results|
 
+Collation is off by default: a `find` that sets `collation` fails with `collation is not supported in the find command yet.` unless the server enables `documentdb_core.enableCollation`.
+
 ## Example(s)
 
 Consider this sample document from the stores collection in the StoreData database.
