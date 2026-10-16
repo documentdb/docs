@@ -120,8 +120,8 @@ sudo documentdb-tune --pg-version 18 --cluster main --dry-run
 Review the proposed configuration, then apply it during a suitable restart window:
 
 ```bash
-sudo documentdb-tune --pg-version 18 --cluster main --yes
-sudo systemctl restart postgresql@18-main
+sudo documentdb-tune --pg-version 18 --cluster main --yes &&
+sudo systemctl restart postgresql@18-main &&
 sudo -u postgres /usr/bin/psql --cluster 18/main -d postgres -v ON_ERROR_STOP=1 \
   -c "CREATE EXTENSION IF NOT EXISTS documentdb CASCADE;" \
   -c "CREATE EXTENSION IF NOT EXISTS documentdb_extended_rum CASCADE;"
@@ -293,7 +293,7 @@ sudo documentdb-tune --pg-version 18 --cluster main --yes
 Then restart PostgreSQL so it loads the new libraries, and update the extensions in every database where you created them, in this order, because `ALTER EXTENSION` doesn't update dependencies. `-1` runs the statements as one transaction, so a failure leaves every extension at its old version, and the gateway restarts only on success. The transaction doesn't detect a missing preload, though: when `documentdb_extended_rum` already exists, the statements succeed without it and index builds fail later with `The index access method extended_rum could not be located`. That is why the preload check above comes first:
 
 ```bash
-sudo systemctl restart postgresql@18-main
+sudo systemctl restart postgresql@18-main &&
 sudo -u postgres /usr/bin/psql --cluster 18/main -d postgres -1 -v ON_ERROR_STOP=1 \
   -c "ALTER EXTENSION documentdb_core UPDATE;" \
   -c "ALTER EXTENSION documentdb UPDATE;" \

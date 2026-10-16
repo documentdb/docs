@@ -28,7 +28,7 @@ docker pull ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0
 Choose the admin credentials first, in the same terminal (this works in bash and zsh):
 
 ```bash
-printf 'DocumentDB username: '; read -r DOCUMENTDB_USERNAME
+printf 'DocumentDB username: '; IFS= read -r DOCUMENTDB_USERNAME
 printf 'DocumentDB password: '; IFS= read -r -s DOCUMENTDB_PASSWORD; echo
 export DOCUMENTDB_USERNAME DOCUMENTDB_PASSWORD
 ```
@@ -153,7 +153,7 @@ To turn it off, add any of these before the image name:
 
 or `--disable-usage-telemetry` (or `--usage-telemetry false`) after it. `NO_ANALYTICS` and `DO_NOT_TRACK` win over any setting that turns it on. To send the reports to your own collector instead, set `DOCUMENTDB_USAGE_TELEMETRY_ENDPOINT`.
 
-In CI, turn it off explicitly with `-e DOCUMENTDB_USAGE_TELEMETRY=false`. The image skips telemetry only when `CI`, `GITHUB_ACTIONS` or `TF_BUILD` is set in the container's own environment, and `docker run` doesn't pass the runner's variables through: a container started on a CI runner still reports unless you forward one, for example `-e GITHUB_ACTIONS`. `--enable-telemetry` is a separate setting for the gateway's own metrics and doesn't affect this.
+In CI, turn it off explicitly with `-e DOCUMENTDB_USAGE_TELEMETRY=false`. The image skips telemetry only when `CI`, `GITHUB_ACTIONS` or `TF_BUILD` is set to a non-empty value in the container's own environment, and `docker run` doesn't pass the runner's variables through: a container started on a CI runner still reports unless you forward one, for example `-e GITHUB_ACTIONS`. `--enable-telemetry` is a separate setting for the gateway's own metrics and doesn't affect this.
 
 The [privacy statement](https://github.com/documentdb/documentdb/blob/v1.0-0/documentdb-local/PRIVACY.md) has the details. The image also includes it at `/home/documentdb/PRIVACY.md`.
 

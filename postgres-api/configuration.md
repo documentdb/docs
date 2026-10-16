@@ -43,7 +43,7 @@ When enabled, creating a unique ordered index on an existing collection no longe
 | --- | --- | --- |
 | `documentdb_core.enableCollation` | `off` | Accepts the `collation` option on queries. It is defined by `pg_documentdb_core`, hence the `documentdb_core.` prefix, and can be set per session. |
 
-While `off`, `find`, `aggregate`, and `count` reject a `collation` option with "collation is not supported in the find command yet." (or `aggregate` / `count` in place of `find`). `delete` follows the flag too. `distinct`, `findAndModify` and `update` reject `collation` whether or not the flag is on. Setting `documentdb.skipFailOnCollation` (default `off`) makes these commands ignore the option instead, so they compare strings by binary value.
+While `off`, `find`, `aggregate`, and `count` reject a `collation` option with "collation is not supported in the find command yet." (or `aggregate` / `count` in place of `find`). `delete` follows the flag too. `distinct`, `findAndModify` and `update` reject `collation` whether or not the flag is on.
 
 With the flag on, a few aggregation stages still reject a collation, including `$bucket`, `$bucketAuto`, `$densify`, `$fill`, `$geoNear`, `$merge`, `$setWindowFields`, and `$sortByCount`.
 

@@ -37,7 +37,7 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
    # Tag the image for convenience
    docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
 
-   printf 'DocumentDB username: '; read -r DOCUMENTDB_USERNAME
+   printf 'DocumentDB username: '; IFS= read -r DOCUMENTDB_USERNAME
    printf 'DocumentDB password: '; IFS= read -r -s DOCUMENTDB_PASSWORD; echo
    export DOCUMENTDB_USERNAME DOCUMENTDB_PASSWORD
 

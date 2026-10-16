@@ -67,7 +67,7 @@ Use this if you already run DocumentDB Local outside VS Code, or you want to man
    ```bash
    docker pull ghcr.io/documentdb/documentdb/documentdb-local:latest
    docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
-   printf 'DocumentDB username: '; read -r DOCUMENTDB_USERNAME
+   printf 'DocumentDB username: '; IFS= read -r DOCUMENTDB_USERNAME
    printf 'DocumentDB password: '; IFS= read -r -s DOCUMENTDB_PASSWORD; echo
    export DOCUMENTDB_USERNAME DOCUMENTDB_PASSWORD
    if docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container -e USERNAME="${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" -e PASSWORD="${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}" documentdb; then
