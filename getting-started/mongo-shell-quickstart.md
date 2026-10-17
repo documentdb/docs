@@ -64,7 +64,7 @@ DocumentDB Local accepts TLS connections on the gateway port and requires authen
 ```bash
 mongosh localhost:10260 \
   -u "${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
-  -p "${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}" \
+  -p \
   --authenticationMechanism SCRAM-SHA-256 \
   --tls --tlsAllowInvalidCertificates
 ```

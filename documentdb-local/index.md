@@ -76,7 +76,7 @@ First start typically takes a few tens of seconds. If the command has not return
 ```bash
 mongosh localhost:10260 \
   -u "${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
-  -p "${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}" \
+  -p \
   --authenticationMechanism SCRAM-SHA-256 \
   --tls --tlsAllowInvalidCertificates
 ```
@@ -185,7 +185,7 @@ Seeding is one-shot per data volume; use a new, empty volume to seed again. A di
 
 A newer image on an existing data volume doesn't update the DocumentDB extensions in it ([#773](https://github.com/documentdb/documentdb/issues/773)), so the volume keeps the old schema under the new binaries. Upgrading a volume in place is not supported in 1.0. To move data from a 0.117 container to 1.0, export it with `mongodump`, start a 1.0 container on a new volume, and load it with `mongorestore`. The PostgreSQL major version of the image must also match the one that initialized the volume.
 
-If you do start a 1.0 image on a volume an older container used, the 1.0 image refuses to start while the old container's `postmaster.pid` is still there, until you re-create it once with `-e DOCUMENTDB_FORCE_REMOVE_STALE_POSTMASTER_PID=true`; see [Container lifecycle](#container-lifecycle). For 0.116 and 0.117, stop the old container with `docker stop` first, which removes the file; after `docker kill`, `docker rm -f` or a crash it stays. Images 0.114 and earlier never stop PostgreSQL cleanly, so their volumes always leave the file behind.
+If you do start a 1.0 image on a volume an older container used, the 1.0 image refuses to start while the old container's `postmaster.pid` is still there; see [Container lifecycle](#container-lifecycle) for the override and removing it afterward. For 0.116 and 0.117, stop the old container with `docker stop` first, which removes the file; after `docker kill`, `docker rm -f` or a crash it stays. Images 0.114 and earlier don't normally stop PostgreSQL cleanly, so their volumes usually keep the file.
 
 ## Feature support
 
@@ -232,7 +232,7 @@ Point it inside the data directory rather than at a volume of its own: a separat
 ```bash
 mongosh localhost:10260 \
   -u "${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
-  -p "${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}" \
+  -p \
   --authenticationMechanism SCRAM-SHA-256 \
   --tls --tlsCAFile ~/documentdb-cert.pem
 ```

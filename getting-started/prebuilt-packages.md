@@ -275,11 +275,12 @@ On a configured instance the wizard is a day-2 re-run: it keeps the gateway port
 
 ### Extension and gateway on your own PostgreSQL
 
-If you adopted the instance with `documentdb-setup --target-postgres-instance 18/main`, the wizard never restarts PostgreSQL for you. Upgrade the packages, restart PostgreSQL yourself (`sudo systemctl restart postgresql@18-main` on Ubuntu, `sudo systemctl restart postgresql-18` on EL9), then re-run the same `documentdb-setup --pg-version 18 --target-postgres-instance 18/main --admin-user admin` command; it warns about the admin password as above. If the wizard has to change `shared_preload_libraries`, it writes the change, asks you to restart PostgreSQL, and exits without updating the extensions: restart and run it once more.
+If you adopted the instance with `documentdb-setup --target-postgres-instance 18/main`, the wizard never restarts PostgreSQL for you. Stop the gateway (`sudo systemctl stop documentdb-gateway-local@18.service`), upgrade the packages, restart PostgreSQL yourself (`sudo systemctl restart postgresql@18-main` on Ubuntu, `sudo systemctl restart postgresql-18` on EL9), then re-run the same `documentdb-setup --pg-version 18 --target-postgres-instance 18/main --admin-user admin` command; it warns about the admin password as above, updates the extensions and then starts the gateway. If the wizard has to change `shared_preload_libraries`, it writes the change, asks you to restart PostgreSQL, and exits without updating the extensions: restart and run it once more.
 
-Otherwise, upgrade the packages first. On Ubuntu with a cluster named `main`:
+Otherwise, stop the gateway and upgrade the packages first. On Ubuntu with a cluster named `main`:
 
 ```bash
+sudo systemctl stop documentdb-gateway &&
 sudo apt update && sudo apt install --only-upgrade postgresql-18-documentdb \
   documentdb-postgresql-tools documentdb-gateway
 sudo -u postgres /usr/bin/psql --cluster 18/main -d postgres -Atc "SHOW shared_preload_libraries;"
@@ -292,7 +293,7 @@ sudo documentdb-tune --pg-version 18 --cluster main --dry-run
 sudo documentdb-tune --pg-version 18 --cluster main --yes
 ```
 
-Then restart PostgreSQL so it loads the new libraries, and update the extensions in every database where you created them, in this order, because `ALTER EXTENSION` doesn't update dependencies. `-1` runs the statements as one transaction, so a failure leaves every extension at its old version, and the gateway restarts only on success. The transaction doesn't detect a missing preload, though: when `documentdb_extended_rum` already exists, the statements succeed without it and index builds fail later with `The index access method extended_rum could not be located`. That is why the preload check above comes first:
+Then restart PostgreSQL so it loads the new libraries, and update the extensions in every database where you created them, in this order, because `ALTER EXTENSION` doesn't update dependencies. `-1` runs the statements as one transaction, so a failure leaves every extension at its old version, and the gateway starts again only on success. The transaction doesn't detect a missing preload, though: when `documentdb_extended_rum` already exists, the statements succeed without it and index builds fail later with `The index access method extended_rum could not be located`. That is why the preload check above comes first:
 
 ```bash
 sudo systemctl restart postgresql@18-main &&
@@ -301,7 +302,7 @@ sudo -u postgres /usr/bin/psql --cluster 18/main -d postgres -1 -v ON_ERROR_STOP
   -c "ALTER EXTENSION documentdb UPDATE;" \
   -c "CREATE EXTENSION IF NOT EXISTS documentdb_extended_rum CASCADE;" \
   -c "ALTER EXTENSION documentdb_extended_rum UPDATE;" &&
-sudo systemctl restart documentdb-gateway
+sudo systemctl start documentdb-gateway
 ```
 
 ### Check the version
