@@ -251,23 +251,25 @@ Upgrading a host that ever ran a release candidate isn't supported, and the inst
 
 ### Stand-alone stack
 
-Upgrade the packages, restart the stack so PostgreSQL loads the new libraries, then re-run the setup wizard with the options you installed with:
+Stop the gateway so no client reaches the new libraries before the extensions are updated, upgrade the packages, restart PostgreSQL so it loads the new libraries, then re-run the setup wizard with the options you installed with. The wizard updates the extensions and then starts the gateway:
 
 ```bash
 # Debian / Ubuntu
+sudo systemctl stop documentdb-gateway-local@18.service &&
 sudo apt update && sudo apt install --only-upgrade documentdb-18 postgresql-18-documentdb \
   documentdb-common documentdb-gateway documentdb-postgresql-tools &&
-sudo systemctl restart documentdb-local@18.target &&
+sudo systemctl restart documentdb-postgresql@18.service &&
 sudo documentdb-setup --pg-version 18 --use-new-postgres-instance --admin-user admin
 
 # RHEL-compatible 9
+sudo systemctl stop documentdb-gateway-local@18.service &&
 sudo dnf upgrade documentdb-18 postgresql18-documentdb \
   documentdb-common documentdb-gateway documentdb-postgresql-tools &&
-sudo systemctl restart documentdb-local@18.target &&
+sudo systemctl restart documentdb-postgresql@18.service &&
 sudo documentdb-setup --pg-version 18 --use-new-postgres-instance --admin-user admin
 ```
 
-These commands assume the DocumentDB package repository, which carries 1.0 from the release date. If you installed from release assets, download the 1.0 assets and install the same set of files [the same way](#install-from-downloaded-assets) in place of the `apt`/`dnf` command, keeping the `&&` so the restart and setup run only if the install succeeds. The shared packages (`documentdb-common`, `documentdb-gateway`, `documentdb-postgresql-tools`) serve every PostgreSQL major on the host, so if more than one major is installed, upgrade and re-run setup for each of them.
+These commands assume the DocumentDB package repository, which carries 1.0 from the release date. If you installed from release assets, download the 1.0 assets and install the same set of files [the same way](#install-from-downloaded-assets) in place of the `apt`/`dnf` command, keeping the `&&` so the restart and setup run only if the install succeeds. The gateway stays stopped until the wizard finishes; if the wizard stops early, run it again. The shared packages (`documentdb-common`, `documentdb-gateway`, `documentdb-postgresql-tools`) serve every PostgreSQL major on the host, so if more than one major is installed, stop each major's gateway first, then upgrade and re-run setup for each of them.
 
 On a configured instance the wizard is a day-2 re-run: it keeps the gateway port and TLS settings and runs `ALTER EXTENSION ... UPDATE` for each DocumentDB extension. It also asks for the admin password and, after a warning and a confirmation, sets it on the existing admin user: enter the current password to keep it, because any other value replaces it and the old one stops working. For PostgreSQL 17, use `17` throughout. If pressing Enter at the password prompt aborts the wizard, run it again and type the password ([#772](https://github.com/documentdb/documentdb/issues/772)).
 
