@@ -20,6 +20,8 @@ db.collection.count(query, options)
 - `query`: A document specifying the selection criteria using query operators.
 - `options`: Optional. A document specifying options, such as `limit` and `skip`.
 
+Collation is off by default: a `count` that sets `collation` fails with `collation is not supported in the count command yet.` unless the server enables `documentdb_core.enableCollation`.
+
 ## Examples
 
 Here are some examples to demonstrate the usage of the `count` command:

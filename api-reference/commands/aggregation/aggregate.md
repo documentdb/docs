@@ -18,6 +18,8 @@ db.collection.aggregate(pipeline, options)
 - **pipeline**: An array of aggregation stages that process and transform the data.
 - **options**: Optional. Specifies more options for the aggregation, such as `explain`, `allowDiskUse`, and `cursor`.
 
+Collation is off by default: an `aggregate` that sets `collation` fails with `collation is not supported in the aggregate command yet.` unless the server enables `documentdb_core.enableCollation`.
+
 ## Examples
 
 ### Example 1: Calculate total sales by category

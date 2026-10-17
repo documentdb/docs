@@ -58,8 +58,10 @@ DocumentDB supports the following JSON Schema keywords:
 |---------|------|-------------|--------|
 | `additionalItems` | arrays | Schema for extra array items | Extended array validation |
 | `bsonType` | all types | MongoDB extension - accepts BSON type aliases | `"string"`, `"int"`, `"double"`, `"object"`, `"array"`, `"bool"`, `"date"` |
-| `exclusiveMinimum` | numbers | Exclusive minimum boundary | Advanced numeric validation |
-| `exclusiveMaximum` | numbers | Exclusive maximum boundary | Advanced numeric validation |
+| `description` | N/A | Informational text; must be a string | Documentation only |
+| `enum` | all types | Value must equal one of the listed values | Restrict a field to fixed values |
+| `exclusiveMinimum` | numbers | Boolean; makes `minimum` exclusive (requires `minimum`) | Advanced numeric validation |
+| `exclusiveMaximum` | numbers | Boolean; makes `maximum` exclusive (requires `maximum`) | Advanced numeric validation |
 | `items` | arrays | Schema for array elements | Array element validation |
 | `minimum` | numbers | Minimum value constraint | Numeric validation |
 | `maximum` | numbers | Maximum value constraint | Numeric validation |
@@ -68,6 +70,7 @@ DocumentDB supports the following JSON Schema keywords:
 | `multipleOf` | numbers | Value must be multiple of specified number | Mathematical constraints |
 | `minLength` | strings | Minimum string length | String validation |
 | `maxLength` | strings | Maximum string length | String validation |
+| `oneOf` | all types | Value must match exactly one of the listed subschemas | Alternative structures |
 | `pattern` | strings | Regular expression pattern matching | String format validation |
 | `properties` | objects | Define validation rules for object fields | Schema definition for nested objects |
 | `required` | objects | Array of required field names | Enforce mandatory fields |
@@ -76,22 +79,20 @@ DocumentDB supports the following JSON Schema keywords:
 
 ### Unsupported Keywords
 
-These JSON Schema keywords are yet to be supported in DocumentDB:
+These keywords are rejected with `The '<keyword>' keyword in $jsonSchema is not supported at this time`:
 
-| Keyword | Type | Reason for Non-Support | Workaround |
-|---------|------|----------------------|------------|
-| `additionalProperties` | objects | Not implemented | Use explicit `properties` definitions |
-| `allOf` | all types | Logical operator not supported | Use nested validation |
-| `anyOf` | all types | Logical operator not supported | Use separate queries |
-| `dependencies` | objects | Complex dependency validation not supported | Handle in application logic |
-| `description` | N/A | Might not appear in error messages | Informational only |
-| `enum` | all types | Enumeration validation not supported | Use `$in` operator instead |
-| `maxProperties` | objects | Property count validation not supported | Handle in application logic |
-| `minProperties` | objects | Property count validation not supported | Handle in application logic |
-| `not` | all types | Negation operator not supported | Use positive validation rules |
-| `oneOf` | all types | Logical operator not supported | Use application-level validation |
-| `patternProperties` | objects | Pattern-based property validation not supported | Use explicit property names |
-| `title` | N/A | Metadata field not processed | Use `description` instead |
+| Keyword | Type | Workaround |
+|---------|------|------------|
+| `$ref` | N/A | Inline the referenced schema |
+| `$schema` | N/A | Omit it |
+| `default` | N/A | Set defaults in application logic |
+| `definitions` | N/A | Inline the subschemas |
+| `format` | strings | Use `pattern` |
+| `id` | N/A | Omit it |
+
+`encrypt` and `encryptMetadata` are accepted so that client-side field-level encryption schemas parse; DocumentDB doesn't encrypt anything.
+
+Any other keyword, including `additionalProperties`, `allOf`, `anyOf`, `dependencies`, `maxProperties`, `minProperties`, `not`, `patternProperties`, and `title`, is rejected with `Unknown $jsonSchema keyword: <keyword>`.
 
 ## Examples
 
@@ -131,6 +132,7 @@ This query retrieves all stores with names between 5 and 100 characters long, an
 db.stores.find({
   $jsonSchema: {
     bsonType: "object",
+    required: ["name", "location"],
     properties: {
       _id: {
         bsonType: "string"
@@ -142,6 +144,7 @@ db.stores.find({
       },
       location: {
         bsonType: "object",
+        required: ["lat", "lon"],
         properties: {
           lat: {
             bsonType: "double",
@@ -169,9 +172,11 @@ This query retrieves all store documents where the sales field is a valid object
 db.stores.find({
   $jsonSchema: {
     bsonType: "object",
+    required: ["sales"],
     properties: {
       sales: {
         bsonType: "object",
+        required: ["totalSales", "salesByCategory"],
         properties: {
           totalSales: {
             bsonType: "int",
@@ -202,20 +207,22 @@ db.stores.find({
 
 ```
 
-This query should return this output:
+This query matches one store in the sample data. Its `name` and `sales` fields are:
 
 ```javascript
 [
   {
-    _id: 'new-store-001',
-    name: 'Adatum Corporation - Downtown Branch',
-    sales: { totalSales: 5000 },
-    createdDate: ISODate('2025-06-11T11:11:32.262Z'),
-    status: 'new',
-    staff: { totalStaff: { fullTime: 0, partTime: 0 } },
-    version: 1,
-    storeOpeningDate: ISODate('2025-06-11T11:11:32.262Z'),
-    storeFeatures: 213
+    _id: 'f2a8c190-28e4-4e14-9d8b-0256e53dca66',
+    name: 'Fabrikam, Inc. | Car Accessory Outlet - West Adele',
+    sales: {
+      salesByCategory: [
+        { categoryName: 'Phone Mounts', totalSales: 12000 },
+        { categoryName: 'Dash Cameras', totalSales: 22300 }
+      ],
+      peakSalesRecord: 100000,
+      revenue: 50000,
+      totalSales: 50000
+    }
   }
 ]
 ```
@@ -229,12 +236,15 @@ db.stores.find({
   $and: [
     {
       $jsonSchema: {
+        required: ["staff"],
         properties: {
           staff: {
             bsonType: "object",
+            required: ["totalStaff"],
             properties: {
               totalStaff: {
                 bsonType: "object",
+                required: ["fullTime"],
                 properties: {
                   fullTime: {
                     bsonType: "int",
@@ -255,26 +265,19 @@ db.stores.find({
 }).limit(1)
 ```
 
-This query returns the following result:
+This query matches one store in the sample data. Its `name`, `staff` and `sales.totalSales` fields are:
 
 ```javascript
 [
   {
-    _id: 'future-electronics-001',
-    address: { city: 'New Tech City' },
-    name: 'Boulder Innovations - Future Electronics Hub',
-    sales: { totalSales: 25000 },
-    establishedDate: ISODate('2025-06-11T11:14:23.147Z'),
-    categories: [ 'electronics', 'gadgets', 'smart-home' ],
-    promotionEvents: [],
-    ratings: { average: 0, count: 0, reviews: [] },
-    inventory: {
-      lastUpdated: ISODate('2025-06-11T11:14:23.147Z'),
-      totalItems: 0,
-      lowStockAlerts: []
+    _id: 'f2a8c190-28e4-4e14-9d8b-0256e53dca66',
+    name: 'Fabrikam, Inc. | Car Accessory Outlet - West Adele',
+    staff: {
+      maxStaffCapacity: 25,
+      employeeCount: { fullTime: 10, partTime: 2 },
+      totalStaff: { fullTime: 10, partTime: 2 }
     },
-    storeOpeningDate: ISODate('2025-06-11T11:11:32.262Z'),
-    storeFeatures: 120
+    sales: { totalSales: 50000 }
   }
 ]
 ```

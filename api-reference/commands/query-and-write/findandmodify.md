@@ -35,6 +35,8 @@ db.collection.findAndModify({
 - **fields**: Limits the fields to return for the matching document.
 - **upsert**: If `true`, creates a new document if no document matches the query.
 
+`collation` isn't supported and fails with `findAndModify.collation is not implemented yet`.
+
 ## Examples
 
 ### Example 1: Update total sales
@@ -136,6 +138,19 @@ db.stores.findAndModify({
   },
   "promotionEvents": [
     {
+      "eventName": "Incredible Discount Days",
+      "promotionalDates": {
+        "startDate": { "Year": 2024, "Month": 2, "Day": 11 },
+        "endDate": { "Year": 2024, "Month": 2, "Day": 18 }
+      },
+      "discounts": [
+        { "categoryName": "Square Sunglasses", "discountPercentage": 16 },
+        { "categoryName": "Safety Glasses", "discountPercentage": 17 },
+        { "categoryName": "Wayfarers", "discountPercentage": 7 },
+        { "categoryName": "Eyewear Accessories", "discountPercentage": 12 }
+      ]
+    },
+    {
       "eventName": "Electronics Super Saver",
       "promotionalDates": { "startDate": "2025-09-31", "endDate": "2025-09-31" },
       "discounts": [
@@ -156,7 +171,7 @@ db.stores.findAndModify({
 
 ### Example 3: Remove a promotional event
 
-Suppose we want to remove the "Electronics Super Saver" promotional event from the store with `_id` "e5767a9f-cd95-439c-9ec4-7ddc13d22926" and return the original document.
+Suppose we want to remove the "Electronics Super Saver" promotional event from the store with `_id` "e5767a9f-cd95-439c-9ec4-7ddc13d22926" and return the updated document.
 
 ```javascript
 db.stores.findAndModify({

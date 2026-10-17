@@ -1,13 +1,16 @@
 ---
 title: $changeStream
-description: The $changeStream stage opens a change stream cursor to track data changes in real-time.
+description: The $changeStream stage opens a change stream cursor in MongoDB. DocumentDB does not support it.
 type: operators
 category: aggregation
 ---
 
 # $changeStream
 
-The `$changeStream` aggregation stage opens a change stream cursor that tracks data changes in real-time. This stage enables applications to react to insert, update, delete, and other operations as they occur in the collection.
+> [!IMPORTANT]
+> DocumentDB does not support `$changeStream`. Any pipeline that uses it, including `db.collection.watch()`, fails with `Stage $changeStream is not supported yet in native pipeline` (`CommandNotSupported`, code 115).
+
+In MongoDB, the `$changeStream` aggregation stage opens a cursor that reports inserts, updates, deletes, and other changes as they happen. The syntax below is listed for reference only.
 
 ## Syntax
 
@@ -37,123 +40,9 @@ The `$changeStream` aggregation stage opens a change stream cursor that tracks d
 | **`startAtOperationTime`** | Optional. timestamp for starting change stream from a specific time. |
 | **`showExpandedEvents`** | Optional. Boolean. Include another change stream events. Default is false. |
 
-## Examples
+## Example
 
-Consider this sample document from the stores collection.
-
-```json
-{
-    "_id": "0fcc0bf0-ed18-4ab8-b558-9848e18058f4",
-    "name": "First Up Consultants | Beverage Shop - Satterfieldmouth",
-    "location": {
-        "lat": -89.2384,
-        "lon": -46.4012
-    },
-    "staff": {
-        "totalStaff": {
-            "fullTime": 8,
-            "partTime": 20
-        }
-    },
-    "sales": {
-        "totalSales": 75670,
-        "salesByCategory": [
-            {
-                "categoryName": "Wine Accessories",
-                "totalSales": 34440
-            },
-            {
-                "categoryName": "Bitters",
-                "totalSales": 39496
-            },
-            {
-                "categoryName": "Rum",
-                "totalSales": 1734
-            }
-        ]
-    },
-    "promotionEvents": [
-        {
-            "eventName": "Unbeatable Bargain Bash",
-            "promotionalDates": {
-                "startDate": {
-                    "Year": 2024,
-                    "Month": 6,
-                    "Day": 23
-                },
-                "endDate": {
-                    "Year": 2024,
-                    "Month": 7,
-                    "Day": 2
-                }
-            },
-            "discounts": [
-                {
-                    "categoryName": "Whiskey",
-                    "discountPercentage": 7
-                },
-                {
-                    "categoryName": "Bitters",
-                    "discountPercentage": 15
-                },
-                {
-                    "categoryName": "Brandy",
-                    "discountPercentage": 8
-                },
-                {
-                    "categoryName": "Sports Drinks",
-                    "discountPercentage": 22
-                },
-                {
-                    "categoryName": "Vodka",
-                    "discountPercentage": 19
-                }
-            ]
-        },
-        {
-            "eventName": "Steal of a Deal Days",
-            "promotionalDates": {
-                "startDate": {
-                    "Year": 2024,
-                    "Month": 9,
-                    "Day": 21
-                },
-                "endDate": {
-                    "Year": 2024,
-                    "Month": 9,
-                    "Day": 29
-                }
-            },
-            "discounts": [
-                {
-                    "categoryName": "Organic Wine",
-                    "discountPercentage": 19
-                },
-                {
-                    "categoryName": "White Wine",
-                    "discountPercentage": 20
-                },
-                {
-                    "categoryName": "Sparkling Wine",
-                    "discountPercentage": 19
-                },
-                {
-                    "categoryName": "Whiskey",
-                    "discountPercentage": 17
-                },
-                {
-                    "categoryName": "Vodka",
-                    "discountPercentage": 23
-                }
-            ]
-        }
-    ]
-}
-```
-
-### Example 1: Monitor all changes in stores collection
-
-This operation sets up a change stream to monitor all changes in the stores collection.
+This pipeline is rejected:
 
 ```javascript
 db.stores.aggregate([
@@ -165,27 +54,6 @@ db.stores.aggregate([
 ])
 ```
 
-When a store document is updated, the change stream returns the change event with the full document.
-
-```json
-{
-  "_id": { "_data": "AeARBpQ/AAAA" },
-  "operationType": "update",
-  "fullDocument": {
-    "_id": "905d1939-e03a-413e-a9c4-221f74055aac",
-    "name": "Trey Research | Home Office Depot - Lake Freeda",
-    "sales": {
-      "revenue": 42500
-    },
-    "company": "Trey Research",
-    "lastUpdated": "ISODate('2024-06-16T10:30:00.000Z')"
-  },
-  "ns": {
-    "db": "StoreData",
-    "coll": "stores"
-  },
-  "documentKey": {
-    "_id": "905d1939-e03a-413e-a9c4-221f74055aac"
-  }
-}
+```
+Stage $changeStream is not supported yet in native pipeline
 ```

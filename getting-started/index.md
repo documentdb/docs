@@ -11,12 +11,12 @@ DocumentDB is an open-source document database platform built on PostgreSQL. It 
 
 DocumentDB provides a NoSQL datastore implemented using PostgreSQL, giving developers complete visibility into the architecture and implementation of the engine. It's designed to offer:
 
-- Full compatibility with the MongoDB wire protocol through the `pg_documentdb_gw` gateway
+- MongoDB wire protocol compatibility through the `pg_documentdb_gw` gateway, so MongoDB drivers and tools connect unmodified
 - Public document CRUD and management APIs through the `pg_documentdb` extension
 - Native BSON document support via the `pg_documentdb_core` PostgreSQL extension
 - Advanced indexing capabilities including single field, multi-key, compound, text, geospatial, and vector indexes
 - Vector search functionality powered by the `pgvector` PostgreSQL extension
-- Enterprise-grade security with SCRAM authentication
+- SCRAM-SHA-256 authentication and TLS on the gateway
 - Full PostgreSQL compatibility for advanced SQL operations
 
 ## Key Features
@@ -24,12 +24,12 @@ DocumentDB provides a NoSQL datastore implemented using PostgreSQL, giving devel
 - **PostgreSQL Foundation**: Built on the powerful PostgreSQL engine, allowing you to leverage both document and relational capabilities
 - **Open Source**: Released under the MIT license with no restrictions on usage, modification, or distribution
 - **Document Database Standard**: First implementation towards creating an open standard for document databases, similar to ANSI SQL for relational databases
-- **Cloud Ready**: Supports multi-cloud deployments across major cloud providers with native integration in Azure Cosmos DB
+- **Runs anywhere**: Linux packages, a container image for local development, and a Kubernetes operator for replicated deployments
 - **Developer Friendly**: Rich ecosystem of tools and extensions, including VS Code integration and MongoDB compatibility
 
 ## Architecture Components
 
-DocumentDB consists of three primary components:
+DocumentDB consists of four primary components:
 
 1. **pg_documentdb_core**: A PostgreSQL extension that provides:
    - Native BSON data type support in PostgreSQL
@@ -48,6 +48,8 @@ DocumentDB consists of three primary components:
    - Terminates TLS and authenticates clients (SCRAM-SHA-256)
    - Translates MongoDB commands into calls against `pg_documentdb`
    - Manages cursors, sessions, and connection state for MongoDB drivers
+
+4. **pg_documentdb_extended_rum**: The index access method behind DocumentDB's document indexes, required in 1.0
 
 ## Common Use Cases
 

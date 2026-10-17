@@ -1,13 +1,13 @@
 ---
 title: $[]
-description: The $[] operator is used to update all elements in an array that match the query condition.
+description: The $[] all positional operator applies an update to every element of an array.
 type: operators
 category: array-update
 ---
 
 # $[]
 
-The $[] operator in DocumentDB is used to update all elements in an array that match a specified condition. This operator allows you to perform updates on multiple elements in an array without specifying their positions. It is particularly useful when you need to apply the same update to all items in an array.
+The `$[]` all positional operator applies an update to every element of an array in each matched document. Unlike `$`, it doesn't depend on which element the query matched, and unlike `$[<identifier>]`, it takes no `arrayFilters`. If the path holds a value that isn't an array, the update fails.
 
 ## Syntax
 
@@ -28,7 +28,7 @@ db.collection.update(
 | --- | --- |
 | **`<query>`** | The selection criteria for the documents to update. |
 | **`<arrayField>`** | The field containing the array to update. |
-| **`<value>`** | The value to set for each matching element in the array. |
+| **`<value>`** | The value to set for each element in the array. |
 
 ## Examples
 
@@ -150,7 +150,7 @@ This query updates all elements in the discounts array inside each promotion eve
 
 ```javascript
 db.stores.updateOne(
-  { _id: "905d1939-e03a-413e-a9c4-221f74055aac" },
+  { _id: "0fcc0bf0-ed18-4ab8-b558-9848e18058f4" },
   {
     $inc: {
       "promotionEvents.$[].discounts.$[].discountPercentage": 5
@@ -165,7 +165,7 @@ This query increase the total sales for all categories by 10% by using the $[] o
 
 ```javascript
 db.stores.update(
-  { _id: "905d1939-e03a-413e-a9c4-221f74055aac" },
+  { _id: "0fcc0bf0-ed18-4ab8-b558-9848e18058f4" },
   {
     $mul: {
       "sales.salesByCategory.$[].totalSales": 1.10

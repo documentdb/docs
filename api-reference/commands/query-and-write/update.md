@@ -9,6 +9,8 @@ category: query-and-write
 
 The `update` command is used to modify existing documents within a collection. The `update` command can be used to update one or multiple documents based on filtering criteria. Values of fields can be changed, new fields and values can be added and existing fields can be removed.
 
+The `collation` option isn't supported and fails with `BSON field 'update.updates.collation' is not yet supported`.
+
 ## Example(s)
 
 Consider this sample document from the stores collection in the StoreData database.

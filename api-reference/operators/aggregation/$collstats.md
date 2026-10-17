@@ -14,7 +14,6 @@ The $collStats stage in the aggregation pipeline is used to return statistics ab
 ```javascript
 {
   $collStats: {
-    latencyStats: { histograms: <boolean> },
     storageStats: { scale: <number> },
     count: {}
   }
@@ -25,9 +24,10 @@ The $collStats stage in the aggregation pipeline is used to return statistics ab
 
 | Parameter | Description |
 | --- | --- |
-| **`latencyStats`** | Optional. Specifies whether to include latency statistics. The `histograms` field is a boolean that indicates whether to include histograms of latency data. |
 | **`storageStats`** | Optional. Specifies whether to include storage statistics. The `scale` field is a number that indicates the scale factor for the storage statistics. |
 | **`count`** | Optional. Includes the count of documents in the collection. |
+
+`latencyStats` and `queryExecStats` aren't supported; either one fails with `collStats with <option> not supported yet` (`CommandNotSupported`).
 
 ## Examples
 
