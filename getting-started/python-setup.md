@@ -37,15 +37,15 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
    # Tag the image for convenience
    docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
 
-   read -r -p 'DocumentDB username: ' DOCUMENTDB_USERNAME
-   read -r -s -p 'DocumentDB password: ' DOCUMENTDB_PASSWORD
-   printf '\n'
+   printf 'DocumentDB username: '; IFS= read -r DOCUMENTDB_USERNAME
+   printf 'DocumentDB password: '; IFS= read -r -s DOCUMENTDB_PASSWORD; echo
    export DOCUMENTDB_USERNAME DOCUMENTDB_PASSWORD
 
    # Run the container with your chosen username and password
-   if docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container documentdb \
-     --username "${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" \
-     --password "${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}"; then
+   if docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container \
+     -e USERNAME="${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" \
+     -e PASSWORD="${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}" \
+     documentdb; then
      docker image rm -f ghcr.io/documentdb/documentdb/documentdb-local:latest
    fi
    ```
@@ -54,6 +54,8 @@ Learn how to set up and use DocumentDB with Python using the official MongoDB Py
    >
    > **Readiness Note:** `docker ps` reports the container as `Up` before DocumentDB can accept connections. Wait for the ready banner first: `until docker logs documentdb-container 2>&1 | grep -q "=== DocumentDB is ready ==="; do sleep 2; done`
    > 
+   > **Telemetry note:** The 1.0 image sends usage data (its version, platform and CPU architecture) by default. To turn it off, add `-e DOCUMENTDB_USAGE_TELEMETRY=false` before the image name. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
+   >
    > **Network Note:** The example binds the gateway only to the local host. Expose it to other machines only after adding firewall rules and a certificate those clients can validate.
    >
    > **Port Note:** To use host port `27017` while leaving the gateway on its default container port, publish `-p 127.0.0.1:27017:10260` and connect to `localhost:27017`. To change the gateway's internal port too, add `--documentdb-port 27017` after the image name and publish that container port.
@@ -225,7 +227,7 @@ The code reads the same `DOCUMENTDB_USERNAME` and `DOCUMENTDB_PASSWORD` values e
 
    ```python
    db.command({
-       'createIndexes': 'your_collection',
+       'createIndexes': 'sample_collection',
        'indexes': [
            {
                'name': 'embeddings_idx',

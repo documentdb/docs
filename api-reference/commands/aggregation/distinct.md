@@ -19,7 +19,7 @@ db.collection.distinct(field, query, options)
 
 - `field`: The field that receives the returned distinct values.
 - `query`: Optional. A query that specifies the documents from which to retrieve the distinct values.
-- `options`: Optional. Other options for the command.
+- `options`: Optional. Other options for the command. `collation` isn't supported and fails with `collation is not supported in the distinct command yet.`
 
 ## Examples
 
