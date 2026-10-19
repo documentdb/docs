@@ -149,7 +149,7 @@ Registration configures authentication and the admin user. Connect with `mongosh
 
 DocumentDB is also included in the **PostgreSQL Global Development Group (PGDG) APT repository**, with packaging maintained by the Debian PostgreSQL team. This is an extension-only distribution: it does not include the first-party gateway, setup wizard, or administrator tools.
 
-For example, as of **2026-09-10**, PGDG publishes DocumentDB **0.116** for Debian 13 (`trixie-pgdg`), PostgreSQL **15-18**, on **amd64 and arm64**. Versions and targets differ from first-party releases; consult the [PGDG package pool](https://apt.postgresql.org/pub/repos/apt/pool/main/d/documentdb/).
+PGDG builds lag first-party releases. As of **2026-10-19**, its Debian 13 (`trixie-pgdg`) packages are the release candidate `1.0~RC1`, not 1.0, and a host that ran a release candidate can't be upgraded to 1.0 (see [1.0 release candidates](release-candidate.md)). Until PGDG ships `1.0-0`, run 1.0 on Debian 13 with [DocumentDB Local](../documentdb-local/index.md) or the [Kubernetes operator](../kubernetes-operator/index.md). Check the [PGDG package pool](https://apt.postgresql.org/pub/repos/apt/pool/main/d/documentdb/) for what it publishes now.
 
 For a new Debian 13 installation, follow the [PGDG repository setup instructions](https://www.postgresql.org/download/linux/debian/#apt), then inspect the candidate for your chosen PostgreSQL major version:
 
@@ -158,7 +158,7 @@ sudo apt update
 apt-cache policy postgresql-16-documentdb
 ```
 
-If PGDG provides a candidate for your host, install it:
+Install it only if the candidate is `1.0-0` or later:
 
 ```bash
 sudo apt install postgresql-16-documentdb
