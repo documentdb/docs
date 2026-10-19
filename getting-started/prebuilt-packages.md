@@ -33,10 +33,21 @@ and runs setup:
 
 ```sh
 curl -fsSLo documentdb-install.sh https://documentdb.io/install.sh &&
-sh documentdb-install.sh
+sudo sh documentdb-install.sh
 ```
 
-This installs the current release on PostgreSQL 18. Use `--pg-major 17` for PostgreSQL 17.
+This installs the current release on PostgreSQL 18. Use `--pg-major 17` for PostgreSQL 17. Run it with `sudo`: started as a normal user, it calls `sudo -v`, which asks for a password even on cloud images whose default user has passwordless sudo.
+
+It asks you to confirm the plan and to choose the admin password. For an unattended run, store the password in a root-owned file and pass `--yes`:
+
+```sh
+printf 'DocumentDB admin password: '; IFS= read -r -s PW; echo
+printf '%s\n' "$PW" | sudo install -m 600 /dev/stdin /root/documentdb-admin.pw
+sudo sh documentdb-install.sh --yes \
+  --admin-password-file /root/documentdb-admin.pw --accept-external-listen
+```
+
+`--accept-external-listen` acknowledges that the gateway listens on all interfaces.
 The manual steps below install the same release. To move an existing installation to 1.0, see [Upgrading to 1.0](#upgrading-to-10) instead.
 
 ## Set up and connect
@@ -80,7 +91,7 @@ Enter the password set in the wizard, then run:
 db.runCommand({ ping: 1 })
 ```
 
-The local example accepts the generated self-signed certificate. A bare `-p` prompts for a password; non-interactive scripts must supply a password explicitly.
+The local example accepts the generated self-signed certificate. A bare `-p` prompts for a password; non-interactive scripts must supply a password explicitly. `db.version()` reports the MongoDB version DocumentDB is compatible with, not the DocumentDB version; see [Check the version](#check-the-version).
 
 ### Optional setup controls
 
@@ -94,6 +105,18 @@ The local example accepts the generated self-signed certificate. A bare `-p` pro
 | Adopt an existing local PostgreSQL instance | Replace `--use-new-postgres-instance` with `--target-postgres-instance 18/main`; review the proposed changes and plan PostgreSQL restarts. |
 
 Inspect state with `sudo documentdb-setup --pg-version 18 --status`. On systemd, restart this stack with `sudo systemctl restart documentdb-local@18.target`; adopted PostgreSQL retains its own lifecycle. See [Operating a package install](https://documentdb.io/docs/linux-packages/) for TLS and other operational guidance.
+
+### Remove the stack
+
+Delete the instance first, then the packages. `documentdb-local-reset` ships in `documentdb-common`, so it has to run before the purge; purging alone keeps the data directory.
+
+```bash
+sudo documentdb-local-reset --pg-version 18 --confirm-destroy
+sudo apt purge -y '*documentdb*'      # Ubuntu
+sudo dnf remove -y '*documentdb*'     # EL9
+```
+
+The reset is irreversible and only covers the stand-alone stack's private instance, not an adopted PostgreSQL. Open remove and purge problems are tracked in [#771](https://github.com/documentdb/documentdb/issues/771).
 
 ## What each release publishes
 

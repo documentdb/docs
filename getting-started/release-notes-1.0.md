@@ -54,6 +54,7 @@ The SQL extension version is `1.0-0` everywhere, and `hello` reports it in `inte
 - **A write can be applied twice** ([#767](https://github.com/documentdb/documentdb/issues/767)). If the backend connection is lost after a write commits but before the reply, the gateway retries it, so a non-idempotent update such as `$inc` can be applied twice even with `retryWrites=false`.
 - **`$lookup` can fail on a collection with a wildcard index** ([#769](https://github.com/documentdb/documentdb/issues/769)), with `Unrecognized BSON data type code 0`.
 - **Collation is off by default.** `find`, `aggregate`, `count` and `delete` with a `collation` fail as unsupported unless `documentdb_core.enableCollation` is on. `distinct`, `findAndModify` and `update` don't support `collation` at all.
+- **Harmless errors in the container log.** The health check logs `FATAL: database "documentdb" does not exist` about every 30 seconds, and startup logs one `Failed to accept a TCP connection (IPv6)` error. Neither affects the server.
 - **Container options that do nothing.** `--log-level` and `--enable-telemetry` are validated but have no effect, and a `--data-path` that contains a space fails.
 - **Open packaging and container issues:**
   - [#771](https://github.com/documentdb/documentdb/issues/771): package remove, purge, upgrade and rerun paths that can leave the stack down or stuck.
