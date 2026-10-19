@@ -1,11 +1,11 @@
 ---
 title: Configuration
-description: Server GUCs and gateway environment variables for configuring DocumentDB, including the RUM library default introduced in v0.117-0.
+description: Server GUCs and gateway environment variables for configuring DocumentDB 1.0, including the required extended RUM index library, collation, and role management flags.
 ---
 
 # Configuration
 
-DocumentDB is configured at two layers: the PostgreSQL extension (via GUCs in `postgresql.conf`) and the gateway process (via environment variables or a JSON config file). This page covers the most commonly adjusted settings, including the RUM library default introduced in **v0.117-0**.
+DocumentDB is configured at two layers: the PostgreSQL extension (via GUCs in `postgresql.conf`) and the gateway process (via environment variables or a JSON config file). This page covers the most commonly adjusted settings in DocumentDB 1.0.
 
 ## Extension GUCs
 
@@ -15,27 +15,37 @@ DocumentDB is configured at two layers: the PostgreSQL extension (via GUCs in `p
 
 | GUC | Default | Description |
 | --- | --- | --- |
-| `documentdb.enableSchemaValidation` | `on` (since v0.114-0) | Enforces collection `$jsonSchema` validators on write operations. When `off`, a collection's validator is stored but not enforced. |
+| `documentdb.enableSchemaValidation` | `on` | Enforces collection `$jsonSchema` validators on write operations. When `off`, a collection's validator is stored but not enforced. |
 
-Collections with a `validator` are enforced on `insert`, `update`, `findAndModify`, and aggregation output stages (`$merge`, `$out`) when the collection's `validationLevel` is not `off` and its `validationAction` is `error`. (A `validationAction` of `warn` is not rejected on the write path, and a write that sets `bypassDocumentValidation` skips enforcement — see `documentdb.enableBypassDocumentValidation`.) Prior to v0.114-0 enforcement was opt-in; it is now enabled by default.
+Collections with a `validator` are enforced on `insert`, `update`, `findAndModify`, and aggregation output stages (`$merge`, `$out`) when the collection's `validationLevel` is not `off` and its `validationAction` is `error`. (A `validationAction` of `warn` is not rejected on the write path, and a write that sets `bypassDocumentValidation` skips enforcement — see `documentdb.enableBypassDocumentValidation`.)
 
 ### RUM index library
 
 | GUC | Default | Description |
 | --- | --- | --- |
-| `documentdb.rum_library_load_option` | `require_documentdb_extended_rum` (since v0.117-0) | Requires the DocumentDB extended RUM library on every supported PostgreSQL major version, not only PG18. Set this in `postgresql.conf` and restart PostgreSQL for a change to take effect. |
+| `documentdb.rum_library_load_option` | `require_documentdb_extended_rum` | Requires the DocumentDB extended RUM library (`pg_documentdb_extended_rum`) on every supported PostgreSQL major version. Set this in `postgresql.conf` and restart PostgreSQL for a change to take effect. |
 
 The package setup wizard and container startup handle the required extension setup. For a manually configured PostgreSQL instance, create both `documentdb` and `documentdb_extended_rum`; `CREATE EXTENSION documentdb CASCADE` does not create `documentdb_extended_rum` automatically. Follow the [package setup guidance](https://documentdb.io/docs/getting-started/packages/) before creating indexes.
 
-Setting the option to `none` opts out of the library-load requirement.
+Leave this at the default on package and container installs: they also set `documentdb.alternate_index_handler_name = 'extended_rum'`, and with `none` index builds crash the server (and the PostgreSQL 18 image, which ships no upstream `rum` library, doesn't start). On a server you built yourself, `none` loads the upstream `rum` library instead, which must be installed. `prefer_documentdb_extended_rum` falls back to `rum` only when the extended library loads but lacks its index handler; if the library itself is missing, PostgreSQL still fails to start.
 
 ### Non-blocking unique index builds
 
 | GUC | Default | Description |
 | --- | --- | --- |
-| `documentdb.enableNonBlockingUniqueIndexBuild` | `on` (since v0.114-0) | Builds unique ordered indexes without holding a long write lock, using `CREATE INDEX CONCURRENTLY` with post-processing to register the exclusion constraint and validate existing rows. |
+| `documentdb.enableNonBlockingUniqueIndexBuild` | `on` | Builds unique ordered indexes without holding a long write lock, using `CREATE INDEX CONCURRENTLY` with post-processing to register the exclusion constraint and validate existing rows. |
 
 When enabled, creating a unique ordered index on an existing collection no longer blocks concurrent writes for the duration of the build.
+
+### Collation
+
+| GUC | Default | Description |
+| --- | --- | --- |
+| `documentdb_core.enableCollation` | `off` | Accepts the `collation` option on queries. It is defined by `pg_documentdb_core`, hence the `documentdb_core.` prefix, and can be set per session. |
+
+While `off`, `find`, `aggregate`, and `count` reject a `collation` option with "collation is not supported in the find command yet." (or `aggregate` / `count` in place of `find`). `delete` follows the flag too. `distinct`, `findAndModify` and `update` reject `collation` whether or not the flag is on.
+
+With the flag on, a few aggregation stages still reject a collation, including `$bucket`, `$bucketAuto`, `$densify`, `$fill`, `$geoNear`, `$merge`, `$setWindowFields`, and `$sortByCount`.
 
 ### Off-by-default feature flags
 
@@ -53,14 +63,14 @@ Unlike the flags above, these two produce an error rather than a missing effect,
 
 | GUC | Default | Description |
 | --- | --- | --- |
-| `documentdb.enableRoleCrud` | `off` (since v0.108-0) | Enables role CRUD through the data plane. While `off`, `create_role`, `drop_role`, and `roles_info` each raise before doing any work, for example "The CreateRole command is currently unsupported." Note that `update_role` is not implemented in any case. |
-| `documentdb.enableRolesAdminDBCheck` | `on` (since v0.109-0) | Requires the wire-protocol role commands to be issued against the `admin` database, raising "CreateRole must be called from 'admin' database." otherwise. The user management commands are governed separately by `documentdb.enableUsersAdminDBCheck`, which is `off` by default. |
+| `documentdb.enableRoleCrud` | `off` | Enables custom roles through the data plane. When `on`, `createRole` creates the role and records it in the `documentdb_api_catalog.roles` table, and `dropRole` drops only roles recorded there. While `off`, `create_role`, `drop_role`, and `roles_info` each raise before doing any work, for example "The CreateRole command is currently unsupported." `update_role` is not implemented either way and always raises "UpdateRole command is not supported in preview." |
+| `documentdb.enableRolesAdminDBCheck` | `on` | Requires the wire-protocol role commands to be issued against the `admin` database, raising "CreateRole must be called from 'admin' database." otherwise. The user management commands are governed separately by `documentdb.enableUsersAdminDBCheck`, which is `off` by default. |
 
 ## Gateway configuration
 
-The gateway (`pg_documentdb_gw`) reads its settings from a JSON configuration file and/or `DOCUMENTDB_*` environment variables. Environment variables override the JSON file, which makes them convenient for systemd-managed and container deployments. *(Environment-variable configuration added in v0.114-0.)*
+The gateway (`pg_documentdb_gw`) reads its settings from a JSON configuration file and/or `DOCUMENTDB_*` environment variables. Environment variables override the JSON file, which makes them convenient for systemd-managed and container deployments.
 
-> **Note:** Since v0.116-0 the packaged gateway service — its systemd unit and per-major `gateway.env` file — is published as a release asset (`documentdb-gateway`, together with `documentdb-common`, which owns the unit templates). The `DOCUMENTDB_*` settings below apply to that packaged service, to the `documentdb-gateway` binary directly (which the `documentdb-local` container image configures internally), and to downstream packaging that installs its own unit. On a packaged install, `documentdb-setup` writes the managed block in `/etc/documentdb/local/<major>/gateway.env`; edits outside that block are preserved, but the managed block is rebuilt whenever the wizard re-runs.
+> **Note:** The packaged gateway service — its systemd unit and per-major `gateway.env` file — is published as a release asset (`documentdb-gateway`, together with `documentdb-common`, which owns the unit templates). The `DOCUMENTDB_*` settings below apply to that packaged service, to the `documentdb-gateway` binary directly (which the `documentdb-local` container image configures internally), and to downstream packaging that installs its own unit. On a packaged install, `documentdb-setup` writes the managed block in `/etc/documentdb/local/<major>/gateway.env`; edits outside that block are preserved, but the managed block is rebuilt whenever the wizard re-runs.
 
 | Environment variable | Purpose |
 | --- | --- |
@@ -76,7 +86,7 @@ For systemd-managed installs these are typically set through the unit's `Environ
 
 ### Connectivity check
 
-The gateway binary provides a `check` subcommand (added in v0.114-0) that acts as a post-install connectivity probe:
+The gateway binary provides a `check` subcommand that acts as a post-install connectivity probe:
 
 ```bash
 documentdb-gateway check [--config <path>]

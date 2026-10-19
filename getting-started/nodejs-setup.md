@@ -26,15 +26,15 @@ Before connecting from Node.js, make sure you have a running DocumentDB instance
    # Tag the image for convenience
    docker tag ghcr.io/documentdb/documentdb/documentdb-local:latest documentdb
 
-   read -r -p 'DocumentDB username: ' DOCUMENTDB_USERNAME
-   read -r -s -p 'DocumentDB password: ' DOCUMENTDB_PASSWORD
-   printf '\n'
+   printf 'DocumentDB username: '; IFS= read -r DOCUMENTDB_USERNAME
+   printf 'DocumentDB password: '; IFS= read -r -s DOCUMENTDB_PASSWORD; echo
    export DOCUMENTDB_USERNAME DOCUMENTDB_PASSWORD
 
    # Run the container with your chosen username and password
-   if docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container documentdb \
-     --username "${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" \
-     --password "${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}"; then
+   if docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container \
+     -e USERNAME="${DOCUMENTDB_USERNAME:?DocumentDB username cannot be empty}" \
+     -e PASSWORD="${DOCUMENTDB_PASSWORD:?DocumentDB password cannot be empty}" \
+     documentdb; then
      docker image rm -f ghcr.io/documentdb/documentdb/documentdb-local:latest
    fi
    ```
@@ -43,6 +43,8 @@ Before connecting from Node.js, make sure you have a running DocumentDB instance
 > **Note:** The prompts export the credentials for the Node.js example below. The guards reject empty values so the container cannot fall through to the public `default_user` / `Admin100` defaults. If you skip this Docker setup or open a new shell, set both environment variables before running Node.js.
 >
 > **Readiness Note:** `docker ps` reports the container as `Up` before DocumentDB can accept connections. Wait for the ready banner first: `until docker logs documentdb-container 2>&1 | grep -q "=== DocumentDB is ready ==="; do sleep 2; done`
+>
+> **Telemetry note:** The 1.0 image sends usage data (its version, platform and CPU architecture) by default. To turn it off, add `-e DOCUMENTDB_USAGE_TELEMETRY=false` before the image name. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
 >
 > **Network Note:** The example binds the gateway only to the local host. Expose it to other machines only after adding firewall rules and a certificate those clients can validate.
 >
@@ -133,8 +135,9 @@ main().catch((error) => {
 
 ## Beyond CRUD
 
-Aggregation pipelines, vector search, geospatial queries, and change streams use the
-same syntax as the MongoDB shell. See the
+Aggregation pipelines, vector search and geospatial queries use the same syntax as the
+MongoDB shell. Change streams (`watch()`) are not supported; see
+[`$changeStream`](https://documentdb.io/docs/reference/operators/aggregation/$changestream/). See the
 [Mongo Shell Quick Start](https://documentdb.io/docs/getting-started/mongo-shell-quickstart/)
 for worked examples, and the [API reference](https://documentdb.io/docs/reference/)
 for the supported operator set.
