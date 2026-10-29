@@ -9,20 +9,45 @@ category: aggregation
 
 The `count` command is used to count the number of documents in a collection that match a specified query. This command is useful for obtaining quick statistics about the data stored in your collections, such as the number of documents that meet certain criteria.
 
-## Syntax
+Returns a count in `n`, rather than a cursor. An omitted or empty query without other query modifiers can use collection statistics; supplying a query or hint selects a query-based counting path.
 
-The syntax for the `count` command is as follows:
+## Parameters
+
+| Parameter | Description |
+| --- | --- |
+| **`count`** | (Required) A string specifying the collection name. |
+| **`query`** | (Optional) A document specifying the match filter. Omit it to count the collection without a filter. |
+| **`skip`** | (Optional) A non-negative integer that skips this many matches before counting. |
+| **`limit`** | (Optional) An integer specifying the maximum count; `0` means no limit. Negative values use their absolute value. |
+| **`hint`** | (Optional) A string or document specifying the index name or key pattern; forces the query-based counting path. |
+| **`maxTimeMS`** | (Optional) A number specifying the execution timeout in milliseconds. |
+| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation`. |
+
+## Example: count delayed flights
+
+Using the [airline example dataset](../diagnostic/wire-protocol.md#airline-example-dataset):
+
+```javascript
+db.flights.count({ status: "Delayed" })
+```
+
+The helper returns `2`. Unlike the raw command response, this is a number rather than a document containing `n`.
+
+To count at most one matching flight after skipping the first match:
+
+```javascript
+db.flights.count({ departure_airport: "SVO" }, { skip: 1, limit: 1 })
+```
+
+This returns `1`. The `count()` helper targets the command documented here; current mongosh marks that helper as deprecated.
+
+## Shell syntax
 
 ```javascript
 db.collection.count(query, options)
 ```
 
-- `query`: A document specifying the selection criteria using query operators.
-- `options`: Optional. A document specifying options, such as `limit` and `skip`.
-
-Collation is off by default: a `count` that sets `collation` fails with `collation is not supported in the count command yet.` unless the server enables `documentdb_core.enableCollation`.
-
-## Examples
+## Detailed Examples
 
 Here are some examples to demonstrate the usage of the `count` command:
 
@@ -81,3 +106,7 @@ db.stores.count({ "location.lat": -2.4111, "location.lon": 72.1041 })
 ```json
 1
 ```
+
+## Implementation
+
+Source: `pg_documentdb/src/aggregation/bson_aggregation_pipeline.c`, `GenerateCountQuery`. See [wire protocol and common fields](../diagnostic/wire-protocol.md) for source scope and shared metadata.

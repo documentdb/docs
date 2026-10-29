@@ -9,9 +9,70 @@ category: query-and-write
 
 The `update` command is used to modify existing documents within a collection. The `update` command can be used to update one or multiple documents based on filtering criteria. Values of fields can be changed, new fields and values can be added and existing fields can be removed.
 
-The `collation` option isn't supported and fails with `BSON field 'update.updates.collation' is not yet supported`.
+Applies a batch of updates. Each entry supplies its own filter and modification, allowing one-document updates, multi-document updates, or upserts.
 
-## Example(s)
+## Parameters
+
+| Parameter | Description |
+| --- | --- |
+| **`update`** | (Required) A string specifying the collection name. |
+| **`updates`** | (Required) An array of documents specifying the operations. Drivers can instead send an OP_MSG sequence named `updates`, but not both. |
+| **`ordered`** | (Optional) A boolean that defaults to `true`; stop after the first operation error. |
+| **`let`** | (Optional) A document specifying the command-scoped expression variables referenced as `$$name`. |
+| **`bypassDocumentValidation`** | (Optional) A boolean that bypasses schema validation when the server enables that capability; otherwise ignored. |
+| **`maxTimeMS`** | (Optional) A number specifying the execution timeout in milliseconds. |
+| **`comment`** | (Optional) A string carrying trace context for gateway request tracing; see [common request fields](../diagnostic/wire-protocol.md). |
+
+## Per-update parameters
+
+| Parameter | Description |
+| --- | --- |
+| **`q`** | (Required) A document specifying the match filter. |
+| **`u`** | (Required) A replacement or operator document, or an array defining an update pipeline. |
+| **`multi`** | (Optional) A boolean that updates all matches if `true`; defaults to `false`. |
+| **`upsert`** | (Optional) A boolean that inserts if no document matches; defaults to `false`. |
+| **`arrayFilters`** | (Optional) An array of documents that selects named positional identifiers in operator updates; incompatible with pipeline updates. |
+| **`sort`** | (Optional) A document that selects the first matching document in this order; cannot be combined with `multi: true`. |
+| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation` and cluster version 1.1 or later. |
+
+## Example: record a revised delay
+
+Each example below is independent and starts from the [airline example dataset](../diagnostic/wire-protocol.md#airline-example-dataset).
+
+```javascript
+db.flights.updateOne(
+  { route_no: "PG0102" },
+  { $inc: { delay_minutes: 3 } },
+  { upsert: false, maxTimeMS: 5000 }
+)
+```
+
+The flight on route `PG0102` changes from a 12-minute delay to a 15-minute delay. The helper reports `matchedCount: 1` and `modifiedCount: 1`, corresponding to the wire response's `n` and `nModified`.
+
+## Example: change a fare class inside an array
+
+```javascript
+db.flights.updateOne(
+  { route_no: "PG0101" },
+  { $set: { "segments.$[segment].fare_conditions": "Business" } },
+  { arrayFilters: [{ "segment.ticket_no": "0005432000101" }] }
+)
+```
+
+Only ticket segment `0005432000101` in the flight on route `PG0101` changes from `Economy` to `Business`. Other ticket segments and flights are unchanged.
+
+## Example: update every delayed flight
+
+```javascript
+db.flights.updateMany(
+  { status: "Delayed" },
+  { $set: { dispatch_reviewed: true } }
+)
+```
+
+The new field is added to `PG0102` and `PG0104`. Do not add a per-update `sort` to this multi-document update.
+
+## Detailed Examples
 
 Consider this sample document from the stores collection in the StoreData database.
 
@@ -201,3 +262,7 @@ db.stores.updateOne({"_id": "NonExistentDocId"}, {"$set": {"name": "Lakeshore Re
 
 - [insert with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/insert/)
 - [delete with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/delete/)
+
+## Implementation
+
+Source: `pg_documentdb/src/commands/update.c`, `BuildBatchUpdateSpec` and per-update parsing. See [wire protocol and common fields](../diagnostic/wire-protocol.md) for session and transaction metadata.

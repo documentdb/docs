@@ -9,9 +9,65 @@ category: query-and-write
 
 The `findAndModify` command is used to atomically modify and return a single document. This command is useful for operations that require reading and updating a document in a single step, ensuring data consistency. Common use cases include implementing counters, queues, and other atomic operations.
 
-## Syntax
+## Parameters
 
-The syntax for the `findAndModify` command is as follows:
+| Parameter | Description |
+| --- | --- |
+| **`findAndModify`** | (Required) A string specifying the collection name. |
+| **`query`** | (Optional) A document specifying the selection filter. |
+| **`sort`** | (Optional) A document specifying the ordering used to select one matching document. |
+| **`update`** | (Required for updates) A replacement or operator document, or an array defining an update pipeline. |
+| **`remove`** | (Optional) A boolean that selects the removal path instead of an update when `true`. |
+| **`new`** | (Optional) A boolean that returns the post-update document if `true`; otherwise return the original. |
+| **`fields`** | (Optional) A document specifying the projection applied to the returned document. |
+| **`upsert`** | (Optional) A boolean that inserts if the update filter matches no document. |
+| **`arrayFilters`** | (Optional) An array of documents specifying the filters for named positional identifiers in operator updates; incompatible with pipeline updates. Not applied to removal. |
+| **`let`** | (Optional) A document specifying the command-scoped variables referenced as `$$name`. |
+| **`maxTimeMS`** | (Optional) A number specifying the execution timeout in milliseconds. |
+| **`bypassDocumentValidation`** | (Optional) A boolean that is applied only when schema validation and validation bypass are enabled; otherwise ignored. |
+| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation` and cluster version 1.1 or later. |
+| **`comment`** | (Optional) A string carrying trace context for gateway request tracing; see [common request fields](../diagnostic/wire-protocol.md). |
+
+Specify either an update or `remove: true`, not both. Removal cannot request `new: true` or `upsert: true`.
+
+## Example: revise and return a departure
+
+Each example below is independent and starts from the [airline example dataset](../diagnostic/wire-protocol.md#airline-example-dataset).
+
+```javascript
+db.flights.findOneAndUpdate(
+  { route_no: "PG0102" },
+  { $set: { delay_minutes: 15 } },
+  {
+    returnDocument: "after",
+    projection: { _id: 0, route_no: 1, delay_minutes: 1 }
+  }
+)
+```
+
+The helper returns the selected document directly:
+
+```json
+{ "route_no": "PG0102", "delay_minutes": 15 }
+```
+
+`returnDocument: "after"` maps to the wire field `new: true`, and `projection` maps to `fields`. Without requesting the post-update document, the returned value would contain the original delay of `12`.
+
+## Example: remove the earliest delayed service
+
+```javascript
+db.flights.findOneAndDelete(
+  { status: "Delayed" },
+  {
+    sort: { scheduled_departure: 1, _id: 1 },
+    projection: { _id: 0, route_no: 1 }
+  }
+)
+```
+
+This sends the removal form of `findAndModify`, removes `PG0102`, and returns `{ route_no: "PG0102" }` directly. Unlike a `delete` entry, this path can use `sort` to choose a particular match.
+
+## Shell syntax
 
 ```javascript
 db.collection.findAndModify({
@@ -25,19 +81,7 @@ db.collection.findAndModify({
 })
 ```
 
-### Parameters
-
-- **query**: The selection criteria for the document to modify.
-- **sort**: Determines which document to modify if the query selects multiple documents.
-- **remove**: If `true`, removes the selected document.
-- **update**: The modifications to apply.
-- **new**: If `true`, returns the modified document rather than the original.
-- **fields**: Limits the fields to return for the matching document.
-- **upsert**: If `true`, creates a new document if no document matches the query.
-
-`collation` isn't supported and fails with `findAndModify.collation is not implemented yet`.
-
-## Examples
+## Detailed Examples
 
 ### Example 1: Update total sales
 
@@ -221,3 +265,9 @@ db.stores.findAndModify({
   ]
 }
 ```
+
+## Implementation
+
+The alias `findandmodify` reaches the same wire handler.
+
+Source: `pg_documentdb/src/commands/find_and_modify.c`, `ParseFindAndModifyMessage`. See [wire protocol and common fields](../diagnostic/wire-protocol.md) for shared metadata.

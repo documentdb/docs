@@ -11,41 +11,64 @@ The `hello` command returns a document describing the role of the DocumentDB ser
 
 The versions in `internal.documentdb_versions` come from the backend DocumentDB PostgreSQL extension, not from the gateway. The array reports two values: the installed SQL extension version (from the `pg_extension` catalog, such as `1.0-0`) followed by the loaded binary version (from `documentdb_api.binary_version()`, in dotted form such as `1.0.0`). In PostgreSQL, the installed extension version *is* the schema version — it tracks which SQL upgrade scripts have been applied — so the first value reflects the schema currently installed in the database. These two values normally describe the same release and differ only in formatting, but they can diverge during an upgrade — for example, after the 1.0 packages are installed over 0.117 but before `ALTER EXTENSION documentdb UPDATE` has been run. A mismatch such as `["0.117-0", "1.0.0"]` indicates the SQL schema is behind the loaded binary.
 
-## Syntax
+Returns gateway handshake information. This command does not read collection data and does not require loading the airline example dataset.
 
-The syntax for the `hello` command is as follows:
-
-```javascript
-db.runCommand({ hello: 1 })
-```
-
-The `mongosh` helper `db.hello()` runs the same command:
+## Example
 
 ```javascript
 db.hello()
 ```
 
-## Return fields
+To inspect the backend version values separately:
 
-The response includes the following fields. Fields marked as DocumentDB-specific are extensions to the standard MongoDB response.
+```javascript
+db.hello().internal.documentdb_versions
+```
 
-| Field | Description |
+These are deployment-dependent values, not fixed example output.
+
+## Request parameters
+
+| Parameter | Description |
 | --- | --- |
-| **`isWritablePrimary`** | `true` when the connected node accepts writes. |
-| **`msg`** | Set to `isdbgrid`, indicating requests are served through the DocumentDB gateway. |
-| **`maxBsonObjectSize`** | Maximum permitted size, in bytes, of a BSON document. |
-| **`maxMessageSizeBytes`** | Maximum permitted size, in bytes, of a single message. |
-| **`maxWriteBatchSize`** | Maximum number of write operations permitted in a single batch. |
-| **`localTime`** | The server's current time, in UTC. |
-| **`logicalSessionTimeoutMinutes`** | Minutes an idle logical session is retained before timing out. |
-| **`minWireVersion`** / **`maxWireVersion`** | Range of the MongoDB wire protocol versions the server supports. |
-| **`readOnly`** | `true` when the connection is read-only. |
-| **`connectionId`** | Identifier of the current connection. |
-| **`saslSupportedMechs`** | Authentication mechanisms the server supports, for example `SCRAM-SHA-256`. |
-| **`internal.documentdb_versions`** | (DocumentDB-specific) Versions reported by the backend DocumentDB PostgreSQL extension: the installed SQL extension version — which in PostgreSQL is the schema version (for example `1.0-0`) — followed by the loaded binary version (dotted, for example `1.0.0`). These normally match and diverge only during an upgrade. |
-| **`ok`** | `1` when the command succeeds. |
+| **`hello`** | (Required) A command marker, conventionally `1`. |
+| **`client`** | (Optional) A document specifying the driver/application metadata stored on the connection. A second `client` document fails with `ClientMetadataCannotBeMutated`. |
 
-## Examples
+`isMaster` and `ismaster` reach the same handler, but use `ismaster` in the response instead of `isWritablePrimary`.
+
+The handler does not implement awaitable hello through `topologyVersion` and `maxAwaitTimeMS`, or speculative authentication through `speculativeAuthenticate`. The request's `saslSupportedMechs` value does not select mechanisms: the handler reports enabled gateway authentication schemes.
+
+## Response fields
+
+| Field | Implementation behavior |
+| --- | --- |
+| `isWritablePrimary` | Set to `true` by the hello handler. The legacy handler uses `ismaster` instead. |
+| `msg` | Set to `isdbgrid`. |
+| `maxBsonObjectSize`, `maxMessageSizeBytes` | Gateway protocol limits in bytes. |
+| `maxWriteBatchSize` | Configured gateway write-batch limit. |
+| `localTime` | Current gateway time. |
+| `logicalSessionTimeoutMinutes` | Set to `30`. |
+| `minWireVersion`, `maxWireVersion` | Minimum is `0`; maximum follows the configured compatibility version. |
+| `readOnly` | Configured connection read-only state. |
+| `connectionId` | Connection identifier. |
+| `saslSupportedMechs` | Enabled gateway authentication schemes. |
+| `internal` | Configured topology metadata, including `documentdb_versions` in the default deployment. |
+| `operationTime` | Included when change streams are enabled. |
+| `ok` | Success marker. |
+
+In the default backend, `internal.documentdb_versions` contains the installed SQL extension version followed by the loaded binary version. The first tracks applied SQL upgrades; the second identifies the loaded implementation. They can diverge during an upgrade. [`buildInfo`](compatibility.md) reports the configured wire-compatibility version, not these engine versions.
+
+## Shell syntax
+
+```javascript
+db.runCommand({ hello: 1 })
+```
+
+```javascript
+db.hello()
+```
+
+## Detailed Examples
 
 ### Example 1: Inspect the server role and version
 
@@ -106,3 +129,7 @@ The first value is the installed SQL extension version — the schema version, f
 ## Related content
 
 - [DocumentDB Local](https://documentdb.io/docs/documentdb-local/)
+
+## Implementation
+
+Source: gateway `processor/ismaster.rs`, the default topology configuration, and the PostgreSQL version-information query. See [wire protocol and common fields](wire-protocol.md) for source scope.

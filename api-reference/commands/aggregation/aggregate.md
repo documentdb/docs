@@ -9,18 +9,60 @@ category: aggregation
 
 The `aggregate` command is used to process data records and return computed results. It performs operations on the data, such as filtering, grouping, and sorting, and can transform the data in various ways. The `aggregate` command is highly versatile and is commonly used for data analysis and reporting.
 
-## Syntax
+## Parameters
+
+| Parameter | Description |
+| --- | --- |
+| **`aggregate`** | (Required) A string or number specifying the collection name, or `1` for a collection-independent pipeline. |
+| **`pipeline`** | (Required) An array of aggregation-stage documents. |
+| **`cursor`** | (Required unless explaining the command) A document that accepts `batchSize` and the DocumentDB extension `singleBatch`. |
+| **`hint`** | (Optional) A string or document specifying the index name or key pattern for the input collection. |
+| **`let`** | (Optional) A document specifying the command-scoped variables referenced as `$$name`. |
+| **`maxTimeMS`** | (Optional) A number specifying the execution timeout in milliseconds. |
+| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation`. Rejected when that capability is disabled. |
+| **`collectionUUID`** | (Optional) A BSON UUID that must match the input collection's UUID; a mismatch fails the command. |
+| **`explain`** | (Optional) A boolean that requests an explanation instead of normal execution. The [`explain`](../diagnostic/explain.md) wrapper provides verbosity selection. |
+| **`cursor.batchSize`** | (Optional) A number limiting the initial batch, converted to an integer that must be non-negative after conversion. Defaults to `101`; `0` returns an empty first batch. Response size limits still apply. |
+| **`cursor.singleBatch`** | (Optional) A boolean that closes the cursor after the initial batch when `true`. |
+
+`cursor.batchSize` is converted to an integer and must be non-negative after conversion. The initial batch defaults to `101`; `0` returns an empty first batch. `cursor.singleBatch: true` closes the cursor after that batch. Response size limits still apply.
+
+## Example: summarize departures by airport
+
+Load the [airline example dataset](../diagnostic/wire-protocol.md#airline-example-dataset), then run:
+
+```javascript
+db.flights.aggregate(
+  [
+    { $group: {
+      _id: "$departure_airport",
+      departures: { $sum: 1 },
+      total_seats: { $sum: "$seat_capacity" }
+    } },
+    { $sort: { _id: 1 } }
+  ],
+  { batchSize: 10, maxTimeMS: 5000 }
+).toArray()
+```
+
+The returned array is:
+
+```json
+[
+  { "_id": "LED", "departures": 1, "total_seats": 100 },
+  { "_id": "SVO", "departures": 3, "total_seats": 440 }
+]
+```
+
+The shell cursor retrieves additional batches automatically. The [`getMore`](../query-and-write/getMore.md) reference describes the underlying continuation request.
+
+## Shell syntax
 
 ```javascript
 db.collection.aggregate(pipeline, options)
 ```
 
-- **pipeline**: An array of aggregation stages that process and transform the data.
-- **options**: Optional. Specifies more options for the aggregation, such as `explain`, `allowDiskUse`, and `cursor`.
-
-Collation is off by default: an `aggregate` that sets `collation` fails with `collation is not supported in the aggregate command yet.` unless the server enables `documentdb_core.enableCollation`.
-
-## Examples
+## Detailed Examples
 
 ### Example 1: Calculate total sales by category
 
@@ -132,3 +174,9 @@ db.stores.aggregate([
   }
 ]
 ```
+
+## Implementation
+
+Runs a pipeline against a collection or a collection-independent input. The backend parses the pipeline into a PostgreSQL query; the gateway returns results through a cursor.
+
+Source: `pg_documentdb/src/aggregation/bson_aggregation_pipeline.c`, `ParseAggregationQueryAndLookupCollection` and `ParseCursorDocument`. Source revision and shared metadata are documented in [wire protocol and common fields](../diagnostic/wire-protocol.md).

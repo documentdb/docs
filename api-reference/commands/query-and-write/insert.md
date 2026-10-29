@@ -9,9 +9,58 @@ category: query-and-write
 
 The `insert` command is used to create new documents into a collection. Either a single document or multiple documents can be inserted in one go.
 
-## Syntax
+Inserts a batch of documents into a collection. Documents without `_id` receive generated identifiers; an explicit `_id` must be unique within the collection.
 
-The basic syntax of the insert command is:
+## Parameters
+
+| Parameter | Description |
+| --- | --- |
+| **`insert`** | (Required) A string specifying the collection name. |
+| **`documents`** | (Required) An array of documents specifying the batch. Drivers can instead send an OP_MSG document sequence named `documents`; do not provide both representations. |
+| **`ordered`** | (Optional) A boolean that defaults to `true`: stop after the first write error. `false` attempts the remaining documents. |
+| **`bypassDocumentValidation`** | (Optional) A boolean that bypasses schema validation when the server enables that capability; otherwise ignored. |
+| **`maxTimeMS`** | (Optional) A number specifying the execution timeout in milliseconds. |
+| **`comment`** | (Optional) A string carrying trace context for gateway request tracing; see [common request fields](../diagnostic/wire-protocol.md). |
+
+`collation` is rejected by default.
+
+## Example: load the airline dataset
+
+The [airline dataset setup](../diagnostic/wire-protocol.md#airline-example-dataset) uses `insert` to load four flights. It supplies explicit identifiers so that the read examples have reproducible results.
+
+## Example: add an airport
+
+Run this in the `bookings` database, with no airport document using `_id: "SVO"`. The airport code serves as the document identifier:
+
+```javascript
+db.airports.insertOne({
+    _id: "SVO",
+    airport_name: "Sheremetyevo",
+    city: "Moscow",
+    country: "Russia",
+    timezone: "Europe/Moscow"
+}, { maxTimeMS: 5000 })
+```
+
+On success, the helper reports `acknowledged: true` and `insertedId: "SVO"`. The underlying wire-command response counts the insert in `n`.
+
+## Example: continue after a duplicate identifier
+
+Run this after the preceding airport insert, with no airport using `_id: "LED"`:
+
+```javascript
+db.airports.insertMany(
+  [
+    { _id: "SVO", airport_name: "Sheremetyevo", city: "Moscow", country: "Russia", timezone: "Europe/Moscow" },
+    { _id: "LED", airport_name: "Pulkovo", city: "Saint Petersburg", country: "Russia", timezone: "Europe/Moscow" }
+  ],
+  { ordered: false }
+)
+```
+
+The first entry produces a duplicate-key error, and the second can still be inserted. Mongosh throws a bulk-write error that identifies the failed input entry by `index: 0`. The underlying command response uses `writeErrors` for failures and `n` for successful inserts. With `ordered: true`, processing would stop at the duplicate instead.
+
+## Shell syntax
 
 ```javascript
 db.collection.insert(
@@ -23,19 +72,7 @@ db.collection.insert(
 )
 ```
 
-### Parameters
-
-| Parameter | Description |
-| --- | --- |
-| **`<single document or array of documents>`** | The document or array of documents to insert into the collection|
-| **`writeConcern`** | (Optional) A document expressing the write concern. The write concern describes the level of acknowledgment requested from the server for the write operation|
-| **`ordered`** | (Optional) Defaults to `true`. If `true`, the server inserts the documents in the order provided and stops at the first failure. If `false`, the server can insert the documents in any order and will attempt to insert all documents regardless of errors|
-
-- `<single document or array of documents>`: The document or array of documents to insert into the collection.
-- `writeConcern`: Optional. A document expressing the write concern. The write concern describes the level of acknowledgment requested from the server for the write operation.
-- `ordered`: Optional. Defaults to `true`. If `true`, the server inserts the documents in the order provided and stops at the first failure. If `false`, the server can insert the documents in any order and will attempt to insert all documents regardless of errors.
-
-## Example(s)
+## Detailed Examples
 
 ### Inserting a single document
 
@@ -354,3 +391,7 @@ A successful insert returns the ids of the inserted documents, keyed by their po
 
 - [update with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/update/)
 - [find with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/find/)
+
+## Implementation
+
+Source: `pg_documentdb/src/commands/insert.c`, `BuildBatchInsertionSpec`. See [wire protocol and common fields](../diagnostic/wire-protocol.md) for transaction and retryable-write metadata.
