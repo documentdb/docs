@@ -1,6 +1,6 @@
 ---
 title: listCollections
-description: List collection and view metadata with filtering and cursor options.
+description: List collection and view metadata in DocumentDB with filtering and cursor options.
 type: commands
 category: administration
 ---

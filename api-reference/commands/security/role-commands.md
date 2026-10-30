@@ -1,6 +1,6 @@
 ---
 title: Role management commands
-description: Supported custom-role creation, querying, deletion, and inheritance commands.
+description: Support custom-role creation, querying, deletion, and inheritance commands in DocumentDB.
 type: commands
 category: security
 ---

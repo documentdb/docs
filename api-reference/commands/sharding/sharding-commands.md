@@ -1,6 +1,6 @@
 ---
 title: Sharding commands
-description: Supported shardCollection, reshardCollection, unshardCollection, and getShardMap wire fields.
+description: Supported shardCollection, reshardCollection, unshardCollection, and getShardMap wire fields in DocumentDB.
 type: commands
 category: sharding
 ---

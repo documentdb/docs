@@ -1,6 +1,6 @@
 ---
 title: collStats
-description: Return collection statistics with a configurable size scale.
+description: Return collection statistics in DocumentDB with a configurable size scale.
 type: commands
 category: diagnostic
 ---

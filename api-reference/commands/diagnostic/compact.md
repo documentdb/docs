@@ -1,6 +1,6 @@
 ---
 title: compact
-description: Run collection maintenance, update statistics, or estimate reclaimable storage.
+description: Run collection maintenance, update statistics, or estimate reclaimable storage in DocumentDB.
 type: commands
 category: diagnostic
 ---

@@ -1,6 +1,6 @@
 ---
 title: dropIndexes
-description: Remove indexes selected by name, key pattern, or a list of names.
+description: Remove DocumentDB indexes selected by name, key pattern, or a list of names.
 type: commands
 category: indexing
 ---

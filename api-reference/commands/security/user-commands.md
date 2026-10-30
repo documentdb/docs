@@ -1,6 +1,6 @@
 ---
 title: User management commands
-description: Supported createUser, updateUser, dropUser, usersInfo, and user role-membership fields.
+description: Supported createUser, updateUser, dropUser, usersInfo, and user role-membership fields in DocumentDB.
 type: commands
 category: security
 ---

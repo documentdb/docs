@@ -1,6 +1,6 @@
 ---
 title: currentOp
-description: Inspect active operations using supported currentOp fields and filters.
+description: Inspect active operations in DocumentDB using supported currentOp fields and filters.
 type: commands
 category: diagnostic
 ---
