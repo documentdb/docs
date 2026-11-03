@@ -9,25 +9,63 @@ category: query-and-write
 
 The `find` command in DocumentDB is used to query documents within a collection. This command is fundamental for data retrieval operations and can be customized with filters, projections, and query options to fine-tune the results.
 
-## Syntax
+## Parameters
 
-The basic syntax for the `find` command is:
+| Parameter | Description |
+| --- | --- |
+| **`find`** | (Required) A string specifying the collection name. |
+| **`filter`** | (Optional) A document specifying the match filter; defaults to all documents. |
+| **`projection`** | (Optional) A document specifying the fields or expressions to return. |
+| **`sort`** | (Optional) A document specifying the result ordering. |
+| **`skip`** | (Optional) A non-negative integer specifying the number of matching documents to skip. |
+| **`limit`** | (Optional) An integer specifying the maximum number of results; `0` means no limit. Negative values use their absolute value, without implicitly enabling `singleBatch`. |
+| **`batchSize`** | (Optional) A number specifying the first-batch limit, converted to a non-negative integer; defaults to `101`. `0` creates an empty first batch. Response size limits still apply. |
+| **`singleBatch`** | (Optional) A boolean that closes the cursor after the first batch; defaults to `false`. |
+| **`hint`** | (Optional) A string or document specifying the index name or key pattern; also accepts a `$natural` hint. A non-natural hint cannot be combined with a `$natural` sort. |
+| **`let`** | (Optional) A document specifying the command-scoped expression variables, referenced as `$$name`. |
+| **`maxTimeMS`** | (Optional) A number specifying the execution timeout in milliseconds; `0` sets no explicit timeout. |
+| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation`. |
+
+## Example: find delayed departures
+
+Load the [airline example dataset](../diagnostic/wire-protocol.md#airline-example-dataset), then run:
+
+```javascript
+db.flights.find(
+  { delay_minutes: { $gt: 0 } },
+  { _id: 0, route_no: 1, arrival_airport: 1, delay_minutes: 1 }
+).sort({ route_no: 1 }).batchSize(10).maxTimeMS(5000).toArray()
+```
+
+The returned array is:
+
+```json
+[
+  { "route_no": "PG0102", "arrival_airport": "KZN", "delay_minutes": 12 },
+  { "route_no": "PG0104", "arrival_airport": "LED", "delay_minutes": 5 }
+]
+```
+
+## Example: filter embedded ticket segments
+
+```javascript
+db.flights.find(
+  { "segments.fare_conditions": "Business" },
+  { _id: 0, route_no: 1 }
+).sort({ route_no: 1 }).toArray()
+```
+
+This returns route numbers `PG0102` and `PG0103`. Dot notation selects a field inside each ticket segment; it does not require the entire `segments` array to equal the filter.
+
+The shell cursor issues [`getMore`](getMore.md) as needed. Applications using raw wire requests must continue with the actual returned `cursor.id`.
+
+## Shell syntax
 
 ```javascript
 db.collection.find(query, projection, options)
 ```
 
-### Parameters
-
-| Parameter | Description |
-| --- | --- |
-| **`query`** | A document that specifies the criteria for the documents to be retrieved|
-| **`projection`** | (Optional) A document that specifies the fields in the matching documents to be returned in the result set|
-| **`options`** | (Optional) A document that specifies options for query behavior and results|
-
-Collation is off by default: a `find` that sets `collation` fails with `collation is not supported in the find command yet.` unless the server enables `documentdb_core.enableCollation`.
-
-## Example(s)
+## Detailed Examples
 
 Consider this sample document from the stores collection in the StoreData database.
 
@@ -349,3 +387,9 @@ One of the documents returned shows the specified array elements projected in th
 
 - [insert with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/insert/)
 - [update with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/update/)
+
+## Implementation
+
+Selects documents from a collection and returns a cursor. The backend applies the filter, projection, ordering, and result limits; the gateway packages the first batch and retains any remaining cursor state.
+
+Source: `pg_documentdb/src/aggregation/bson_aggregation_pipeline.c`, `ParseFindQuery`. See [wire protocol and common fields](../diagnostic/wire-protocol.md) for shared request metadata.

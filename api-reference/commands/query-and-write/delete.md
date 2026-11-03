@@ -9,9 +9,48 @@ category: query-and-write
 
 The `delete` command is used to remove documents from a collection. A single document or multiple documents can be deleted based on a specified query filter.
 
-## Syntax
+Removes documents selected by each entry in a deletion batch. The per-entry `limit`, not a command-level option, determines whether one or all matches are removed.
 
-The basic syntax for the `delete` command is as follows:
+## Parameters
+
+| Parameter | Description |
+| --- | --- |
+| **`delete`** | (Required) A string specifying the collection name. |
+| **`deletes`** | (Required) An array of documents specifying the operations. Drivers can instead send an OP_MSG sequence named `deletes`, but not both. |
+| **`ordered`** | (Optional) A boolean that defaults to `true`; stop after the first operation error. |
+| **`let`** | (Optional) A document specifying the command-scoped expression variables referenced as `$$name`. |
+| **`maxTimeMS`** | (Optional) A number specifying the execution timeout in milliseconds. |
+| **`comment`** | (Optional) A string carrying trace context for gateway request tracing; see [common request fields](../diagnostic/wire-protocol.md). |
+
+## Per-deletion parameters
+
+| Parameter | Description |
+| --- | --- |
+| **`q`** | (Required) A document specifying the match filter. |
+| **`limit`** | (Required) A number with the following behavior: `1` removes at most one match, and `0` removes every match. Fractional values and other integers are rejected. |
+| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation`. |
+
+## Example: remove one flight service
+
+Each example below is independent and starts from the [airline example dataset](../diagnostic/wire-protocol.md#airline-example-dataset).
+
+```javascript
+db.flights.deleteOne({ route_no: "PG0103" })
+```
+
+The helper reports `deletedCount: 1`, corresponding to `n: 1` in the wire response. It sends `limit: 1`. Filtering by the known service identifies the document to remove; a non-unique filter does not specify which match is chosen.
+
+## Example: remove all delayed services
+
+```javascript
+db.flights.deleteMany({ status: "Delayed" }, { maxTimeMS: 5000 })
+```
+
+This sends `limit: 0`, removes `PG0102` and `PG0104`, and reports `deletedCount: 2`.
+
+An empty `q` with `limit: 0` removes every document in the collection; it does not drop the collection or its indexes.
+
+## Shell syntax
 
 ```javascript
 db.collection.deleteOne(
@@ -25,14 +64,7 @@ db.collection.deleteMany(
 )
 ```
 
-### Parameters
-
-| Parameter | Description |
-| --- | --- |
-| **<`filter`>** | A document that specifies the criteria for deletion. Only the documents that match the filter are deleted|
-| **`options`** | Optional. A document that specifies options for the delete operation. Common options include writeConcern and collation. Collation is off by default: a delete that sets it fails with `BSON field 'delete.deletes.collation' is not yet supported` unless the server enables `documentdb_core.enableCollation`.|
-
-## Example(s)
+## Detailed Examples
 
 Consider this sample document from the stores collection in the StoreData database.
 
@@ -195,3 +227,7 @@ db.runCommand({
 
 - [insert with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/insert/)
 - [update with DocumentDB](https://documentdb.io/docs/reference/commands/query-and-write/update/)
+
+## Implementation
+
+Source: `pg_documentdb/src/commands/delete.c`, `BuildBatchDeletionSpec` and per-deletion parsing. See [wire protocol and common fields](../diagnostic/wire-protocol.md) for shared metadata.

@@ -9,19 +9,44 @@ category: aggregation
 
 The `distinct` command is used to find the unique values for a specified field across a single collection. This command is useful when you need to identify the set of distinct values for a field without retrieving all the documents or when you need to perform operations like filtering or grouping based on unique values.
 
-## Syntax
+Returns unique values for a field path in `values`. This command does not create a cursor, so its result is not continued with `getMore`.
 
-The basic syntax of the `distinct` command is as follows:
+## Parameters
+
+| Parameter | Description |
+| --- | --- |
+| **`distinct`** | (Required) A string specifying the collection name. |
+| **`key`** | (Required) A string specifying the field path. |
+| **`query`** | (Optional) A document specifying the match filter; omitted or `null` means no filter. |
+| **`hint`** | (Optional) A string or document specifying the index name or key pattern. |
+| **`maxTimeMS`** | (Optional) A number specifying the execution timeout in milliseconds. |
+| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation` and cluster version 1.1 or later. Rejected otherwise. |
+
+## Example: list arrival airports from one departure airport
+
+Using the [airline example dataset](../diagnostic/wire-protocol.md#airline-example-dataset):
+
+```javascript
+db.flights.distinct("arrival_airport", { departure_airport: "SVO" }, { maxTimeMS: 5000 })
+```
+
+The returned array contains `"LED"` and `"KZN"`. The helper extracts the command response's `values` array. Do not depend on the order of distinct values.
+
+To collect fare classes from the embedded ticket segments instead:
+
+```javascript
+db.flights.distinct("segments.fare_conditions")
+```
+
+The values are `"Economy"` and `"Business"`, without duplicates.
+
+## Shell syntax
 
 ```javascript
 db.collection.distinct(field, query, options)
 ```
 
-- `field`: The field that receives the returned distinct values.
-- `query`: Optional. A query that specifies the documents from which to retrieve the distinct values.
-- `options`: Optional. Other options for the command. `collation` isn't supported and fails with `collation is not supported in the distinct command yet.`
-
-## Examples
+## Detailed Examples
 
 Here are examples using the provided sample JSON structure.
 
@@ -78,3 +103,7 @@ db.stores.distinct("promotionEvents.discounts.discountPercentage", { "promotionE
   23, 16, 18, 21, 13, 11, 8
 ]
 ```
+
+## Implementation
+
+Source: `pg_documentdb/src/aggregation/bson_aggregation_pipeline.c`, `GenerateDistinctQuery`. See [wire protocol and common fields](../diagnostic/wire-protocol.md) for source scope and shared metadata.
