@@ -1,0 +1,32 @@
+# documentdb.io clones this repo at build time but only rebuilds on its own pushes,
+# so a docs merge stays unpublished until someone redeploys the site by hand.
+name: Deploy documentdb.io
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+permissions: {}
+# Back-to-back merges need only one rebuild; the site's own `pages` group also collapses queued runs.
+concurrency:
+  group: deploy-site
+  cancel-in-progress: true
+jobs:
+  dispatch:
+    if: github.repository == 'documentdb/docs'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Run the site deployment
+        env:
+          # Fine-grained token scoped to documentdb/documentdb.github.io with Actions: read and write.
+          GH_TOKEN: ${{ secrets.SITE_DEPLOY_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::SITE_DEPLOY_TOKEN is not set; documentdb.io was not redeployed."
+            exit 1
+          fi
+          gh workflow run continuous-deployment.yml \
+            --repo documentdb/documentdb.github.io \
+            --ref main
+          echo "Deployment requested: https://github.com/documentdb/documentdb.github.io/actions/workflows/continuous-deployment.yml"
