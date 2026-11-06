@@ -172,22 +172,24 @@ Registration configures authentication and the admin user. Connect with `mongosh
 
 DocumentDB is also included in the **PostgreSQL Global Development Group (PGDG) APT repository**, with packaging maintained by the Debian PostgreSQL team. This is an extension-only distribution: it does not include the first-party gateway, setup wizard, or administrator tools.
 
-For example, as of **2026-09-10**, PGDG publishes DocumentDB **0.116** for Debian 13 (`trixie-pgdg`), PostgreSQL **15-18**, on **amd64 and arm64**. Versions and targets differ from first-party releases; consult the [PGDG package pool](https://apt.postgresql.org/pub/repos/apt/pool/main/d/documentdb/).
+As of **2026-11-05**, PGDG publishes DocumentDB **1.0** (extension `1.0-0`, package version `1.0-0-1.pgdg…`) for PostgreSQL **15-18** on Debian 13 (`trixie-pgdg`), Debian 14 (`forky-pgdg`) and Ubuntu 26.04 (`resolute-pgdg`) for **amd64 and arm64**, and on Ubuntu 26.10 (`stonking-pgdg`) for amd64. PGDG builds can lag first-party releases, and its targets differ from the first-party matrix; check the [PGDG package pool](https://apt.postgresql.org/pub/repos/apt/pool/main/d/documentdb/) for what it publishes now.
 
-For a new Debian 13 installation, follow the [PGDG repository setup instructions](https://www.postgresql.org/download/linux/debian/#apt), then inspect the candidate for your chosen PostgreSQL major version:
+For a new installation, follow the [PGDG repository setup instructions](https://www.postgresql.org/download/linux/debian/#apt), then inspect the candidate for your chosen PostgreSQL major version:
 
 ```bash
 sudo apt update
-apt-cache policy postgresql-16-documentdb
+apt-cache policy postgresql-18-documentdb
 ```
 
-If PGDG provides a candidate for your host, install it:
+If the candidate is `1.0-0-1.pgdg…` or later, install it:
 
 ```bash
-sudo apt install postgresql-16-documentdb
+sudo apt install postgresql-18-documentdb
 ```
 
 Configure PostgreSQL and create the extensions for that packaged version separately; the first-party helper commands above do not apply. Do not use another distribution's repository to obtain a missing package, or treat a provider switch as an in-place upgrade.
+
+A PGDG 0.116 or 0.117 installation upgrades in place: upgrade `postgresql-N-documentdb`, add `pg_documentdb_extended_rum` to `shared_preload_libraries` if it is missing, restart PostgreSQL and update the extensions as in [Extension and gateway on your own PostgreSQL](#extension-and-gateway-on-your-own-postgresql). A host that installed PGDG's `1.0~RC1` is offered `1.0-0` by `apt upgrade`, but upgrading a release candidate isn't supported: the RC already reports extension version `1.0-0`, so `ALTER EXTENSION ... UPDATE` changes nothing and the RC schema stays. Keep it on the RC with `sudo apt-mark hold postgresql-N-documentdb`, and move the data to a fresh 1.0 instance instead.
 
 ## Community builds
 
