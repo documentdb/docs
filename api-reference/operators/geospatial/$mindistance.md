@@ -28,7 +28,7 @@ The `$minDistance` operator is used in geospatial queries to specify the minimum
 ## Parameters
 
 | Parameter | Description |
-|-----------|------|-------------|
+|-----------|-------------|
 | `location field` | The field containing the geospatial data |
 | `coordinates` | An array of [longitude, latitude] specifying the center point |
 | `$minDistance` | Minimum distance in meters from the center point |
