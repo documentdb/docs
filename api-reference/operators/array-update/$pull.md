@@ -22,7 +22,7 @@ The `$pull` operator is used to remove all instances of a specified value or val
 | Parameter | Description |
 | --- | --- |
 | **`<field>`** | The field from which to remove one or more values. |
-| **`<value|condition>`** | The value or condition to remove from the array. |
+| **`<value\|condition>`** | The value or condition to remove from the array. |
 
 ## Examples
 
