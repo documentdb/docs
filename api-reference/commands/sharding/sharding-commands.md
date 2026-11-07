@@ -9,6 +9,8 @@ category: sharding
 
 Sharding behavior and option support depend on the installed implementation.
 
+For additional behaviors, see the [contrib section](../contrib/).
+
 ## shardCollection and reshardCollection
 
 ```javascript
