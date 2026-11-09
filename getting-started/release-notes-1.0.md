@@ -13,6 +13,7 @@ description: What's new in DocumentDB 1.0, where to get it, how to upgrade from 
 | --- | --- | --- |
 | [Linux packages](prebuilt-packages.md) | packages `1.0.0`, extension `1.0-0` | Ubuntu 24.04 and RHEL-compatible 9, PostgreSQL 17 and 18, amd64 and arm64 |
 | [Container image](../documentdb-local/index.md) | `pg15-1.0.0` to `pg18-1.0.0`; `latest` is `pg17-1.0.0` | Linux amd64 and arm64 |
+| [PGDG APT repository](prebuilt-packages.md#pgdg-extension-packages) | packages `1.0-0-1.pgdg…`, extension `1.0-0` (extension only) | Debian 13 and 14, Ubuntu 26.04 (amd64 and arm64) and 26.10 (amd64), PostgreSQL 15 to 18 |
 | [Kubernetes operator](../kubernetes-operator/index.md) | operator `1.0.0`, which runs engine `1.0-0` | Kubernetes 1.33+ with the `ImageVolume` feature gate on (on by default from 1.35, GA in 1.36) |
 
 The SQL extension version is `1.0-0` everywhere, and `hello` reports it in `internal.documentdb_versions`.
