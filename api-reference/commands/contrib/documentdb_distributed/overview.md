@@ -9,13 +9,17 @@ category: documentdb_distributed
 
 `documentdb_distributed` is an optional PostgreSQL extension that adds distributed behavior to DocumentDB. It implements distribution hooks used by existing DocumentDB commands and adds SQL APIs for cluster administration, collection placement, and rebalancing.
 
-These features require **`documentdb_distributed` to be installed and loaded**. **Citus is a prerequisite**, together with `documentdb_core` and `documentdb`; the core DocumentDB extension alone does not provide this distributed surface.
+These features require **`documentdb_distributed` to be installed and loaded**. **[Citus](https://github.com/citusdata/citus), a PostgreSQL extension for distributing tables across nodes, is a prerequisite**, together with `documentdb_core` and `documentdb`; the core DocumentDB extension alone does not provide this distributed surface.
 
 ## Prerequisites and installation
 
 Before installing prerequisites, review their license terms and any usage, distribution, or deployment restrictions that apply to the selected packages and versions.
 
 Install compatible Citus and DocumentDB extension packages on the coordinator and workers. Configure a Citus cluster with its coordinator and worker nodes before initializing DocumentDB's distributed metadata.
+
+**Citus 14 is the recommended Citus version.** Use a build compatible with your PostgreSQL major version and platform. Do not assume that an arbitrary newer Citus package, or the same Citus build across different PostgreSQL major versions, is compatible.
+
+Build or obtain `documentdb_core`, `documentdb`, and `documentdb_distributed` from the same DocumentDB release for the same PostgreSQL major version and platform, and use a consistent package set on the coordinator and workers. For provider-managed packages, use the provider's supported dependency combination instead of substituting independently selected versions. The installed-version query below reports what is installed; it does not certify compatibility.
 
 The `pg_documentdb_distributed` library must be loaded through `shared_preload_libraries` on the coordinator and workers, after `citus` and `pg_documentdb`. Preserve the other libraries required by your deployment and restart PostgreSQL after changing this setting.
 
@@ -73,6 +77,6 @@ Worker index-update, version-cache, and catalog-repair helpers support the imple
 
 ## Implementation
 
-This section uses the source revision recorded in [wire protocol and common fields](../../diagnostic/wire-protocol.md). The extension's [control file](https://github.com/documentdb/documentdb/blob/f027bf1b2fc5ac1e83bfccf97ecc50b69835c758/internal/pg_documentdb_distributed/documentdb_distributed.control) declares the Citus and DocumentDB dependencies. Its [library initialization](https://github.com/documentdb/documentdb/blob/f027bf1b2fc5ac1e83bfccf97ecc50b69835c758/internal/pg_documentdb_distributed/src/documentdb_distributed.c) registers distributed hooks during PostgreSQL startup.
+The [distributed extension source tree](https://github.com/documentdb/documentdb/tree/main/internal/pg_documentdb_distributed) links to current `main`. Its `documentdb_distributed.control` file declares the Citus and DocumentDB dependencies, and `src/documentdb_distributed.c` registers distributed hooks during PostgreSQL startup. For the revision used to audit the command behavior in this section, see [wire protocol and common fields](../../diagnostic/wire-protocol.md).
 
 Source: `internal/pg_documentdb_distributed/src/distribution/distributed_hooks.c`, `InitializeDocumentDBDistributedHooks`; `src/colocation/shard_colocation.c`, `UpdateColocationHooks`; lifecycle APIs: `src/distribution/cluster_operations.c`, `command_initialize_cluster` and `command_complete_upgrade`.

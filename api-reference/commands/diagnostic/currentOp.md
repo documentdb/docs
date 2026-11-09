@@ -7,7 +7,7 @@ category: diagnostic
 
 # currentOp
 
-Returns operation information in `inprog`, including index-build progress.
+Returns operation information in `inprog`, including index-build and collection-maintenance progress.
 
 ```javascript
 db.currentOp({ $all: true, active: true, ns: "bookings.flights" })
@@ -109,6 +109,63 @@ An entry disappearing from `currentOp` is not proof of success. For [index-creat
 | **`Finalizing.`** | Performing finalization work. |
 | **`Aborting.`** | Aborting the operation; this is not a successful completion state. |
 
+## Monitor compact and statistics maintenance
+
+Use another shell connection to monitor [`compact`](compact.md), including `mode: "full"` and `mode: "updateStats"`:
+
+```javascript
+db.currentOp({
+  $all: true,
+  ns: "bookings.flights",
+  "command.compact": "flights"
+})
+```
+
+The filter includes underlying maintenance operations as well as the compact command wrapper. The wrapper can have no progress counters; inspect the maintenance entries for progress. Availability depends on the installed implementation and the caller's visibility into operations.
+
+An illustrative excerpt from a full rewrite scanning the backing table is:
+
+```json
+{
+  "ns": "bookings.flights",
+  "active": true,
+  "secs_running": 180,
+  "op": "workerCommand",
+  "command": { "compact": "flights", "mode": "full" },
+  "waitingForLock": false,
+  "progress": {
+    "phase": "seq scanning heap",
+    "blocks_done": 400,
+    "blocks_total": 1000,
+    "Progress": 40
+  },
+  "msg": "Vacuum progress: seq scanning heap."
+}
+```
+
+Unlike index builds, maintenance counters are directly under `progress`, not in `progress.builds`.
+
+| Field | Description |
+| --- | --- |
+| **`command.compact`** | The collection being maintained. The underlying vacuum and analyze operations are reported as compact operations. |
+| **`command.mode`** | `full` for a recognized full rewrite or `updateStats` for analyze. Ordinary vacuum can omit this field; absence does not mean that no maintenance is running. |
+| **`ns`** | The logical database and collection namespace. |
+| **`opid`** | The operation identifier, when reported. Distinct wrapper or worker entries can have different identifiers. |
+| **`active`** | Whether the operation is active; this does not prove that it is advancing. |
+| **`secs_running`** | Elapsed execution time in seconds for this operation. |
+| **`progress.phase`** | The current maintenance phase, using the underlying phase text. When no progress row is available yet, this can be `waiting to start`. |
+| **`progress.blocks_done`** | Heap blocks scanned for vacuum/full rewrite, or sample blocks scanned for analyze. This is not a count of documents rewritten or deleted. |
+| **`progress.blocks_total`** | Total heap blocks for vacuum/full rewrite, or total sample blocks for analyze. It can be zero before counters are available. |
+| **`progress.Progress`** | `100 * blocks_done / blocks_total`, omitted when the total is zero. The capital `P` is significant. This is scan progress, not the percentage of the entire compact operation completed. |
+| **`msg`** | A summary such as `Vacuum progress: seq scanning heap.` or `Analyze progress: acquiring sample rows.` |
+| **`waitingForLock`** | Whether the operation is waiting on a reported lock or related synchronization event. Inspect this when counters stop advancing. |
+| **`locking_op_prefixes`** | Identifiers of blocking operations, when available for a waiting operation. |
+| **`writeConflicts`** | The number of blocking processes reported with the lock-wait information, not a cumulative count of write failures. |
+
+Phases depend on the maintenance mode. A full rewrite can proceed from scanning to writing the new heap, rebuilding indexes, and swapping relation files. The scan counters can reach 100% before those later phases finish; they provide neither an overall completion estimate nor an estimate of time remaining. Analyze reports sample-block progress rather than a full collection scan. Distributed maintenance can produce multiple entries; do not sum their percentages.
+
+After a client timeout, reconnect and use the same query to see whether maintenance remains active. Do not assume that timeout leaves a background job running: cancellation can stop the operation. An entry disappearing is not proof of success, and `currentOp` does not retain a completed compact result or its `bytesFreed` value. See [extending compact timeouts and investigating their outcome](compact.md#allow-more-time-for-a-full-rewrite).
+
 ## Implementation
 
 Index-build counters come from PostgreSQL's index-creation progress reporting. The implementation translates phase messages and groups the reported counters into `progress.builds`; queued and failed/retrying background builds are also included in the operation output.
@@ -116,3 +173,5 @@ Index-build counters come from PostgreSQL's index-creation progress reporting. T
 The generic translation for phase names containing `waiting for` runs before the worker-specific waiting cases. Consequently, worker join, start, finish, abort, finalize, and cleanup waits currently use `Index is waiting for other concurrent commands.`, rather than distinct worker-wait messages.
 
 See [wire protocol and common fields](wire-protocol.md). Source: `pg_documentdb/src/commands/current_op.c`, `BuildAggregateSpecFromCommandSpec`, `WriteIndexBuildProgressAndGetMessage`, `PhaseToUserMessage`, and `AddIndexBuilds`.
+
+Maintenance reporting uses `MaintenanceProgressQuery`, `WriteMaintenanceProgressAndGetMessage`, and the vacuum/analyze command mapping in the same source file. It reads `pg_stat_progress_vacuum` for ordinary vacuum, `pg_stat_progress_cluster` for full rewrites, and `pg_stat_progress_analyze` for statistics refreshes.

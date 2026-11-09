@@ -11,6 +11,10 @@ Welcome to the official documentation for [DocumentDB](https://github.com/docume
 - [documentdb-local](documentdb-local/index.md) - Detailed documentation of the documentdb-local container image
 - [Kubernetes Operator](kubernetes-operator/index.md) - Running DocumentDB on Kubernetes, and where to find the operator's own documentation
 
+### Contrib Extensions
+
+- [documentdb_distributed](api-reference/commands/contrib/documentdb_distributed/overview.md) - Optional distributed extension prerequisites and command reference
+
 ## Contributing
 
 When contributing to this documentation repository, keep the following in mind:
