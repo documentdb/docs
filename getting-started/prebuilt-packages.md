@@ -189,25 +189,40 @@ sudo apt install postgresql-18-documentdb
 
 Configure PostgreSQL and create the extensions for that packaged version separately; the first-party helper commands above do not apply. Do not use another distribution's repository to obtain a missing package, or treat a provider switch as an in-place upgrade.
 
-A PGDG 0.11x installation upgrades in place; the 1.0 package carries upgrade scripts from 0.110 on. Upgrade the package and check that `pg_documentdb_extended_rum` is preloaded:
+A PGDG 0.11x installation upgrades in place; the 1.0 package carries upgrade scripts from 0.110 on. Back up first; there is no downgrade. Stop applications and any gateway you run, and keep them stopped until the extensions are updated. The commands below use PostgreSQL 18, cluster `main` and database `postgres`: substitute yours throughout, and update every database where you created the extensions.
+
+Upgrade the package and check where `shared_preload_libraries` is set:
 
 ```bash
 sudo apt update && sudo apt install --only-upgrade postgresql-18-documentdb
-sudo -u postgres psql --cluster 18/main -d postgres -Atc "SHOW shared_preload_libraries;"
+sudo -u postgres psql --cluster 18/main -d postgres -Atc \
+  "SELECT setting, sourcefile FROM pg_settings WHERE name = 'shared_preload_libraries';"
 ```
 
-If it isn't listed (it may be missing on 0.116 and older), add it to `shared_preload_libraries` in `/etc/postgresql/18/main/postgresql.conf`; 1.0 [loads it only from there](#extension-and-gateway-on-your-own-postgresql). Then restart PostgreSQL and update the extensions in every database where you created them:
+If `pg_documentdb_extended_rum` isn't listed (it may be missing on 0.116 and older), add it next to the existing `pg_cron, pg_documentdb_core, pg_documentdb` in the file shown, usually `/etc/postgresql/18/main/postgresql.conf`; a value set with `ALTER SYSTEM` lives in `postgresql.auto.conf` and overrides it. 1.0 [loads the library only from there](#extension-and-gateway-on-your-own-postgresql), and the extension update succeeds without it while index builds fail later, so restart and confirm all four libraries are loaded:
 
 ```bash
 sudo systemctl restart postgresql@18-main &&
+sudo -u postgres psql --cluster 18/main -d postgres -Atc "SHOW shared_preload_libraries;"
+```
+
+Then update the extensions, and check the package, extension and library versions; PGDG has no gateway for the `mongosh` check below:
+
+```bash
 sudo -u postgres psql --cluster 18/main -d postgres -1 -v ON_ERROR_STOP=1 \
   -c "ALTER EXTENSION documentdb_core UPDATE;" \
   -c "ALTER EXTENSION documentdb UPDATE;" \
   -c "CREATE EXTENSION IF NOT EXISTS documentdb_extended_rum CASCADE;" \
   -c "ALTER EXTENSION documentdb_extended_rum UPDATE;"
+dpkg-query -W -f='${Version}\n' postgresql-18-documentdb
+sudo -u postgres psql --cluster 18/main -d postgres -At \
+  -c "SELECT extname, extversion FROM pg_extension WHERE extname LIKE 'documentdb%';" \
+  -c "SELECT documentdb_api.binary_version();"
 ```
 
-A host on PGDG's `1.0~RC1` is offered `1.0-0` by `apt upgrade`. PGDG's RC1 and 1.0 packages ship identical extension SQL, so after the upgrade and a restart the instance runs the 1.0 libraries and there is nothing for `ALTER EXTENSION ... UPDATE` to do. As with first-party packages, upgrading from a release candidate still isn't a supported path; for a supported 1.0 instance, move the data to a fresh one with `mongodump` and `mongorestore`.
+Expect package `1.0-0-1.pgdg…`, `1.0-0` for every extension and library `1.0.0`.
+
+A host on PGDG's `1.0~RC1` is offered `1.0-0` by `apt upgrade`, but upgrading a release candidate isn't supported. RC1 already reports extension `1.0-0` and library `1.0.0`, so only the package version tells it apart from 1.0, and the engine code changed after RC1: the 1.0 libraries don't repair data the RC wrote. Move the data to a fresh 1.0 instance instead. `mongodump` and `mongorestore` need a MongoDB-compatible gateway in front of both instances, which PGDG doesn't ship.
 
 ## Community builds
 
