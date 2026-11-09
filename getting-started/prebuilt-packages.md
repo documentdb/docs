@@ -172,9 +172,9 @@ Registration configures authentication and the admin user. Connect with `mongosh
 
 DocumentDB is also included in the **PostgreSQL Global Development Group (PGDG) APT repository**, with packaging maintained by the Debian PostgreSQL team. This is an extension-only distribution: it does not include the first-party gateway, setup wizard, or administrator tools.
 
-As of **2026-11-05**, PGDG publishes DocumentDB **1.0** (extension `1.0-0`, package version `1.0-0-1.pgdg…`) for PostgreSQL **15-18** on Debian 13 (`trixie-pgdg`), Debian 14 (`forky-pgdg`) and Ubuntu 26.04 (`resolute-pgdg`) for **amd64 and arm64**, and on Ubuntu 26.10 (`stonking-pgdg`) for amd64. PGDG builds can lag first-party releases, and its targets differ from the first-party matrix; check the [PGDG package pool](https://apt.postgresql.org/pub/repos/apt/pool/main/d/documentdb/) for what it publishes now.
+As of **2026-11-05**, PGDG publishes DocumentDB **1.0** (extension `1.0-0`, package version `1.0-0-1.pgdg…`) for PostgreSQL **15-18** on Debian 13 (`trixie-pgdg`), Debian 14 (`forky-pgdg`, testing) and Ubuntu 26.04 (`resolute-pgdg`), including **amd64 and arm64**, and on Ubuntu 26.10 (`stonking-pgdg`) for amd64 only. PGDG builds can lag first-party releases, and its targets differ from the first-party matrix; check the [PGDG package pool](https://apt.postgresql.org/pub/repos/apt/pool/main/d/documentdb/) for what it publishes now.
 
-For a new installation, follow the [PGDG repository setup instructions](https://www.postgresql.org/download/linux/debian/#apt), then inspect the candidate for your chosen PostgreSQL major version:
+For a new installation, follow the PGDG repository setup instructions for [Debian](https://www.postgresql.org/download/linux/debian/#apt) or [Ubuntu](https://www.postgresql.org/download/linux/ubuntu/#apt), then inspect the candidate for your chosen PostgreSQL major version:
 
 ```bash
 sudo apt update
@@ -189,7 +189,7 @@ sudo apt install postgresql-18-documentdb
 
 Configure PostgreSQL and create the extensions for that packaged version separately; the first-party helper commands above do not apply. Do not use another distribution's repository to obtain a missing package, or treat a provider switch as an in-place upgrade.
 
-A PGDG 0.11x installation upgrades in place; the 1.0 package carries upgrade scripts from 0.110 on. Back up first; there is no downgrade. Stop applications and any gateway you run, and keep them stopped until the extensions are updated. The commands below use PostgreSQL 18, cluster `main` and database `postgres`: substitute yours throughout, and update every database where you created the extensions.
+An earlier PGDG installation upgrades in place; the 1.0 package carries the upgrade scripts for every version PGDG has published, 0.108 on. Back up first; there is no downgrade. Stop applications and any gateway you run, and keep them stopped until the extensions are updated. The commands below use PostgreSQL 18, cluster `main` and database `postgres`: substitute yours throughout, and update every database where you created the extensions.
 
 Upgrade the package and check where `shared_preload_libraries` is set:
 
@@ -199,7 +199,7 @@ sudo -u postgres psql --cluster 18/main -d postgres -Atc \
   "SELECT setting, sourcefile FROM pg_settings WHERE name = 'shared_preload_libraries';"
 ```
 
-If `pg_documentdb_extended_rum` isn't listed (it may be missing on 0.116 and older), add it next to the existing `pg_cron, pg_documentdb_core, pg_documentdb` in the file shown, usually `/etc/postgresql/18/main/postgresql.conf`; a value set with `ALTER SYSTEM` lives in `postgresql.auto.conf` and overrides it. 1.0 [loads the library only from there](#extension-and-gateway-on-your-own-postgresql), and the extension update succeeds without it while index builds fail later, so restart and confirm all four libraries are loaded:
+If `pg_documentdb_extended_rum` isn't listed (it may be missing on 0.116 and older), add it next to the existing `pg_cron, pg_documentdb_core, pg_documentdb` in the file shown, usually `/etc/postgresql/18/main/postgresql.conf`; a value set with `ALTER SYSTEM` lives in `postgresql.auto.conf` and overrides it. 1.0 [loads the library only from there](#extension-and-gateway-on-your-own-postgresql), and when `documentdb_extended_rum` already exists the extension update succeeds without it while index builds fail later. Then restart PostgreSQL either way, so it loads the new libraries, and confirm all four are listed:
 
 ```bash
 sudo systemctl restart postgresql@18-main &&
