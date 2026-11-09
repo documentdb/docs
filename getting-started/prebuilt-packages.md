@@ -189,7 +189,25 @@ sudo apt install postgresql-18-documentdb
 
 Configure PostgreSQL and create the extensions for that packaged version separately; the first-party helper commands above do not apply. Do not use another distribution's repository to obtain a missing package, or treat a provider switch as an in-place upgrade.
 
-A PGDG 0.116 or 0.117 installation upgrades in place: upgrade `postgresql-N-documentdb`, add `pg_documentdb_extended_rum` to `shared_preload_libraries` if it is missing, restart PostgreSQL and update the extensions as in [Extension and gateway on your own PostgreSQL](#extension-and-gateway-on-your-own-postgresql). A host that installed PGDG's `1.0~RC1` is offered `1.0-0` by `apt upgrade`, but upgrading a release candidate isn't supported: the RC already reports extension version `1.0-0`, so `ALTER EXTENSION ... UPDATE` changes nothing and the RC schema stays. Keep it on the RC with `sudo apt-mark hold postgresql-N-documentdb`, and move the data to a fresh 1.0 instance instead.
+A PGDG 0.11x installation upgrades in place; the 1.0 package carries upgrade scripts from 0.110 on. Upgrade the package and check that `pg_documentdb_extended_rum` is preloaded:
+
+```bash
+sudo apt update && sudo apt install --only-upgrade postgresql-18-documentdb
+sudo -u postgres psql --cluster 18/main -d postgres -Atc "SHOW shared_preload_libraries;"
+```
+
+If it isn't listed (it may be missing on 0.116 and older), add it to `shared_preload_libraries` in `/etc/postgresql/18/main/postgresql.conf`; 1.0 [loads it only from there](#extension-and-gateway-on-your-own-postgresql). Then restart PostgreSQL and update the extensions in every database where you created them:
+
+```bash
+sudo systemctl restart postgresql@18-main &&
+sudo -u postgres psql --cluster 18/main -d postgres -1 -v ON_ERROR_STOP=1 \
+  -c "ALTER EXTENSION documentdb_core UPDATE;" \
+  -c "ALTER EXTENSION documentdb UPDATE;" \
+  -c "CREATE EXTENSION IF NOT EXISTS documentdb_extended_rum CASCADE;" \
+  -c "ALTER EXTENSION documentdb_extended_rum UPDATE;"
+```
+
+A host on PGDG's `1.0~RC1` is offered `1.0-0` by `apt upgrade`. PGDG's RC1 and 1.0 packages ship identical extension SQL, so after the upgrade and a restart the instance runs the 1.0 libraries and there is nothing for `ALTER EXTENSION ... UPDATE` to do. As with first-party packages, upgrading from a release candidate still isn't a supported path; for a supported 1.0 instance, move the data to a fresh one with `mongodump` and `mongorestore`.
 
 ## Community builds
 
