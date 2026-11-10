@@ -255,12 +255,15 @@ db.flights.createIndex(
 
 This requests ordered/composite indexing explicitly rather than relying on the default.
 
-To verify the index configuration, use `listIndexes` through the shell's `getIndexes()` helper and find the named index:
+To verify that the index is ordered, use `$indexStats` and filter by the index name:
 
 ```javascript
-db.flights.getIndexes()
+db.flights.aggregate([
+  { $indexStats: {} },
+  { $match: { name: "flight_status_ordered" } }
+])
 ```
 
-Find `flight_status_ordered` in the returned list and check that its index specification includes `storageEngine.enableOrderedIndex: true`.
+Check that the result includes `spec.storageEngine.enableOrderedIndex: true`. Use `$indexStats` for this check rather than relying on `getIndexes()` to expose the option.
 
 See [wire protocol and common fields](../diagnostic/wire-protocol.md). Source: `pg_documentdb/src/commands/create_indexes.c`, `ParseCreateIndexesArg`, `ParseIndexDefDoc`, `ParseCustomIndexDefOption`, and `pg_documentdb/src/vector/vector_index_kind_impl.c`; uniqueness conversion: `pg_documentdb/src/commands/coll_mod.c`, `HandleUniqueConversion` and `UpdatePostgresIndexesForUnique`.
