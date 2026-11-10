@@ -7,22 +7,16 @@ description: What's new in DocumentDB 1.0, where to get it, how to upgrade from 
 
 [DocumentDB v1.0-0](https://github.com/documentdb/documentdb/releases/tag/v1.0-0) was released on **2026-10-19**. It is built from the same commit as the second release candidate, v1.0-RC2. The [changelog](https://github.com/documentdb/documentdb/blob/v1.0-0/CHANGELOG.md) lists the engine changes.
 
-## 1.0.1 security update
-
-[DocumentDB v1.0-1](https://github.com/documentdb/documentdb/releases/tag/v1.0-1) was released on **2026-11-10**. It rebuilds the `documentdb-local` images on current Debian 13 security updates, which replaces the vulnerable `libbrotli1` ([CVE-2026-111497](https://security-tracker.debian.org/tracker/CVE-2026-111497)) and brings in the fixed `zlib1g` and `libminizip1t64` ([CVE-2026-76844](https://security-tracker.debian.org/tracker/CVE-2026-76844), [CVE-2026-85091](https://security-tracker.debian.org/tracker/CVE-2026-85091)). The rebuild also picks up PostGIS 3.7.0 (was 3.6.4) from PGDG. There are no engine, gateway or schema changes: the `1.0-0` to `1.0-1` extension update is a no-op, and the packages are rebuilt from the same source.
-
-If you run a `1.0.0` image, move to the `1.0.1` tag for your PostgreSQL version; the `1.0.0` tags keep the original images, which contain the vulnerable library. See [Upgrading](#upgrading) for both images and packages.
-
 ## Where to get it
 
-| Channel | Current 1.0 version | Platforms |
+| Channel | 1.0 version | Platforms |
 | --- | --- | --- |
-| [Linux packages](prebuilt-packages.md) | packages `1.0.1`, extension `1.0-1` | Ubuntu 24.04 and RHEL-compatible 9, PostgreSQL 17 and 18, amd64 and arm64 |
-| [Container image](../documentdb-local/index.md) | `pg15-1.0.1` to `pg18-1.0.1`; `latest` is `pg17-1.0.1` | Linux amd64 and arm64 |
+| [Linux packages](prebuilt-packages.md) | packages `1.0.0`, extension `1.0-0` | Ubuntu 24.04 and RHEL-compatible 9, PostgreSQL 17 and 18, amd64 and arm64 |
+| [Container image](../documentdb-local/index.md) | `pg15-1.0.0` to `pg18-1.0.0`; `latest` is `pg17-1.0.0` | Linux amd64 and arm64 |
 | [PGDG APT repository](prebuilt-packages.md#pgdg-extension-packages) | packages `1.0-0-1.pgdg…`, extension `1.0-0` (extension only) | Debian 13 and 14, Ubuntu 26.04 (including amd64 and arm64) and 26.10 (amd64), PostgreSQL 15 to 18 |
 | [Kubernetes operator](../kubernetes-operator/index.md) | operator `1.1.1`, which runs engine `1.0-0` | Kubernetes 1.32+; uses `ImageVolume` where the cluster supports it, otherwise a combined PostgreSQL 18 image |
 
-The SQL extension version is `1.0-1` in the first-party packages and images, and `1.0-0` in PGDG's packages and the operator. Both are the same schema, and `hello` reports the version in `internal.documentdb_versions`.
+The SQL extension version is `1.0-0` everywhere, and `hello` reports it in `internal.documentdb_versions`.
 
 ## What's new since 0.117
 
@@ -38,8 +32,8 @@ The SQL extension version is `1.0-1` in the first-party packages and images, and
 
 ## Upgrading
 
-- **Packages:** 0.116, 0.117 and 1.0.0 installations can be upgraded in place: upgrade the packages, restart PostgreSQL so it loads the new libraries, then update the extensions. See [Upgrading](https://documentdb.io/docs/linux-packages#upgrading).
-- **Containers:** a 1.0 image on an existing volume doesn't update the extensions. Move the data to a new volume with `mongodump` and `mongorestore`. A 1.0.0 volume works under the 1.0.1 image as it is, because the schema is unchanged. See [Upgrading the image](../documentdb-local/index.md#upgrading-the-image).
+- **Packages:** 0.116 and 0.117 installations can be upgraded in place: upgrade the packages, restart PostgreSQL so it loads the new libraries, then update the extensions. See [Upgrading](https://documentdb.io/docs/linux-packages#upgrading).
+- **Containers:** a 1.0 image on an existing volume doesn't update the extensions. Move the data to a new volume with `mongodump` and `mongorestore`. See [Upgrading the image](../documentdb-local/index.md#upgrading-the-image).
 - **Release candidates:** upgrading hosts and volumes that ran an RC isn't supported. Start 1.0 on a fresh host or a new volume.
 
 ## Known issues
