@@ -59,6 +59,8 @@ The following examples use the `bookings` database. Run the flight-index example
 
 ### Enable planner statistics
 
+Before enabling statistics, inspect the [`listCollections`](listCollections.md) output for `flights` (for example, with `db.getCollectionInfos({ name: "flights" })`). If `options.statsEnabled` is `true`, planner statistics are already enabled.
+
 Enable per-collection planner statistics for `flights`:
 
 ```javascript

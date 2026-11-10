@@ -241,4 +241,26 @@ Ordered/composite indexing is enabled by default, so normal index creation does 
 | --- | --- |
 | **`enableOrderedIndex`** | (Optional) A boolean or integer controlling ordered/composite indexing. Numeric values must be `-1`, `1`, or `2`; booleans are preferred. |
 
+To explicitly request an ordered index alongside existing indexes on `flights`, give it a distinct name and set `storageEngine.enableOrderedIndex`:
+
+```javascript
+db.flights.createIndex(
+  { status: 1 },
+  {
+    name: "flight_status_ordered",
+    storageEngine: { enableOrderedIndex: true }
+  }
+)
+```
+
+This requests ordered/composite indexing explicitly rather than relying on the default.
+
+To verify the index configuration, use `listIndexes` through the shell's `getIndexes()` helper and find the named index:
+
+```javascript
+db.flights.getIndexes()
+```
+
+Find `flight_status_ordered` in the returned list and check that its index specification includes `storageEngine.enableOrderedIndex: true`.
+
 See [wire protocol and common fields](../diagnostic/wire-protocol.md). Source: `pg_documentdb/src/commands/create_indexes.c`, `ParseCreateIndexesArg`, `ParseIndexDefDoc`, `ParseCustomIndexDefOption`, and `pg_documentdb/src/vector/vector_index_kind_impl.c`; uniqueness conversion: `pg_documentdb/src/commands/coll_mod.c`, `HandleUniqueConversion` and `UpdatePostgresIndexesForUnique`.
