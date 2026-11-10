@@ -11,11 +11,11 @@ The operator is a separate project, with its own repository, release cadence, an
 
 ## Versions
 
-Operator **1.0.0** runs DocumentDB engine **1.0-0**. Pin the chart version for repeatable installs (cert-manager must be installed first; see the quickstarts below):
+Operator **1.1.1** runs DocumentDB engine **1.0-0**. Pin the chart version for repeatable installs (cert-manager must be installed first; see the quickstarts below):
 
 ```bash
 helm install documentdb-operator oci://ghcr.io/documentdb/documentdb-operator \
-  --version 1.0.0 \
+  --version 1.1.1 \
   --namespace documentdb-operator \
   --create-namespace \
   --wait
@@ -31,12 +31,12 @@ helm install documentdb-operator oci://ghcr.io/documentdb/documentdb-operator \
 
 ## What your cluster needs
 
-Check one thing before you plan a deployment. The operator mounts the DocumentDB extension into PostgreSQL pods using the Kubernetes [ImageVolume](https://kubernetes.io/docs/concepts/storage/volumes/#image) feature, which constrains where it can run:
+The operator needs Kubernetes 1.32 or later. Check one more thing before you plan a deployment: how the DocumentDB extension reaches PostgreSQL pods. By default the operator mounts it with the Kubernetes [ImageVolume](https://kubernetes.io/docs/concepts/storage/volumes/#image) feature when the cluster supports it:
 
 - **Kubernetes 1.35 or later.** ImageVolume is GA from 1.36. In 1.35 it is beta and on by default, so check that your cluster hasn't turned the `ImageVolume` feature gate off. On 1.33 and 1.34 it is off by default, and works only if you enable the gate on the API server and the kubelets.
-- **containerd or CRI-O** as the container runtime. The Docker runtime does not support ImageVolume.
+- **containerd 2.1 or later, or CRI-O 1.33 or later** as the container runtime. The Docker runtime does not support ImageVolume.
 
-If the feature is unavailable, the operator's admission webhook rejects the `DocumentDB` resource with an explanatory error rather than leaving pods stuck. Managed Kubernetes offerings vary in the versions and runtimes they expose, and local tools often need an explicit flag to select a supported runtime, so confirm both up front. [Before You Start](https://documentdb.io/documentdb-kubernetes-operator/latest/preview/getting-started/before-you-start/) has the full prerequisite list, including supported tooling versions and resource sizing.
+Otherwise the operator uses a combined image that ships PostgreSQL 18 and the extension together. It decides when a `DocumentDB` cluster is created, and the cluster keeps that layout. Managed Kubernetes offerings vary in the versions and runtimes they expose, and local tools often need an explicit flag to select a supported runtime, so confirm both up front if you want ImageVolume. [Before You Start](https://documentdb.io/documentdb-kubernetes-operator/latest/preview/getting-started/before-you-start/) has the full prerequisite list, including supported tooling versions and resource sizing.
 
 ## Operator documentation
 

@@ -19,7 +19,7 @@ Get first-party packages from [documentdb.io](https://documentdb.io/packages), e
 
 ## First-party packages
 
-The current release is [`v1.0-0`](https://github.com/documentdb/documentdb/releases/tag/v1.0-0), published on **2026-10-19**. See the [1.0 release notes](release-notes-1.0.md) for what changed and the known issues. First-party CI builds and tests the full stack for:
+The current release is [`v1.0-1`](https://github.com/documentdb/documentdb/releases/tag/v1.0-1), published on **2026-11-10**, a [security update](release-notes-1.0.md#101-security-update) of 1.0. See the [1.0 release notes](release-notes-1.0.md) for what changed and the known issues. First-party CI builds and tests the full stack for:
 
 | Distribution | PostgreSQL | Architectures |
 | --- | --- | --- |
@@ -231,23 +231,23 @@ No package for your target? The supplied scripts build DEB or RPM packages with 
 Use a Linux build environment with Git, Docker, Bash 4+, and GNU utilities, on the target architecture. For example, build the extension for Debian 12 and PostgreSQL 18:
 
 ```bash
-git clone --depth 1 --branch v1.0-0 https://github.com/documentdb/documentdb.git
+git clone --depth 1 --branch v1.0-1 https://github.com/documentdb/documentdb.git
 cd documentdb
-./packaging/build_packages.sh --os deb12 --pg 18 --version 1.0.0 --output-dir packages
+./packaging/build_packages.sh --os deb12 --pg 18 --version 1.0.1 --output-dir packages
 ```
 
-Pass `--version 1.0.0` explicitly. The `v1.0-0` tag shares its commit with `v1.0-RC2`, and without `--version` the build takes its version from the tag `git describe` picks, which can be the release candidate.
+Pass `--version 1.0.1` explicitly, so the package version doesn't depend on which tags your clone has.
 
 For the full stand-alone DEB set, make `dpkg-deb` available on the build host, then build the gateway and shared packages:
 
 ```bash
 ./packaging/gateway/build_gateway_packages.sh --os deb12 --pg 18 \
-  --version 1.0.0 --output-dir packages
+  --version 1.0.1 --output-dir packages
 ./packaging/build_extra_packages.sh --type deb --pg 18 \
-  --version 1.0.0 --output-dir packages
+  --version 1.0.1 --output-dir packages
 ```
 
-Outputs go into `packages/`. RPM extras instead require host `rpmbuild` and applicable RPM macros. The [versioned packaging guide](https://github.com/documentdb/documentdb/blob/v1.0-0/packaging/README.md) lists targets, prerequisites, and clean-install checks.
+Outputs go into `packages/`. RPM extras instead require host `rpmbuild` and applicable RPM macros. The [versioned packaging guide](https://github.com/documentdb/documentdb/blob/v1.0-1/packaging/README.md) lists targets, prerequisites, and clean-install checks.
 
 Validate builds for targets outside the first-party CI matrix in your environment. PostgreSQL 15 is extension-only; package-managed gateway setup requires PostgreSQL 16 or newer.
 
@@ -256,7 +256,7 @@ Validate builds for targets outside the first-party CI matrix in your environmen
 Use release assets when you need an exact first-party version rather than a repository install. Each release publishes its Linux packages with `SHA256SUMS` and `manifest.txt`.
 
 ```bash
-gh release download v1.0-0 -R documentdb/documentdb -D pkgs && cd pkgs && sha256sum -c SHA256SUMS
+gh release download v1.0-1 -R documentdb/documentdb -D pkgs && cd pkgs && sha256sum -c SHA256SUMS
 ```
 
 This downloads all formats, architectures, and PostgreSQL major versions. Install only the matching subset below, not every downloaded file.
@@ -272,11 +272,11 @@ These examples install `documentdb-18` and its dependencies; the optional `docum
 For arm64, replace `amd64` with `arm64`. Only the gateway and extension files are architecture-specific.
 
 ```bash
-sudo apt install ./ubuntu24.04-documentdb-18_1.0.0_all.deb \
-                 ./ubuntu24.04-documentdb-common_1.0.0_all.deb \
-                 ./ubuntu24.04-documentdb-postgresql-tools_1.0.0_all.deb \
-                 ./ubuntu24.04-documentdb-gateway_1.0.0_amd64.deb \
-                 ./ubuntu24.04-postgresql-18-documentdb_1.0-0_amd64.deb
+sudo apt install ./ubuntu24.04-documentdb-18_1.0.1_all.deb \
+                 ./ubuntu24.04-documentdb-common_1.0.1_all.deb \
+                 ./ubuntu24.04-documentdb-postgresql-tools_1.0.1_all.deb \
+                 ./ubuntu24.04-documentdb-gateway_1.0.1_amd64.deb \
+                 ./ubuntu24.04-postgresql-18-documentdb_1.0-1_amd64.deb
 ```
 
 ### RPM (RHEL-compatible 9, PostgreSQL 18, x86_64)
@@ -284,18 +284,18 @@ sudo apt install ./ubuntu24.04-documentdb-18_1.0.0_all.deb \
 For arm64, replace `x86_64` with `aarch64`; leave `noarch` files unchanged.
 
 ```bash
-sudo dnf install ./documentdb-18-1.0.0-1.noarch.rpm \
-                 ./documentdb-common-1.0.0-1.noarch.rpm \
-                 ./documentdb-postgresql-tools-1.0.0-1.noarch.rpm \
-                 ./documentdb-gateway-1.0.0-1.el9.x86_64.rpm \
-                 ./rhel9-postgresql18-documentdb-1.0.0-1.el9.x86_64.rpm
+sudo dnf install ./documentdb-18-1.0.1-1.noarch.rpm \
+                 ./documentdb-common-1.0.1-1.noarch.rpm \
+                 ./documentdb-postgresql-tools-1.0.1-1.noarch.rpm \
+                 ./documentdb-gateway-1.0.1-1.el9.x86_64.rpm \
+                 ./rhel9-postgresql18-documentdb-1.0.1-1.el9.x86_64.rpm
 ```
 
 For PostgreSQL 17, replace the two PostgreSQL-specific files with their `17` equivalents; the shared packages stay the same. The `documentdb` meta package always selects PG18.
 
 For extension-only use, install the extension and tools files, then [configure PostgreSQL](#extension-only-installation). For a full stack, [run the wizard](#2-run-the-setup-wizard) with the installed major: use `--pg-version 17` for PG17.
 
-Filename prefixes such as `ubuntu24.04-` and `rhel9-` identify release assets, not package names. DEB extensions use version `1.0-0`, while other packages use `1.0.0`; RPMs use `1.0.0` with release `1` or `1.el9`.
+Filename prefixes such as `ubuntu24.04-` and `rhel9-` identify release assets, not package names. DEB extensions use version `1.0-1`, while other packages use `1.0.1`; RPMs use `1.0.1` with release `1` or `1.el9`.
 
 ### Offline / air-gapped
 
@@ -303,7 +303,7 @@ Release assets do not include the full dependency set. Stage PostgreSQL, its req
 
 ## Upgrading to 1.0
 
-A 0.116 or 0.117 package installation can be upgraded in place; move the whole stack together. Upgrading the packages replaces the libraries and installs the upgrade scripts, but doesn't change the databases: each PostgreSQL instance keeps reporting the old extension version until its extensions are updated. Back up first; there is no downgrade.
+A 0.116, 0.117 or 1.0.0 package installation can be upgraded in place; move the whole stack together. Upgrading the packages replaces the libraries and installs the upgrade scripts, but doesn't change the databases: each PostgreSQL instance keeps reporting the old extension version until its extensions are updated. Back up first; there is no downgrade.
 
 Upgrading a host that ever ran a release candidate isn't supported, and the installer refuses it. Install 1.0 on a fresh host and move the data with `mongodump` and `mongorestore`. Removing packages keeps the PostgreSQL data; don't reset or reuse an adopted instance as an upgrade workaround.
 
@@ -371,11 +371,11 @@ Connect with `mongosh` and run:
 db.hello().internal.documentdb_versions
 ```
 
-It should print `[ '1.0-0', '1.0.0' ]`: the installed extension version, then the loaded library version. If the first value is still `0.116-0` or `0.117-0`, the extensions weren't updated. See [`hello`](https://documentdb.io/docs/reference/commands/diagnostic/hello/).
+It prints the installed extension version, then the loaded library version: `[ '1.0-1', '1.0.1' ]` for 1.0.1. If the first value is from an older release than the second, such as `1.0-0` with `1.0.1`, the extensions weren't updated. See [`hello`](https://documentdb.io/docs/reference/commands/diagnostic/hello/).
 
 ### Containers
 
-A newer DocumentDB Local image on an existing data volume does not update the extensions ([#773](https://github.com/documentdb/documentdb/issues/773)). Start 1.0 on a new volume and move the data with `mongodump` and `mongorestore`. See [Upgrading the image](../documentdb-local/index.md#upgrading-the-image).
+A newer DocumentDB Local image on an existing data volume does not update the extensions ([#773](https://github.com/documentdb/documentdb/issues/773)). Start 1.0 on a new volume and move the data with `mongodump` and `mongorestore`. A 1.0.0 volume is the exception: it works under the 1.0.1 image as it is. See [Upgrading the image](../documentdb-local/index.md#upgrading-the-image).
 
 ## Retired targets
 

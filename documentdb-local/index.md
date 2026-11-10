@@ -7,7 +7,7 @@ description: Learn how to install and run DocumentDB Local using Docker for loca
 
 DocumentDB Local provides a lightweight, containerized environment for developing and testing applications locally, including prototyping and integration testing.
 
-The examples below use the PostgreSQL 17 image from release **1.0.0**. Images for PostgreSQL 15 to 18 are tagged `pg15-1.0.0` to `pg18-1.0.0`, for Linux amd64 and arm64; `latest` points to `pg17-1.0.0`. Use a versioned tag when you need a reproducible setup. The [1.0 release notes](../getting-started/release-notes-1.0.md) list what changed and the known issues.
+The examples below use the PostgreSQL 17 image from release **1.0.1**, a [security update](../getting-started/release-notes-1.0.md#101-security-update) of 1.0. Images for PostgreSQL 15 to 18 are tagged `pg15-1.0.1` to `pg18-1.0.1`, for Linux amd64 and arm64; `latest` points to `pg17-1.0.1`. Use a versioned tag when you need a reproducible setup. The `1.0.0` tags are still published, but those images contain a vulnerable `libbrotli1`. The [1.0 release notes](../getting-started/release-notes-1.0.md) list what changed and the known issues.
 
 > **Usage telemetry is on by default.** The 1.0 image reports its version, platform and CPU architecture to Scarf at startup and hourly. Turn it off with `-e DOCUMENTDB_USAGE_TELEMETRY=false`. See [Usage telemetry](#usage-telemetry).
 
@@ -20,7 +20,7 @@ The examples below use the PostgreSQL 17 image from release **1.0.0**. Images fo
 Get the Docker container image using `docker pull`.
 
 ```bash
-docker pull ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0
+docker pull ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.1
 ```
 
 ## Running
@@ -39,14 +39,14 @@ Then start the container with `docker run`, and use `docker ps` to check that it
 docker run -dt -p 127.0.0.1:10260:10260 --name docdb \
   -e USERNAME="${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
   -e PASSWORD="${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}" \
-  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0
+  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.1
 
 docker ps
 ```
 
 ```output
 CONTAINER ID   IMAGE                                                         COMMAND                  CREATED         STATUS                            PORTS                        NAMES
-5aff734a3591   ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0     "/bin/bash -c '/home…"   5 seconds ago   Up 4 seconds (health: starting)   127.0.0.1:10260->10260/tcp   docdb
+5aff734a3591   ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.1     "/bin/bash -c '/home…"   5 seconds ago   Up 4 seconds (health: starting)   127.0.0.1:10260->10260/tcp   docdb
 ```
 
 > The exported variables are reused by the client examples below; if you open a new shell, set them again. The guards stop an empty value from falling through to the image's public default credentials, which the container still accepts but warns about loudly. The credentials are passed as environment variables because `--username` and `--password` arguments stay visible in the container's process list.
@@ -133,7 +133,7 @@ docker run -dt \
   --name docdb \
   -e USERNAME="${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
   -e PASSWORD="${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}" \
-  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0 \
+  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.1 \
   --init-data true
 ```
 
@@ -155,7 +155,7 @@ or `--disable-usage-telemetry` (or `--usage-telemetry false`) after it. `NO_ANAL
 
 In CI, turn it off explicitly with `-e DOCUMENTDB_USAGE_TELEMETRY=false`. The image skips telemetry only when `CI`, `GITHUB_ACTIONS` or `TF_BUILD` is set to a non-empty value in the container's own environment, and `docker run` doesn't pass the runner's variables through: a container started on a CI runner still reports unless you forward one, for example `-e GITHUB_ACTIONS`. `--enable-telemetry` is a separate setting for the gateway's own metrics and doesn't affect this.
 
-The [privacy statement](https://github.com/documentdb/documentdb/blob/v1.0-0/documentdb-local/PRIVACY.md) has the details. The image also includes it at `/home/documentdb/PRIVACY.md`.
+The [privacy statement](https://github.com/documentdb/documentdb/blob/v1.0-1/documentdb-local/PRIVACY.md) has the details. The image also includes it at `/home/documentdb/PRIVACY.md`.
 
 ## Built-in sample data
 
@@ -173,7 +173,7 @@ db.getSiblingDB("StoreData").stores.countDocuments({})   // 41505
 db.getSiblingDB("StoreData").ratings.countDocuments({})  // 2
 ```
 
-Seeding is one-shot per data volume; use a new, empty volume to seed again. A direct loader rerun tolerates duplicate keys rather than duplicating documents. See the [versioned sample-data guide](https://github.com/documentdb/documentdb/tree/v1.0-0/documentdb-local/sample-data) for manual loader instructions.
+Seeding is one-shot per data volume; use a new, empty volume to seed again. A direct loader rerun tolerates duplicate keys rather than duplicating documents. See the [versioned sample-data guide](https://github.com/documentdb/documentdb/tree/v1.0-1/documentdb-local/sample-data) for manual loader instructions.
 
 ## Container lifecycle
 
@@ -184,6 +184,8 @@ Seeding is one-shot per data volume; use a new, empty volume to seed again. A di
 ## Upgrading the image
 
 A newer image on an existing data volume doesn't update the DocumentDB extensions in it ([#773](https://github.com/documentdb/documentdb/issues/773)), so the volume keeps the old schema under the new binaries. Upgrading a volume in place is not supported in 1.0. To move data from a 0.117 container to 1.0, export it with `mongodump`, start a 1.0 container on a new volume, and load it with `mongorestore`. The PostgreSQL major version of the image must also match the one that initialized the volume.
+
+The exception is 1.0.0 to 1.0.1: the schema is the same, so a 1.0.0 volume works under the 1.0.1 image for the same PostgreSQL version. Stop the 1.0.0 container, then start the 1.0.1 image on the volume. `hello` then reports `[ '1.0-0', '1.0.1' ]`: the extension version recorded in the volume, then the loaded library.
 
 If you do start a 1.0 image on a volume an older container used, the 1.0 image refuses to start while the old container's `postmaster.pid` is still there; see [Container lifecycle](#container-lifecycle) for the override and removing it afterward. For 0.116 and 0.117, stop the old container with `docker stop` first, which removes the file; after `docker kill`, `docker rm -f` or a crash it stays. Images 0.114 and earlier don't normally stop PostgreSQL cleanly, so their volumes usually keep the file.
 
@@ -222,7 +224,7 @@ docker run -dt \
   --name docdb \
   -e USERNAME="${DOCUMENTDB_USERNAME:?Set DOCUMENTDB_USERNAME first}" \
   -e PASSWORD="${DOCUMENTDB_PASSWORD:?Set DOCUMENTDB_PASSWORD first}" \
-  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.0
+  ghcr.io/documentdb/documentdb/documentdb-local:pg17-1.0.1
 ```
 
 Point it inside the data directory rather than at a volume of its own: a separate volume is created root-owned, and the gateway - which runs as an unprivileged user - cannot write its key there. The trade-off is that the key is included in any backup of the data volume. If the entrypoint ever has to repair the data directory's ownership (it does when the owner doesn't match, or with `DOCUMENTDB_FORCE_OWNERSHIP_REPAIR=true`), it runs `chmod -R 750` over the directory, which leaves the private key group-readable rather than owner-only.
