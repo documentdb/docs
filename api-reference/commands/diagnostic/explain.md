@@ -9,6 +9,8 @@ category: diagnostic
 
 Returns planning information for `find`, `aggregate`, `count`, or `distinct`. The default gateway does not explain write commands.
 
+For the explain response structure and field descriptions, see the [explain output JSON schema](https://github.com/documentdb/documentdb/blob/main/pg_documentdb_gw/documentdb_gateway_core/src/explain/documentdb_explain_output.schema.json) in the DocumentDB repository.
+
 ```javascript
 db.flights.find({ status: "Delayed" }).explain("executionStats")
 ```
