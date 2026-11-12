@@ -47,7 +47,7 @@ db.flights.createIndex({ route_no: 1 })
 | **`min`** | (Optional) A number specifying the bounds for a `2d` index. |
 | **`max`** | (Optional) A number specifying the bounds for a `2d` index. |
 | **`bits`** | (Optional) An integer specifying `2d` precision, from `1` through `32`. |
-| **`collation`** | (Optional) A document specifying the non-empty comparison rules; requires collation support. |
+| **`collation`** | (Optional) A document specifying the non-empty comparison rules; requires `documentdb.enableCollationWithNonUniqueOrderedIndexes` and a non-unique ordered index. |
 | **`prepareUnique`** | (Optional) A boolean that is recognized only by the prepare-unique creation path; not a generally available creation option. |
 | **`storageEngine`** | (Optional) A document containing the DocumentDB-specific options below, not a choice of PostgreSQL storage engine. |
 

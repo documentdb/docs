@@ -20,7 +20,7 @@ Returns unique values for a field path in `values`. This command does not create
 | **`query`** | (Optional) A document specifying the match filter; omitted or `null` means no filter. |
 | **`hint`** | (Optional) A string or document specifying the index name or key pattern. |
 | **`maxTimeMS`** | (Optional) A number specifying the execution timeout in milliseconds. |
-| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation` and cluster version 1.1 or later. Rejected otherwise. |
+| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation` and cluster version 1.2 or later. Rejected otherwise. |
 
 ## Example: list arrival airports from one departure airport
 
