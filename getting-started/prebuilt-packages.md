@@ -236,7 +236,7 @@ cd documentdb
 ./packaging/build_packages.sh --os deb12 --pg 18 --version 1.2.0 --output-dir packages
 ```
 
-Pass `--version 1.2.0` explicitly. The `v1.2-0` tag shares its commit with `v1.2-RC4`, and without `--version` the build takes its version from the tag `git describe` picks, which can be the release candidate.
+Pass `--version 1.2.0` explicitly, so the packages carry the release version.
 
 For the full stand-alone DEB set, make `dpkg-deb` available on the build host, then build the gateway and shared packages:
 
