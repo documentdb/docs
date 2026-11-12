@@ -44,7 +44,7 @@ This is the fastest way to get a database running. The wizard handles the contai
 
    The defaults give you an available port (starting at `10260`), generated credentials, the `latest` official image, and optional sample data. Expand the advanced options to set the port, the image tag, or the credentials yourself, or to skip the sample data.
 
-   > **Telemetry note:** The 1.0 image sends usage data (its version, platform and CPU architecture) by default. Extension 1.0.0 and later turn it off for a container it creates if VS Code telemetry is disabled at that moment; to turn it off yourself, start the container as shown under the alternative below. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
+   > **Telemetry note:** The image sends usage data (its version, platform and CPU architecture) by default. Extension 1.0.0 and later turn it off for a container it creates if VS Code telemetry is disabled at that moment; to turn it off yourself, start the container as shown under the alternative below. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
 
 4. Wait for setup to finish. The extension pulls the image if needed, creates a container named `vscode-documentdb-local` with a persistent volume, starts it, and waits until the database accepts connections.
 
@@ -96,9 +96,9 @@ Use this if you already run DocumentDB Local outside VS Code, or you want to man
 
    > **Note:** During the transition to the Linux Foundation, Docker images may still be hosted on Microsoft's container registry. These will be migrated to the new DocumentDB organization as the transition completes.
    >
-   > **Note:** Both versions prompt for credentials and reject empty values so the container cannot fall through to the public `default_user` / `Admin100` defaults. Enter the same values when the extension asks for the local connection credentials.
+   > **Note:** Both versions prompt for credentials and reject empty values: the container exits at startup without a password, and an empty username would fall back to `default_user`. Enter the same values when the extension asks for the local connection credentials.
    >
-   > **Telemetry note:** The 1.0 image sends usage data (its version, platform and CPU architecture) by default. To turn it off, add `-e DOCUMENTDB_USAGE_TELEMETRY=false` before the image name. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
+   > **Telemetry note:** The image sends usage data (its version, platform and CPU architecture) by default. To turn it off, add `-e DOCUMENTDB_USAGE_TELEMETRY=false` before the image name. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
    >
    > **Network Note:** The example binds the gateway only to the local host. Expose it to other machines only after adding firewall rules and a certificate those clients can validate.
    >

@@ -15,7 +15,7 @@ Get started with DocumentDB using the MongoDB shell (`mongosh`) for a familiar M
 
 ## Setting up DocumentDB locally
 
-Pull the latest `documentdb-local` image and start the container. DocumentDB Local listens on port `10260` by default. Always set the username and password on first run - the container falls back to well-known built-in defaults otherwise.
+Pull the latest `documentdb-local` image and start the container. DocumentDB Local listens on port `10260` by default. The container needs a password to start; set the username too, or it defaults to `default_user`.
 
 ```bash
 # Pull the latest DocumentDB Docker image
@@ -35,9 +35,9 @@ docker run -dt -p 127.0.0.1:10260:10260 --name documentdb-container \
   documentdb
 ```
 
-> **Note:** The prompts export the credentials for the `mongosh` command below. The guards reject empty values so the container cannot fall through to the public `default_user` / `Admin100` defaults. If you open a new shell, set both environment variables again.
+> **Note:** The prompts export the credentials for the `mongosh` command below. The guards reject empty values: the container exits at startup without a password, and an empty username would fall back to `default_user`. If you open a new shell, set both environment variables again.
 >
-> **Telemetry note:** The 1.0 image sends usage data (its version, platform and CPU architecture) by default. To turn it off, add `-e DOCUMENTDB_USAGE_TELEMETRY=false` before the image name. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
+> **Telemetry note:** The image sends usage data (its version, platform and CPU architecture) by default. To turn it off, add `-e DOCUMENTDB_USAGE_TELEMETRY=false` before the image name. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
 >
 > **Network note:** The example binds the gateway only to the local host. Expose it to other machines only after adding firewall rules and a certificate those clients can validate.
 >
