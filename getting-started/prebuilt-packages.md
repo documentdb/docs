@@ -38,6 +38,14 @@ sudo sh documentdb-install.sh
 
 This installs the current release on PostgreSQL 18. Use `--pg-major 17` for PostgreSQL 17. Run it with `sudo`: started as a normal user, it calls `sudo -v`, which asks for a password even on cloud images whose default user has passwordless sudo.
 
+To choose a release:
+
+| Command | Installs | Later `apt upgrade` / `dnf upgrade` |
+| --- | --- | --- |
+| `sudo sh documentdb-install.sh` | The newest release, from the `latest` package channel | Follows each new release |
+| `sudo sh documentdb-install.sh --stable` | The `stable` channel, which can stay on the previous release for a while after a new one | Follows `stable` |
+| `sudo sh documentdb-install.sh --version 1.0.0` | Exactly that release (1.0.0 or later), from its GitHub release files | None: no DocumentDB repository is configured |
+
 It asks you to confirm the plan and to choose the admin password. For an unattended run, store the password in a root-owned file and pass `--yes`:
 
 ```sh
@@ -309,7 +317,17 @@ Upgrading a host that ever ran a release candidate isn't supported, and the inst
 
 ### Stand-alone stack
 
-Upgrade the packages, then finish the upgrade with the setup wizard, naming the PostgreSQL major of the install, plus any `--data-dir` or `--pg-port` it was set up with:
+A host set up by the 1.0 installer, or with `--stable`, follows the `stable` package channel, which still serves 1.0. To upgrade it now, point it at the `latest` channel first:
+
+```bash
+# Debian / Ubuntu
+sudo sed -i 's# stable ubuntu24$# latest ubuntu24#' /etc/apt/sources.list.d/documentdb.list
+
+# RHEL-compatible 9
+sudo sed -i 's#^baseurl=https://documentdb.io/rpm/rhel9$#baseurl=https://documentdb.io/rpm/latest/rhel9#' /etc/yum.repos.d/documentdb.repo
+```
+
+Then upgrade the packages and finish the upgrade with the setup wizard, naming the PostgreSQL major of the install, plus any `--data-dir` or `--pg-port` it was set up with:
 
 ```bash
 # Debian / Ubuntu
