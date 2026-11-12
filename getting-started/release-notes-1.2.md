@@ -5,7 +5,7 @@ description: What's new in DocumentDB 1.2, where to get it, the container change
 
 # DocumentDB 1.2 release notes
 
-[DocumentDB v1.2-0](https://github.com/documentdb/documentdb/releases/tag/v1.2-0) is the release after 1.0. It is built from the same commit as v1.2-RC4. There was no 1.1 release; its changes ship in 1.2. The [changelog](https://github.com/documentdb/documentdb/blob/v1.2-0/CHANGELOG.md) lists the engine changes.
+[DocumentDB v1.2-0](https://github.com/documentdb/documentdb/releases/tag/v1.2-0) is the release after 1.0. There was no 1.1 release; its changes ship in 1.2. The [changelog](https://github.com/documentdb/documentdb/blob/v1.2-0/CHANGELOG.md) lists the engine changes.
 
 ## Where to get it
 
