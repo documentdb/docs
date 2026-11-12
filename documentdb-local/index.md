@@ -7,7 +7,7 @@ description: Learn how to install and run DocumentDB Local using Docker for loca
 
 DocumentDB Local provides a lightweight, containerized environment for developing and testing applications locally, including prototyping and integration testing.
 
-The examples below use the PostgreSQL 17 image from release **1.2.0**. Images for PostgreSQL 15 to 18 are tagged `pg15-1.2.0` to `pg18-1.2.0`, for Linux amd64 and arm64; `latest` and `1.2` point to `pg17-1.2.0`. Use a versioned tag when you need a reproducible setup. The [1.0 release notes](../getting-started/release-notes-1.0.md) list what changed and the known issues.
+The examples below use the PostgreSQL 17 image from release **1.2.0**. Images for PostgreSQL 15 to 18 are tagged `pg15-1.2.0` to `pg18-1.2.0`, for Linux amd64 and arm64; `latest` and `1.2` point to `pg17-1.2.0`. Use a versioned tag when you need a reproducible setup. The [1.2 release notes](../getting-started/release-notes-1.2.md) list what changed.
 
 > **Usage telemetry is on by default.** The image reports its version, platform and CPU architecture to Scarf at startup and hourly. Turn it off with `-e DOCUMENTDB_USAGE_TELEMETRY=false`. See [Usage telemetry](#usage-telemetry).
 

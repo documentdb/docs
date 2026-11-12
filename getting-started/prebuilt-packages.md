@@ -19,7 +19,7 @@ Get first-party packages from [documentdb.io](https://documentdb.io/packages), e
 
 ## First-party packages
 
-The current release is [`v1.2-0`](https://github.com/documentdb/documentdb/releases/tag/v1.2-0). See the [1.0 release notes](release-notes-1.0.md) for what changed and the known issues. First-party CI builds and tests the full stack for:
+The current release is [`v1.2-0`](https://github.com/documentdb/documentdb/releases/tag/v1.2-0). See the [1.2 release notes](release-notes-1.2.md) for what changed. First-party CI builds and tests the full stack for:
 
 | Distribution | PostgreSQL | Architectures |
 | --- | --- | --- |
