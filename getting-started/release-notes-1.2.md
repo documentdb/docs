@@ -5,7 +5,7 @@ description: What's new in DocumentDB 1.2, where to get it, the container change
 
 # DocumentDB 1.2 release notes
 
-[DocumentDB v1.2-0](https://github.com/documentdb/documentdb/releases/tag/v1.2-0) is the release after 1.0. There was no 1.1 release; its changes ship in 1.2. The [changelog](https://github.com/documentdb/documentdb/blob/v1.2-0/CHANGELOG.md) lists the engine changes.
+[DocumentDB v1.2-0](https://github.com/documentdb/documentdb/releases/tag/v1.2-0) was released on **2026-11-12**. It is the release after 1.0. There was no 1.1 release; its changes ship in 1.2. The [changelog](https://github.com/documentdb/documentdb/blob/v1.2-0/CHANGELOG.md) lists the engine changes.
 
 ## Where to get it
 
@@ -26,6 +26,7 @@ The SQL extension version is `1.2-0`, and `hello` reports it in `internal.docume
 - **`bson_build_document`** accepts `timestamptz` values and writes them as BSON dates with millisecond precision.
 - **Query planning.** `$elemMatch` predicates and the inner side of a `$lookup` are estimated from collected statistics, and dynamic cursor queries without planner statistics skip parallel plans. Field pruning before `$unwind` and order-by pushdown for `$group` over multi-key composite indexes are on by default.
 - **Fixes** for crashes and wrong results when a correlated `$lookup` rescans a `$densify` stage, wrong sort and group results when a null equality falls between compound-index sort keys, and RUM leaf splits that could overflow with large index terms.
+- **Gateway metrics are renamed.** If you export the gateway's metrics, the `db.client.*` names are now `docdb.gateway.*`: for example `db.client.operations` is `docdb.gateway.operations` and `db.client.operation.duration` is `docdb.gateway.operation.duration`. Update dashboards and alerts that use the old names. New metrics cover authentication attempts, cursors, sessions and transactions.
 - **Retired settings.** The `enableSkipDottedFieldIndexTerms` and `enable_ordered_operator_scans` settings are removed; their behavior is now always on.
 
 ## Container image changes
