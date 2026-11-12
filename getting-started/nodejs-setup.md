@@ -40,11 +40,11 @@ Before connecting from Node.js, make sure you have a running DocumentDB instance
    ```
 > **Note:** During the transition to the Linux Foundation, Docker images may still be hosted on Microsoft's container registry. These will be migrated to the new DocumentDB organization as the transition completes.
 >
-> **Note:** The prompts export the credentials for the Node.js example below. The guards reject empty values so the container cannot fall through to the public `default_user` / `Admin100` defaults. If you skip this Docker setup or open a new shell, set both environment variables before running Node.js.
+> **Note:** The prompts export the credentials for the Node.js example below. The guards reject empty values: the container exits at startup without a password, and an empty username would fall back to `default_user`. If you skip this Docker setup or open a new shell, set both environment variables before running Node.js.
 >
 > **Readiness Note:** `docker ps` reports the container as `Up` before DocumentDB can accept connections. Wait for the ready banner first: `until docker logs documentdb-container 2>&1 | grep -q "=== DocumentDB is ready ==="; do sleep 2; done`
 >
-> **Telemetry note:** The 1.0 image sends usage data (its version, platform and CPU architecture) by default. To turn it off, add `-e DOCUMENTDB_USAGE_TELEMETRY=false` before the image name. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
+> **Telemetry note:** The image sends usage data (its version, platform and CPU architecture) by default. To turn it off, add `-e DOCUMENTDB_USAGE_TELEMETRY=false` before the image name. See [Usage telemetry](../documentdb-local/index.md#usage-telemetry).
 >
 > **Network Note:** The example binds the gateway only to the local host. Expose it to other machines only after adding firewall rules and a certificate those clients can validate.
 >

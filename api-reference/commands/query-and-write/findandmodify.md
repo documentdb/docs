@@ -25,7 +25,7 @@ The `findAndModify` command is used to atomically modify and return a single doc
 | **`let`** | (Optional) A document specifying the command-scoped variables referenced as `$$name`. |
 | **`maxTimeMS`** | (Optional) A number specifying the execution timeout in milliseconds. |
 | **`bypassDocumentValidation`** | (Optional) A boolean that is applied only when schema validation and validation bypass are enabled; otherwise ignored. |
-| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation` and cluster version 1.1 or later. |
+| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation` and cluster version 1.2 or later. |
 | **`comment`** | (Optional) A string carrying trace context for gateway request tracing; see [common request fields](../diagnostic/wire-protocol.md). |
 
 Specify either an update or `remove: true`, not both. Removal cannot request `new: true` or `upsert: true`.

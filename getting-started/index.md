@@ -49,7 +49,7 @@ DocumentDB consists of four primary components:
    - Translates MongoDB commands into calls against `pg_documentdb`
    - Manages cursors, sessions, and connection state for MongoDB drivers
 
-4. **pg_documentdb_extended_rum**: The index access method behind DocumentDB's document indexes, required in 1.0
+4. **pg_documentdb_extended_rum**: The index access method behind DocumentDB's document indexes (required)
 
 ## Common Use Cases
 

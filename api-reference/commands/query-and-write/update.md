@@ -33,7 +33,7 @@ Applies a batch of updates. Each entry supplies its own filter and modification,
 | **`upsert`** | (Optional) A boolean that inserts if no document matches; defaults to `false`. |
 | **`arrayFilters`** | (Optional) An array of documents that selects named positional identifiers in operator updates; incompatible with pipeline updates. |
 | **`sort`** | (Optional) A document that selects the first matching document in this order; cannot be combined with `multi: true`. |
-| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation` and cluster version 1.1 or later. |
+| **`collation`** | (Optional) A document specifying the comparison rules; requires `documentdb_core.enableCollation` and cluster version 1.2 or later. |
 
 ## Example: record a revised delay
 

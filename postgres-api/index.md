@@ -43,7 +43,7 @@ To use `pg_documentdb`, you need to have `pg_documentdb_core` installed and conf
 
 `pg_documentdb_extended_rum` (SQL extension name `documentdb_extended_rum`) is DocumentDB's fork of the PostgreSQL RUM index access method, which backs DocumentDB's document indexes. It keeps RUM's on-disk format and extends the query path for document workloads.
 
-It is required in 1.0: `documentdb.rum_library_load_option` defaults to `require_documentdb_extended_rum`, so `pg_documentdb` loads its index handler from the extended RUM library. The library loads only from `shared_preload_libraries`, and `CREATE EXTENSION documentdb CASCADE` does not create the extension, so a manually configured server needs both steps before indexes are built:
+It is required: `documentdb.rum_library_load_option` defaults to `require_documentdb_extended_rum`, so `pg_documentdb` loads its index handler from the extended RUM library. The library loads only from `shared_preload_libraries`, and `CREATE EXTENSION documentdb CASCADE` does not create the extension, so a manually configured server needs both steps before indexes are built:
 
 ```sql
 -- postgresql.conf: add pg_documentdb_extended_rum to shared_preload_libraries and set

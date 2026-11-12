@@ -1,6 +1,6 @@
 ---
 title: Functions
-description: Reference for the PostgreSQL functions exposed by the pg_documentdb extension in DocumentDB 1.0, including CRUD, schema, index, diagnostics, user and role management.
+description: Reference for the PostgreSQL functions exposed by the pg_documentdb extension in DocumentDB 1.2, including CRUD, schema, index, diagnostics, user and role management.
 ---
 
 # Functions
@@ -9,7 +9,7 @@ description: Reference for the PostgreSQL functions exposed by the pg_documentdb
 
 All BSON parameters are encoded as PostgreSQL `bson` values (provided by the `pg_documentdb_core` extension). For example, you can pass a literal BSON spec using the cast `'{ ... }'::documentdb_core.bson` in `psql`.
 
-> **This page describes DocumentDB 1.0** (extension version `1.0-0`).
+> **This page describes DocumentDB 1.2** (extension version `1.2-0`).
 
 > **Reading the signatures below.** Parameter names are the ones the extension actually declares in `pg_documentdb/sql/udfs/`, so they are safe to use in named-argument calls such as `p_database_name => 'mydb'`. They are unquoted identifiers, so PostgreSQL folds them to lower case — `\df documentdb_api.*` prints `commandspec` where the source writes `commandSpec`, and `bigint`/`boolean`/`double precision` where the source writes `int8`/`bool`/`float8`. Either spelling works in a call. Types are written unqualified: `bson` and `bsonsequence` live in `documentdb_core`. A function with **two or more** `OUT` parameters returns a `record` and should be called as `SELECT * FROM ...`; one with a single `OUT` parameter returns that parameter's type directly, so a plain `SELECT fn(...)` is fine. A few wire-protocol entry points are PostgreSQL `PROCEDURE`s and must be invoked with `CALL`; these are called out individually.
 
@@ -25,7 +25,7 @@ Functions for creating, reading, updating, and deleting documents.
 | `documentdb_api.find_and_modify(p_database_name text, p_message bson, p_transaction_id text DEFAULT NULL, OUT p_result bson, OUT p_success boolean)` | Executes a MongoDB `findAndModify` command. |
 | `documentdb_api.insert_one(p_database_name text, p_collection_name text, p_document bson, p_transaction_id text DEFAULT NULL)` | Convenience wrapper that inserts a single document by database and collection name and returns the `insert` response. |
 | `documentdb_api_internal.insert_one(p_collection_id bigint, p_shard_key_value bigint, p_document bson, p_transaction_id text)` | **Deprecated and non-functional.** The implementation is a stub that always raises `insert_one is deprecated and should not be called`. Use the public `documentdb_api.insert_one` above. |
-| `CALL documentdb_api.bulkWrite(p_command bson, p_ops bsonsequence DEFAULT NULL, p_ns_info bsonsequence DEFAULT NULL, INOUT p_result bson DEFAULT NULL, INOUT p_success boolean DEFAULT NULL)` | **Not implemented in 1.0.** The `PROCEDURE` exists but every call raises `bulkWrite is not yet implemented`, and it also rejects being called inside a transaction. |
+| `CALL documentdb_api.bulkWrite(p_command bson, p_ops bsonsequence DEFAULT NULL, p_ns_info bsonsequence DEFAULT NULL, INOUT p_result bson DEFAULT NULL, INOUT p_success boolean DEFAULT NULL)` | **Not implemented.** The `PROCEDURE` exists but every call raises `bulkWrite is not yet implemented`, and it also rejects being called inside a transaction. |
 | `documentdb_api.find_cursor_first_page(database text, commandSpec bson, cursorId int8 DEFAULT 0, OUT cursorPage bson, OUT continuation bson, OUT persistConnection bool, OUT cursorId int8)` | Opens a cursor for a `find` command and returns its first page. Omit `cursorId` to have the server generate one. |
 | `documentdb_api.aggregate_cursor_first_page(database text, commandSpec bson, cursorId int8 DEFAULT 0, OUT cursorPage bson, OUT continuation bson, OUT persistConnection bool, OUT cursorId int8)` | Opens a cursor for an `aggregate` command and returns its first page. Omit `cursorId` to have the server generate one. |
 | `documentdb_api.list_collections_cursor_first_page(database text, commandSpec bson, cursorId int8 DEFAULT 0, OUT cursorPage bson, OUT continuation bson, OUT persistConnection bool, OUT cursorId int8)` | Returns the `listCollections` result. Despite the name this is always a single batch — see the note below. |
