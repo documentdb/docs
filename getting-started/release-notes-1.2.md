@@ -13,6 +13,7 @@ description: What's new in DocumentDB 1.2, where to get it, the container change
 | --- | --- | --- |
 | [Linux packages](prebuilt-packages.md) | packages `1.2.0`, extension `1.2-0` | Ubuntu 24.04 and RHEL-compatible 9, PostgreSQL 17 and 18, amd64 and arm64 |
 | [Container image](../documentdb-local/index.md) | `pg15-1.2.0` to `pg18-1.2.0`; `latest` and `1.2` point to `pg17-1.2.0` | Linux amd64 and arm64 |
+| [PGDG APT repository](prebuilt-packages.md#pgdg-extension-packages) | packages `1.2-0-1.pgdg…`, extension `1.2-0` (extension only) | Debian 13 and 14, Ubuntu 26.04 (including amd64 and arm64) and 26.10 (amd64), PostgreSQL 15 to 18 |
 
 The SQL extension version is `1.2-0`, and `hello` reports it in `internal.documentdb_versions`.
 
