@@ -39,16 +39,20 @@ When enabled, creating a unique ordered index on an existing collection no longe
 
 ### Collation
 
-| GUC | Default | Description |
-| --- | --- | --- |
-| `documentdb_core.enableCollation` | `off` | Accepts the `collation` option on queries. It is defined by `pg_documentdb_core`, hence the `documentdb_core.` prefix, and can be set per session. |
-| `documentdb.enableCollationWithNonUniqueOrderedIndexes` | `off` | Accepts the `collation` option on ordered indexes. Also required for collated unique indexes, despite the setting's name. While `off`, an index spec with `collation` fails with "createIndex.collation is not implemented yet". |
-| `documentdb.enable_collated_unique_indexes` | `off` | Allows collated unique ordered indexes; also requires optional-key support and the required extended RUM index library. |
-| `documentdb.enable_composite_unique_optional_key` | `off` | Enables optional-key support required by collated unique indexes. |
-| `documentdb.enable_unique_null_missing_equivalence` | `on` | Treats missing paths as null values during unique-index rechecks. |
-| `documentdb.enable_unique_null_missing_semantics` | `on` | Enables corrected null and missing-value conflict checks for unique indexes. |
+| GUC | Description |
+| --- | --- |
+| `documentdb_core.enableCollation` | Accepts the `collation` option on supported commands. It is defined by `pg_documentdb_core`, hence the `documentdb_core.` prefix, and can be set per session. |
+| `documentdb.enableCollationWithNonUniqueOrderedIndexes` | Accepts the `collation` option on ordered indexes. Also required for collated unique indexes, despite the setting's name. While `off`, an index spec with `collation` fails with "createIndex.collation is not implemented yet". |
+| `documentdb.enable_collated_unique_indexes` | Allows collated unique ordered indexes; also requires optional-key support and the required extended RUM index library. |
+| `documentdb.enable_composite_unique_optional_key` | Enables optional-key support required by collated unique indexes. |
+| `documentdb.defaultUseCompositeOpClass` | Creates regular indexes as ordered indexes. Collated indexes require ordered indexes. |
+| `documentdb.enableCompositeUniqueHash` | Selects the composite-hash unique-index implementation used by collated unique indexes. Keep enabled. |
+| `documentdb.enable_unique_null_missing_equivalence` | Treats missing paths as null values during unique-index rechecks. |
+| `documentdb.enable_unique_null_missing_semantics` | Enables corrected null and missing-value conflict checks for unique indexes. |
+| `documentdb.fail_on_collated_index_term_truncation` | Rejects collated index terms that require truncation. Keep enabled to avoid relying on truncated comparison keys. |
+| `documentdb.skipFailOnCollation` | Can bypass unsupported-collation errors without applying the requested semantics. Do not use this as a way to enable collation support. |
 
-While `off`, `find`, `aggregate`, `count`, and `distinct` reject a `collation` option with "collation is not supported in the find command yet." (or the command's name in place of `find`). `delete`, `findAndModify` and `update` follow the flag too. `distinct`, `findAndModify` and `update` accept `collation` from 1.2, once the extension is updated to `1.2-0`.
+When `documentdb_core.enableCollation` is `off`, `find`, `aggregate`, `count`, and `distinct` reject a `collation` option with "collation is not supported in the find command yet." (or the command's name in place of `find`). `delete`, `findAndModify` and `update` follow the flag too. `distinct`, `findAndModify` and `update` accept `collation` from 1.2, once the extension is updated to `1.2-0`.
 
 With the flag on, a few aggregation stages still reject a collation, including `$bucket`, `$bucketAuto`, `$densify`, `$fill`, `$geoNear`, `$merge`, `$setWindowFields`, and `$sortByCount`.
 
