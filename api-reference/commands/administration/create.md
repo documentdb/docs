@@ -28,7 +28,7 @@ The view uses the [airline example dataset](../diagnostic/wire-protocol.md#airli
 | **`validator`** | (Optional) A document specifying the schema validation rules; requires schema validation to be enabled. |
 | **`validationLevel`** | (Optional) A string selecting `off`, `strict`, or `moderate`; requires schema validation support. |
 | **`validationAction`** | (Optional) A string selecting `error` or `warn`; requires schema validation support. |
-| **`collation`** | (Optional) A document specifying the default collection comparison rules. Requires collation and collection-collation support. |
+| **`collation`** | Not supported by `create` in DocumentDB 1.2. Enabling operation-level collation does not enable collection defaults. See [collation limitations](../../../getting-started/collation.md#limitations-in-12). |
 | **`statsEnabled`** | (Optional) A boolean-like value provided as a DocumentDB extension controlling collection planner statistics. |
 | **`changeStreamPreAndPostImages`** | (Optional) A document with the following behavior: `{ enabled: <boolean> }`; requires pre-image support and cluster version 0.112 or later. Rejected if unavailable. |
 | **`enableUpdateDescription`** | (Optional) A boolean-like value provided as a DocumentDB extension controlling change-stream update descriptions. |
